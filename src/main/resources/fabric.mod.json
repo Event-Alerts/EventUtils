@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "eventutils",
+  "version": "1.0-BETA",
+  "name": "EventUtils",
+  "description": "Utility mod for events",
+  "authors": ["aabss"],
+  "contributors": ["srnyx"],
+  "contact": {
+    "repo": "https://github.com/aabssmc/EventUtils"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "cc.aabss.eventutils.EventUtils"
+    ],
+    "modmenu":  [
+      "cc.aabss.eventutils.api.EventUtilsMenuApiImpl"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "fabric": "*",
+    "minecraft": "*"
+  }
+}

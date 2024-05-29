@@ -1,0 +1,10 @@
+/logs/
+/run/
+/v1_20_R1/.gradle/
+/v1_20_R1/build/
+/v1_20_R2/.gradle/
+/v1_20_R2/build/
+/v1_20_R4/.gradle/
+/v1_20_R4/build/
+/v1_20_R6/.gradle/
+/v1_20_R6/build/

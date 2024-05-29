@@ -1,0 +1,16 @@
+{
+  "alert": {
+    "sounds": [
+      "eventutils:alert",
+      "eventutils:alert",
+      "eventutils:alert",
+      "eventutils:alert",
+      "eventutils:alert",
+      "eventutils:alert",
+      "eventutils:alert",
+      "eventutils:alert",
+      "eventutils:alert",
+      "eventutils:alert2"
+    ]
+  }
+}
