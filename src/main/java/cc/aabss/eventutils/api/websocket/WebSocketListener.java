@@ -34,9 +34,9 @@ public class WebSocketListener implements WebSocket.Listener {
 
     private void handleEvent(String message) {
         try {
-            JsonObject jsonmsg = JsonParser.parseString(message).getAsJsonObject();
             switch (endpoint) {
                 case EVENT_POSTED:
+                    JsonObject jsonmsg = JsonParser.parseString(message).getAsJsonObject();
                     if (isMoneyEvent(jsonmsg)) {
                         eventListenerInstance.onMoneyEvent(jsonmsg);
                     }
