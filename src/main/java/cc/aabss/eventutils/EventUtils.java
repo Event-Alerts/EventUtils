@@ -21,7 +21,7 @@ public class EventUtils implements ClientModInitializer {
     public static WebSocketEvent POTENTIAL_FAMOUS_EVENTS;
     public static final Logger LOGGER = LogManager.getLogger(EventUtils.class);
     public static DiscordRPCClient client = null;
-    public static JsonConfig CONFIG = new JsonConfig(new File(FabricLoader.getInstance().getConfigDir().toString(), "eventutils/config.json"));
+    public static JsonConfig CONFIG = new JsonConfig(new File(FabricLoader.getInstance().getConfigDir().toString(), "config.json"));
 
     public static String DEFAULT_FAMOUS_IP = CONFIG.loadObject("default-famous-ip", "play.invadedlands.net");
     public static boolean AUTO_TP = CONFIG.loadObject("auto-tp", false);

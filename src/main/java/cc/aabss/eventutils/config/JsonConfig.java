@@ -16,14 +16,13 @@ public class JsonConfig {
     public JsonConfig(File config) {
         this.EventUtils = config;
         registerConfigs();
-        loadJson();
     }
 
     // -----------
 
     public void registerConfigs() {
         try {
-            if (new File(EventUtils.getAbsolutePath()).mkdirs() || EventUtils.createNewFile()) {
+            if (EventUtils.createNewFile()) {
                 JsonObject json = new JsonObject();
                 try (FileWriter fileWriter = new FileWriter(EventUtils.getPath())) {
                     fileWriter.write(json.toString());
