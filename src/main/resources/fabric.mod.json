@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "eventutils",
-  "version": "1.0-BETA",
+  "version": "${version}",
   "name": "EventUtils",
   "description": "Utility mod for events",
   "authors": ["aabss"],
