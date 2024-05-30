@@ -133,7 +133,7 @@ public class EventUtil {
         try {
             HttpRequest req = HttpRequest.newBuilder(new URI("https://api.mcstatus.io/v2/status/java/"+ip)).build();
             String body = HttpClient.newHttpClient().sendAsync(req, HttpResponse.BodyHandlers.ofString()).get().body();
-            return !body.endsWith(":null}");
+            return !body.endsWith(":null}") && !body.endsWith("Not Found") && !body.endsWith("Invalid address value");
         } catch (ExecutionException | InterruptedException | URISyntaxException e){
             throw new RuntimeException(e);
         }
