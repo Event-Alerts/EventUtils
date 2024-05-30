@@ -2,6 +2,7 @@ package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.commands.EventTeleportCommand;
+import cc.aabss.eventutils.commands.EventUtilsCommand;
 import cc.aabss.eventutils.commands.TestNotificationCommand;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -89,6 +90,7 @@ public class EventUtil {
     public static void registerEvents(){
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             EventTeleportCommand.register(dispatcher);
+            EventUtilsCommand.register(dispatcher);
             TestNotificationCommand.register(dispatcher);
         });
 
