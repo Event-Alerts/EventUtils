@@ -12,12 +12,14 @@ import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.MutableText;
@@ -37,6 +39,8 @@ import java.util.function.Consumer;
 
 import static cc.aabss.eventutils.EventUtils.*;
 import static cc.aabss.eventutils.EventUtils.TEXT;
+import static cc.aabss.eventutils.config.HidePlayers.HIDEPLAYERS;
+import static cc.aabss.eventutils.config.HidePlayers.HIDEPLAYERSBIND;
 
 public class EventUtil {
 
@@ -123,6 +127,19 @@ public class EventUtil {
                 UpdateChecker.updateCheck();
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
+            }
+        });
+
+        HidePlayers.loadBinds();
+
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            ClientPlayerEntity p = client.player;
+            while (HIDEPLAYERSBIND.wasPressed()) {
+                HIDEPLAYERS = !HIDEPLAYERS;
+                if (p != null) {
+                    p.sendMessage(Text.literal((HIDEPLAYERS ? "§aEnabled" : "§cDisabled") + " hide players"), true);
+                }
             }
         });
     }
@@ -298,6 +315,18 @@ public class EventUtil {
                 .setSaveConsumer(newValue -> {
                     EventUtils.SIMPLE_QUEUE_MSG = newValue;
                     CONFIG.saveObject("simple-queue-msg", EventUtils.SIMPLE_QUEUE_MSG);
+                    CONFIG.saveConfig(CONFIG.JSON);
+                })
+                .build());
+        generalCategory.addEntry(ConfigEntryBuilder.create()
+                .startStrList(Text.literal("Whitelisted Players"), EventUtils.WHITELISTED_PLAYERS)
+                .setDefaultValue(() -> EventUtils.WHITELISTED_PLAYERS)
+                .setTooltip(Text.literal("The names of the players you can see when players are hidden."))
+                .setSaveConsumer(newValue -> {
+                    List<String> names = new ArrayList<>();
+                    newValue.forEach(name -> names.add(name.toLowerCase()));
+                    EventUtils.WHITELISTED_PLAYERS = names;
+                    CONFIG.saveObject("whitelisted-players", EventUtils.WHITELISTED_PLAYERS);
                     CONFIG.saveConfig(CONFIG.JSON);
                 })
                 .build());

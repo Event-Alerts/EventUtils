@@ -12,6 +12,9 @@
   "license": "All-Rights-Reserved",
   "icon": "assets/icon.png",
   "environment": "*",
+  "mixins": [
+    "pertix.mixin.json"
+  ],
   "entrypoints": {
     "client": [
       "cc.aabss.eventutils.EventUtils"

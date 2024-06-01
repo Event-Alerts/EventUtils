@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.util.List;
 
 import static cc.aabss.eventutils.api.DiscordRPC.discordConnect;
 
@@ -28,6 +29,7 @@ public class EventUtils implements ClientModInitializer {
     public static boolean DISCORD_RPC = CONFIG.loadObject("discord-rpc", true);
     public static boolean SIMPLE_QUEUE_MSG = CONFIG.loadObject("simple-queue-msg", false);
     public static boolean UPDATE_CHECKER = CONFIG.loadObject("update-checker", true);
+    public static List<String> WHITELISTED_PLAYERS = CONFIG.loadObject("whitelisted-players", List.of("Skeppy", "BadBoyHalo"));
 
     public static boolean FAMOUS_EVENT = CONFIG.loadObject("famous-event", true);
     public static boolean POTENTIAL_FAMOUS_EVENT = CONFIG.loadObject("potential-famous-event", true);
