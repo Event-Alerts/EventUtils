@@ -162,10 +162,6 @@ public class EventUtil {
         return null;
     }
 
-    public static String getImage(byte[] bytes) {
-        return "data:image/png;base64," + new String(Base64.getUrlEncoder().encode(bytes));
-    }
-
     public static boolean validIp(String ip){
         try {
             HttpRequest req = HttpRequest.newBuilder(new URI("https://api.mcstatus.io/v2/status/java/"+ip)).build();

@@ -13,7 +13,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static cc.aabss.eventutils.EventUtils.LOGGER;
-import static cc.aabss.eventutils.config.EventUtil.getImage;
 
 public class DiscordRPC {
 
@@ -52,27 +51,14 @@ public class DiscordRPC {
         }, "1236917260036083743");
     }
 
-    public static String getCurrentAction(boolean asset){
+    public static String getCurrentAction(boolean asset) {
         MinecraftClient client = MinecraftClient.getInstance();
-        if (client.getServer() != null) {
-            if (asset){
-                return "singleplayer";
-            }
-            return "Singleplayer";
+        if (client.getServer() != null && client.getServer().isRunning()) {
+            return asset ? "singleplayer" : "Singleplayer";
         } else if (client.getCurrentServerEntry() != null) {
-            if (asset) {
-                if (client.getCurrentServerEntry().getFavicon() != null) {
-                    return getImage(client.getCurrentServerEntry().getFavicon());
-                } else{
-                    return "https://media.minecraftforum.net/attachments/300/619/636977108000120237.png";
-                }
-            }
-            return "Multiplayer";
+            return asset ? "https://api.mcstatus.io/v2/icon/"+client.getCurrentServerEntry().address : "Multiplayer";
         } else {
-            if (asset){
-                return "themainmenu";
-            }
-            return "the Main Menu";
+            return asset ? "themainmenu" : "the Main Menu";
         }
     }
 
