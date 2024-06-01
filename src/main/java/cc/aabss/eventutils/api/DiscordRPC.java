@@ -39,7 +39,7 @@ public class DiscordRPC {
                     public void run() {
                         RichPresence presence = new RichPresence.Builder()
                                 .addButton("Event Alerts Mod", "https://modrinth.com/mod/alerts")
-                                .addButton("Event Alerts Discord", "https://discord.gg/skeppy")
+                                .addButton("Event Alerts Discord", "https://discord.gg/uFPFNYzAWC")
                                 .setTimestamps(start, null)
                                 .setText("Playing as " + mcclient.getSession().getUsername(), "Currently in " + getCurrentAction(false))
                                 .setAssets("event_alerts", "logo by Bansed",
