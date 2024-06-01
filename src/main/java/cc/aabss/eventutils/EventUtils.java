@@ -27,6 +27,7 @@ public class EventUtils implements ClientModInitializer {
     public static boolean AUTO_TP = CONFIG.loadObject("auto-tp", false);
     public static boolean DISCORD_RPC = CONFIG.loadObject("discord-rpc", true);
     public static boolean SIMPLE_QUEUE_MSG = CONFIG.loadObject("simple-queue-msg", false);
+    public static boolean UPDATE_CHECKER = CONFIG.loadObject("update-checker", true);
 
     public static boolean FAMOUS_EVENT = CONFIG.loadObject("famous-event", true);
     public static boolean POTENTIAL_FAMOUS_EVENT = CONFIG.loadObject("potential-famous-event", true);

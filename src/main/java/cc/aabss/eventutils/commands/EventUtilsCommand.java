@@ -22,6 +22,7 @@ public class EventUtilsCommand {
                                         .suggest("auto-tp")
                                         .suggest("discord-rpc")
                                         .suggest("simple-queue-msg")
+                                        .suggest("update-checker")
                                         .suggest("famous-event")
                                         .suggest("potential-famous-event")
                                         .suggest("money-event")

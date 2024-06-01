@@ -1,6 +1,7 @@
 package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.api.UpdateChecker;
 import cc.aabss.eventutils.commands.EventTeleportCommand;
 import cc.aabss.eventutils.commands.EventUtilsCommand;
 import cc.aabss.eventutils.commands.TestNotificationCommand;
@@ -9,6 +10,7 @@ import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
@@ -110,6 +112,14 @@ public class EventUtil {
             return true;
         }));
         ClientReceiveMessageEvents.MODIFY_GAME.register(((text, overlay) -> replace(text)));
+
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            try {
+                UpdateChecker.updateCheck();
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public static String ip(String event){
