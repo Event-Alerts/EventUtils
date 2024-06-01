@@ -138,7 +138,7 @@ public class EventUtil {
             while (HIDEPLAYERSBIND.wasPressed()) {
                 HIDEPLAYERS = !HIDEPLAYERS;
                 if (p != null) {
-                    p.sendMessage(Text.literal((HIDEPLAYERS ? "§aEnabled" : "§cDisabled") + " hide players"), true);
+                    p.sendMessage(Text.literal((HIDEPLAYERS ? "Â§aEnabled" : "Â§cDisabled") + " hide players"), true);
                 }
             }
         });

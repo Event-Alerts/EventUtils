@@ -53,10 +53,10 @@ public class UpdateChecker {
             if (client != null && client.player != null) {
                 ClientPlayerEntity p = client.player;
                 p.sendMessage(
-                        Text.literal("§6[EVENTUTILS]§r §eThere is a new update available!§r §7(v" + finalVer + " -> v" + atomicNewVer.get() + ")")
+                        Text.literal("Â§6[EVENTUTILS]Â§r Â§eThere is a new update available!Â§r Â§7(v" + finalVer + " -> v" + atomicNewVer.get() + ")")
                                 .setStyle(
                                         Style.EMPTY.withHoverEvent(
-                                                new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("§eClick to open download."))
+                                                new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Â§eClick to open download."))
                                         ).withClickEvent(
                                                 new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/alerts/version/" + atomicNewVer.get())
                                         )
