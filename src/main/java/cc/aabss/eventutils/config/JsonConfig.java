@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 public class JsonConfig {
 
@@ -64,8 +65,14 @@ public class JsonConfig {
         }
     }
 
-    public <T>T registerObject(String key, T defaultValue){
-        return loadObject(key, defaultValue);
+    public <T> T loadObject(String key, T defaultValue, Type typeOfT) {
+        JsonElement a = JSON.get(key);
+        if (a == null) {
+            saveObject(key, defaultValue);
+            return defaultValue;
+        } else {
+            return GSON.fromJson(a, typeOfT);
+        }
     }
 
     public void saveConfig(JsonObject json){

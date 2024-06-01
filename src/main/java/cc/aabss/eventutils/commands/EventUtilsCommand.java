@@ -17,10 +17,12 @@ public class EventUtilsCommand {
     }
 
     public static int run(MinecraftClient client) {
-        client.setScreen(EventUtil.screen(client.currentScreen));
-        if (client.player != null) {
-            client.player.sendMessage(Text.literal("Opening screen..").formatted(Formatting.GREEN));
-        }
+        client.send(() -> {
+            client.setScreen(EventUtil.screen(client.currentScreen));
+            if (client.player != null) {
+                client.player.sendMessage(Text.literal("Opening screen..").formatted(Formatting.GREEN));
+            }
+        });
         return 1;
     }
 }
