@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
@@ -39,12 +39,15 @@ public class EventUtil {
             LOGGER.error("Minecraft client instance is null");
             return;
         }
-        Screen screen = client.currentScreen;
+        if (client.getCurrentServerEntry() != null && client.getCurrentServerEntry().address.equalsIgnoreCase(ip)){
+            LOGGER.warn("Already in server.");
+            return;
+        }
         client.execute(() -> {
             try {
                 client.disconnect();
                 ServerAddress serverAddress = ServerAddress.parse(ip);
-                ConnectScreen.connect(screen, client, serverAddress,
+                ConnectScreen.connect(new TitleScreen(), client, serverAddress,
                         new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER),
                         true, null);
             } catch (Exception e) {
