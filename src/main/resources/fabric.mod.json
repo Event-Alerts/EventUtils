@@ -13,7 +13,7 @@
   "icon": "assets/icon.png",
   "environment": "*",
   "mixins": [
-    "pertix.mixin.json"
+    "eventutils.mixin.json"
   ],
   "entrypoints": {
     "client": [
