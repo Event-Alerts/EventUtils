@@ -17,13 +17,15 @@ import static cc.aabss.eventutils.EventUtils.LOGGER;
 public class DiscordRPC {
 
     public static void discordConnect(){
-        login();
-        EventUtils.client.connect();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (EventUtils.client.isConnected) {
-                EventUtils.client.disconnect();
-            }
-        }, "YARPC Shutdown Hook"));
+        if (EventUtils.client == null) {
+            login();
+            EventUtils.client.connect();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                if (EventUtils.client.isConnected) {
+                    EventUtils.client.disconnect();
+                }
+            }, "YARPC Shutdown Hook"));
+        }
     }
 
     public static void login(){
