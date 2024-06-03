@@ -11,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.lang.reflect.Type;
 import java.util.List;
 
 import static cc.aabss.eventutils.api.DiscordRPC.discordConnect;
