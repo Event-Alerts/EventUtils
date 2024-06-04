@@ -72,10 +72,11 @@ public class WebSocketListener implements WebSocket.Listener {
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
         if (statusCode == 1006) { // Abnormal closure
-            LOGGER.info("Reconnecting due to abnormal closure...");
+            LOGGER.warn("Reconnecting due to abnormal closure... \"{}\"", reason);
             webSocketEvent.retryConnection(endpoint);
         } else{
-            LOGGER.warn("{} WEBSOCKET CLOSED | STATUS: {} | REASON: {}", endpoint.name(), statusCode, reason);
+            LOGGER.info("{} WEBSOCKET CLOSED | STATUS: {} | REASON: {}", endpoint.name(), statusCode, reason);
+            webSocketEvent.scheduler.close();
             latch.countDown();
         }
         return null;
@@ -83,7 +84,7 @@ public class WebSocketListener implements WebSocket.Listener {
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
-        LOGGER.warn("WEBSOCKET ERROR: {}", error.getMessage());
+        LOGGER.error("WEBSOCKET ERROR: {}", error.getMessage());
         webSocketEvent.retryConnection(endpoint);
         latch.countDown();
         throw new RuntimeException(error);

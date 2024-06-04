@@ -1,5 +1,7 @@
 package cc.aabss.eventutils.api.websocket;
 
+import net.minecraft.client.MinecraftClient;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -13,7 +15,7 @@ import static cc.aabss.eventutils.EventUtils.LOGGER;
 public class WebSocketEvent {
     public WebSocket webSocket;
     public final CountDownLatch latch;
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    public final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public WebSocketEvent(SocketEndpoint event) {
         this(event, new CountDownLatch(1));
@@ -39,20 +41,17 @@ public class WebSocketEvent {
                 this.webSocket = webSocket;
                 this.webSocket.request(1);
                 LOGGER.info("{} WebSocket connection established", event.name());
-                startKeepAlive();
+                scheduler.scheduleAtFixedRate(() -> {
+                    if (!webSocket.isInputClosed()) {
+                        webSocket.sendPing(java.nio.ByteBuffer.wrap(new byte[]{1}));
+                    }
+                }, 0, 30, TimeUnit.SECONDS);
             }
         });
     }
 
-    private void startKeepAlive() {
-        scheduler.scheduleAtFixedRate(() -> {
-            if (webSocket != null && !webSocket.isInputClosed()) {
-                webSocket.sendPing(java.nio.ByteBuffer.wrap(new byte[]{1}));
-            }
-        }, 0, 30, TimeUnit.SECONDS);
-    }
-
     public void retryConnection(SocketEndpoint event) {
+        webSocket.sendClose(1000, "EventUtils client ("+ MinecraftClient.getInstance().getSession().getUsername() +") closed");
         scheduler.schedule(() -> connect(event), 5, TimeUnit.SECONDS);
     }
 
