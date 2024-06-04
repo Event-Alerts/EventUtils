@@ -300,15 +300,17 @@ public class EventUtil {
                 .startBooleanToggle(Text.literal("Discord RPC"), EventUtils.DISCORD_RPC)
                 .setDefaultValue(() -> EventUtils.DISCORD_RPC)
                 .setTooltip(Text.literal("Whether the Discord rich presence should be shown."))
+                .setRequirement(() -> client != null)
                 .setSaveConsumer(newValue -> {
                     EventUtils.DISCORD_RPC = newValue;
                     CONFIG.saveObject("discord-rpc", EventUtils.DISCORD_RPC);
                     CONFIG.saveConfig(CONFIG.JSON);
-                    if (newValue)
-                        EventUtils.client.connect();
-                    else
-                        EventUtils.client.disconnect();
-
+                    if (client != null) {
+                        if (newValue)
+                            EventUtils.client.connect();
+                        else
+                            EventUtils.client.disconnect();
+                    }
                 })
                 .build());
         generalCategory.addEntry(ConfigEntryBuilder.create()
