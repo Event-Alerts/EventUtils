@@ -5,6 +5,9 @@ import cc.aabss.eventutils.api.UpdateChecker;
 import cc.aabss.eventutils.commands.EventTeleportCommand;
 import cc.aabss.eventutils.commands.EventUtilsCommand;
 import cc.aabss.eventutils.commands.TestNotificationCommand;
+import club.bottomservices.discordrpc.lib.exceptions.DiscordException;
+import club.bottomservices.discordrpc.lib.exceptions.NoDiscordException;
+import club.bottomservices.discordrpc.lib.exceptions.NotConnectedException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -271,7 +274,7 @@ public class EventUtil {
         return false;
     }
 
-    public static Screen screen(Screen parent){
+    public static Screen screen(Screen parent) {
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
                 .setTitle(Text.literal("Event Utils Mod Config"));
@@ -305,12 +308,12 @@ public class EventUtil {
                     EventUtils.DISCORD_RPC = newValue;
                     CONFIG.saveObject("discord-rpc", EventUtils.DISCORD_RPC);
                     CONFIG.saveConfig(CONFIG.JSON);
-                    if (client != null) {
+                    try {
                         if (newValue)
                             EventUtils.client.connect();
                         else
                             EventUtils.client.disconnect();
-                    }
+                    } catch (DiscordException ignored){}
                 })
                 .build());
         generalCategory.addEntry(ConfigEntryBuilder.create()
