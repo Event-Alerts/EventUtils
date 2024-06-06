@@ -6,6 +6,8 @@ import cc.aabss.eventutils.commands.EventTeleportCommand;
 import cc.aabss.eventutils.commands.EventUtilsCommand;
 import cc.aabss.eventutils.commands.TestNotificationCommand;
 import club.bottomservices.discordrpc.lib.exceptions.DiscordException;
+import club.bottomservices.discordrpc.lib.exceptions.NoDiscordException;
+import club.bottomservices.discordrpc.lib.exceptions.NotConnectedException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -304,9 +306,12 @@ public class EventUtil {
                     try {
                         if (newValue)
                             EventUtils.client.connect();
-                        else
-                            EventUtils.client.disconnect();
-                    } catch (DiscordException ignored){}
+                        else {
+                            try {
+                                EventUtils.client.disconnect();
+                            } catch (DiscordException ignored){}
+                        }
+                    } catch (NotConnectedException | NoDiscordException ignored){}
                 })
                 .build());
         generalCategory.addEntry(ConfigEntryBuilder.create()
