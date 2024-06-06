@@ -151,7 +151,7 @@ public class NotificationToast implements Toast {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client != null && client.player != null) {
             MutableText type = text("Type ").formatted(Formatting.WHITE);
-            MutableText command = text("/eventteleport " + eventType).formatted(Formatting.YELLOW);
+            MutableText command = text("/eventtp " + eventType).formatted(Formatting.YELLOW);
             MutableText teleport = text(" to teleport!").formatted(Formatting.WHITE);
             client.player.playSound(SoundEvent.of(new Identifier("eventutils:alert")), 1 ,1);
             add(client.getToastManager(), NotificationToast.Type.DEFAULT, text, append(type, command, teleport));

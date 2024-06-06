@@ -13,22 +13,15 @@ import net.minecraft.util.Formatting;
 
 public class EventTeleportCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher){
+        register(dispatcher, "eventteleport");
+        register(dispatcher, "eventutils");
+        register(dispatcher, "eventtp");
+        register(dispatcher, "evtp");
+    }
+
+    public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, String name){
         dispatcher.register(
-                ClientCommandManager.literal("eventteleport")
-                        .then(ClientCommandManager.argument("eventType", StringArgumentType.greedyString())
-                                .suggests((context, builder) -> builder
-                                        .suggest("famous")
-                                        .suggest("potential")
-                                        .suggest("money")
-                                        .suggest("partner")
-                                        .suggest("fun")
-                                        .suggest("housing")
-                                        .suggest("community")
-                                        .suggest("civilization").buildFuture())
-                                .executes(context -> run(context.getSource().getPlayer(), context.getInput()))
-                        ));
-        dispatcher.register(
-                ClientCommandManager.literal("eventutils")
+                ClientCommandManager.literal(name)
                         .then(ClientCommandManager.argument("eventType", StringArgumentType.greedyString())
                                 .suggests((context, builder) -> builder
                                         .suggest("famous")
@@ -54,7 +47,7 @@ public class EventTeleportCommand {
             if (!EventUtils.FAMOUS_EVENT) {
                 client.sendMessage(Text.literal("Famous events are disabled.").formatted(Formatting.RED));
                 return -1;
-            } else if (EventListener.LAST_FAMOUS_IP.isBlank()) {
+            } else if (EventListener.LAST_FAMOUS_IP == null || EventListener.LAST_FAMOUS_IP.isBlank()) {
                 client.sendMessage(Text.literal("No famous event.").formatted(Formatting.RED));
                 return -1;
             } else {
@@ -65,7 +58,7 @@ public class EventTeleportCommand {
             if (!EventUtils.POTENTIAL_FAMOUS_EVENT) {
                 client.sendMessage(Text.literal("Potential famous events are disabled.").formatted(Formatting.RED));
                 return -1;
-            } else if (EventListener.LAST_POTENTIAL_FAMOUS_IP.isBlank()) {
+            } else if (EventListener.LAST_POTENTIAL_FAMOUS_IP == null || EventListener.LAST_POTENTIAL_FAMOUS_IP.isBlank()) {
                 client.sendMessage(Text.literal("No potential famous event.").formatted(Formatting.RED));
                 return -1;
             } else {
@@ -76,7 +69,7 @@ public class EventTeleportCommand {
             if (!EventUtils.MONEY_EVENT) {
                 client.sendMessage(Text.literal("Money events are disabled.").formatted(Formatting.RED));
                 return -1;
-            } else if (EventListener.LAST_MONEY_IP.isBlank()) {
+            } else if (EventListener.LAST_MONEY_IP == null || EventListener.LAST_MONEY_IP.isBlank()) {
                 client.sendMessage(Text.literal("No money event.").formatted(Formatting.RED));
                 return -1;
             } else {
@@ -87,7 +80,7 @@ public class EventTeleportCommand {
             if (!EventUtils.PARTNER_EVENT) {
                 client.sendMessage(Text.literal("Partner events are disabled.").formatted(Formatting.RED));
                 return -1;
-            } else if (EventListener.LAST_PARTNER_IP.isBlank()) {
+            } else if (EventListener.LAST_PARTNER_IP == null || EventListener.LAST_PARTNER_IP.isBlank()) {
                 client.sendMessage(Text.literal("No partner event.").formatted(Formatting.RED));
                 return -1;
             } else {
@@ -98,7 +91,7 @@ public class EventTeleportCommand {
             if (!EventUtils.FUN_EVENT) {
                 client.sendMessage(Text.literal("Fun events are disabled.").formatted(Formatting.RED));
                 return -1;
-            } else if (EventListener.LAST_FUN_IP.isBlank()) {
+            } else if (EventListener.LAST_FUN_IP == null || EventListener.LAST_FUN_IP.isBlank()) {
                 client.sendMessage(Text.literal("No fun event.").formatted(Formatting.RED));
                 return -1;
             } else {
@@ -109,7 +102,7 @@ public class EventTeleportCommand {
             if (!EventUtils.HOUSING_EVENT) {
                 client.sendMessage(Text.literal("Housing events are disabled.").formatted(Formatting.RED));
                 return -1;
-            } else if (EventListener.LAST_HOUSING_IP.isBlank()) {
+            } else if (EventListener.LAST_HOUSING_IP == null || EventListener.LAST_HOUSING_IP.isBlank()) {
                 client.sendMessage(Text.literal("No housing event.").formatted(Formatting.RED));
                 return -1;
             } else {
@@ -120,7 +113,7 @@ public class EventTeleportCommand {
             if (!EventUtils.COMMUNITY_EVENT) {
                 client.sendMessage(Text.literal("Community events are disabled.").formatted(Formatting.RED));
                 return -1;
-            } else if (EventListener.LAST_COMMUNITY_IP.isBlank()) {
+            } else if (EventListener.LAST_COMMUNITY_IP == null || EventListener.LAST_COMMUNITY_IP.isBlank()) {
                 client.sendMessage(Text.literal("No community event.").formatted(Formatting.RED));
                 return -1;
             } else {
@@ -131,7 +124,7 @@ public class EventTeleportCommand {
             if (!EventUtils.CIVILIZATION_EVENT) {
                 client.sendMessage(Text.literal("Civilization events are disabled.").formatted(Formatting.RED));
                 return -1;
-            } else if (EventListener.LAST_CIVILIZATION_IP.isBlank()) {
+            } else if (EventListener.LAST_CIVILIZATION_IP == null || EventListener.LAST_CIVILIZATION_IP.isBlank()) {
                 client.sendMessage(Text.literal("No civilization event.").formatted(Formatting.RED));
                 return -1;
             } else {

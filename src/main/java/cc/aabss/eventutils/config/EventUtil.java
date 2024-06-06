@@ -6,8 +6,6 @@ import cc.aabss.eventutils.commands.EventTeleportCommand;
 import cc.aabss.eventutils.commands.EventUtilsCommand;
 import cc.aabss.eventutils.commands.TestNotificationCommand;
 import club.bottomservices.discordrpc.lib.exceptions.DiscordException;
-import club.bottomservices.discordrpc.lib.exceptions.NoDiscordException;
-import club.bottomservices.discordrpc.lib.exceptions.NotConnectedException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -117,12 +115,7 @@ public class EventUtil {
             POTENTIAL_FAMOUS_EVENTS.webSocket.sendClose(1000, "EventUtils client ("+client.getSession().getUsername()+") closed");
         });
 
-        ClientReceiveMessageEvents.ALLOW_GAME.register(((text, overlay) -> {
-            if (text.copyContentOnly().contains(Text.of(TEXT))){
-                return !SIMPLE_QUEUE_MSG;
-            }
-            return true;
-        }));
+        ClientReceiveMessageEvents.ALLOW_GAME.register(((text, overlay) -> text.copyContentOnly().contains(Text.of(TEXT)) && SIMPLE_QUEUE_MSG));
         ClientReceiveMessageEvents.MODIFY_GAME.register(((text, overlay) -> replace(text)));
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
