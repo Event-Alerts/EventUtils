@@ -117,8 +117,13 @@ public class EventUtil {
             POTENTIAL_FAMOUS_EVENTS.webSocket.sendClose(1000, "EventUtils client ("+client.getSession().getUsername()+") closed");
         });
 
-        ClientReceiveMessageEvents.ALLOW_GAME.register(((text, overlay) -> text.copyContentOnly().contains(Text.of(TEXT)) && SIMPLE_QUEUE_MSG));
-        ClientReceiveMessageEvents.MODIFY_GAME.register(((text, overlay) -> replace(text)));
+        ClientReceiveMessageEvents.ALLOW_GAME.register(((text, overlay) -> {
+            if (text.copyContentOnly().contains(Text.of(TEXT))){
+                return !SIMPLE_QUEUE_MSG;
+            }
+            return true;
+        }));
+        ClientReceiveMessageEvents.GAME_CANCELED.register(((text, overlay) -> replace(text)));
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             try {
