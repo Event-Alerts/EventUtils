@@ -5,7 +5,7 @@ import club.bottomservices.discordrpc.lib.DiscordRPCClient;
 import club.bottomservices.discordrpc.lib.EventListener;
 import club.bottomservices.discordrpc.lib.RichPresence;
 import club.bottomservices.discordrpc.lib.User;
-import club.bottomservices.discordrpc.lib.exceptions.NoDiscordException;
+import club.bottomservices.discordrpc.lib.exceptions.DiscordException;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import org.jetbrains.annotations.NotNull;
@@ -19,17 +19,15 @@ public class DiscordRPC {
 
     public static void discordConnect(){
         if (EventUtils.client == null) {
+            login();
             try {
-                login();
                 EventUtils.client.connect();
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     if (EventUtils.client.isConnected) {
                         EventUtils.client.disconnect();
                     }
                 }, "YARPC Shutdown Hook"));
-            } catch (NoDiscordException e){
-                LOGGER.warn("Discord not found, not starting.");
-            }
+            } catch (DiscordException ignored){}
         }
     }
 
@@ -51,7 +49,9 @@ public class DiscordRPC {
                                 .setAssets("event_alerts", "logo by Bansed",
                                         getCurrentAction(true), DiscordRPC.ver())
                                 .build();
-                        client.sendPresence(presence);
+                        if (client.isConnected) {
+                            client.sendPresence(presence);
+                        }
                     }
                 }, 0, 5000);
             }
