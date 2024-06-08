@@ -32,6 +32,7 @@ public class EventUtils implements ClientModInitializer {
     public static boolean UPDATE_CHECKER = CONFIG.loadObject("update-checker", true);
     public static List<String> WHITELISTED_PLAYERS = CONFIG.loadObject("whitelisted-players", List.of("Skeppy", "BadBoyHalo"),
             new TypeToken<List<String>>() {}.getType());
+    public static Integer MINIMUM_PRIZE = CONFIG.loadObject("minimum-prize", 0);
 
     public static boolean FAMOUS_EVENT = CONFIG.loadObject("famous-event", true);
     public static boolean POTENTIAL_FAMOUS_EVENT = CONFIG.loadObject("potential-famous-event", true);

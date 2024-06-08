@@ -5,6 +5,7 @@ import cc.aabss.eventutils.api.NotificationToast;
 import cc.aabss.eventutils.config.EventUtil;
 import com.google.gson.JsonObject;
 
+import static cc.aabss.eventutils.EventUtils.MINIMUM_PRIZE;
 import static cc.aabss.eventutils.config.EventUtil.*;
 
 public class EventListener {
@@ -36,8 +37,11 @@ public class EventListener {
 
     public void onMoneyEvent(JsonObject message) {
         if (EventUtils.MONEY_EVENT){
-            NotificationToast.addMoneyEvent(prize(message));
-            LAST_MONEY_IP = getAndConnectIP(message);
+            int prize = prize(message);
+            if (prize >= MINIMUM_PRIZE) {
+                NotificationToast.addMoneyEvent(prize);
+                LAST_MONEY_IP = getAndConnectIP(message);
+            }
         }
     }
 
