@@ -36,7 +36,7 @@ public class EventListener {
 
     public void onMoneyEvent(JsonObject message) {
         if (EventUtils.MONEY_EVENT){
-            NotificationToast.addMoneyEvent();
+            NotificationToast.addMoneyEvent(prize(message));
             LAST_MONEY_IP = getAndConnectIP(message);
         }
     }

@@ -6,8 +6,6 @@ import cc.aabss.eventutils.commands.EventTeleportCommand;
 import cc.aabss.eventutils.commands.EventUtilsCommand;
 import cc.aabss.eventutils.commands.TestNotificationCommand;
 import club.bottomservices.discordrpc.lib.exceptions.DiscordException;
-import club.bottomservices.discordrpc.lib.exceptions.NoDiscordException;
-import club.bottomservices.discordrpc.lib.exceptions.NotConnectedException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -166,6 +164,32 @@ public class EventUtil {
             }
         }
         return "";
+    }
+
+    public static int prize(JsonObject event){
+        if (event.has("prize")){
+            return Integer.parseInt(event.get("prize").getAsString().replaceAll("\\$", "").replaceAll("€", "").replaceAll("£", "").split(" ")[0]);
+        }
+        if (event.has("description")) {
+            String[] split = removeMarkdown(event.get("description").getAsString().toLowerCase()).split("\\n+");
+            for (String s : split) {
+                if (s.contains("$") || s.contains("€") || s.contains("£") || s.contains("dollars") || s.contains("prize")) {
+                    String[] split2 = s.split(" ");
+                    for (String ss : split2) {
+                        if (ss.contains("$") || ss.contains("€") || ss.contains("£")) {
+                            String prize = ss.replaceAll("\\$", "").replaceAll("€", "").replaceAll("£", "");
+                            try {
+                                return Integer.parseInt(prize);
+                            } catch (NumberFormatException ignored) {}
+                        }
+                        try {
+                            return Integer.parseInt(ss);
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
     public static boolean validIp(String ip){

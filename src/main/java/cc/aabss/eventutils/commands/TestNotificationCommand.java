@@ -2,6 +2,7 @@ package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.api.NotificationToast;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -13,7 +14,7 @@ public class TestNotificationCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher){
         dispatcher.register(
                 ClientCommandManager.literal("testnotification")
-                        .then(ClientCommandManager.argument("eventType", StringArgumentType.greedyString())
+                        .then(ClientCommandManager.argument("eventType", StringArgumentType.word())
                                 .suggests((context, builder) -> builder
                                         .suggest("famous")
                                         .suggest("potential")
@@ -23,23 +24,30 @@ public class TestNotificationCommand {
                                         .suggest("housing")
                                         .suggest("community")
                                         .suggest("civilization").buildFuture())
+                                .then(ClientCommandManager.argument("prize", IntegerArgumentType.integer())
+                                        .executes(context -> run(context.getSource().getPlayer(), context.getInput())))
                                 .executes(context -> run(context.getSource().getPlayer(), context.getInput()))
                         ));
     }
 
     public static int run(ClientPlayerEntity client, String command){
-        if (command.split(" ").length == 1) {
+        String[] args = command.split(" ");
+        if (args.length == 1) {
             client.sendMessage(
                     Text.literal("Usage: /testnotification <famous | potential | money | partner | fun | housing | community | civilization>").formatted(Formatting.RED));
             return -1;
         }
-        String eventType = command.split(" ")[1];
+        String eventType = args[1];
         if (eventType.equalsIgnoreCase("famous")) {
             NotificationToast.addFamousEvent();
         } else if (eventType.equalsIgnoreCase("potential")) {
             NotificationToast.addPotentialFamousEvent();
         } else if (eventType.equalsIgnoreCase("money")) {
-            NotificationToast.addMoneyEvent();
+            try {
+                NotificationToast.addMoneyEvent(args.length > 2 ? Integer.parseInt(args[2]) : 0);
+            } catch (NumberFormatException ignored){
+                NotificationToast.addMoneyEvent(0);
+            }
         } else if (eventType.equalsIgnoreCase("partner")) {
             NotificationToast.addPartnerEvent();
         } else if (eventType.equalsIgnoreCase("fun")) {

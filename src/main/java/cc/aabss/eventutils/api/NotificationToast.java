@@ -115,8 +115,8 @@ public class NotificationToast implements Toast {
         templateEvent(event, "potential");
     }
 
-    public static void addMoneyEvent(){
-        MutableText event = text("New Money Event!").formatted(Formatting.GREEN);
+    public static void addMoneyEvent(Integer prize){
+        MutableText event = text("New Money Event! ").formatted(Formatting.GREEN).append(text("($"+prize+")").formatted(Formatting.GRAY));
         templateEvent(event, "money");
     }
 
