@@ -358,16 +358,6 @@ public class EventUtil {
                     CONFIG.saveConfig(CONFIG.JSON);
                 })
                 .build());
-        generalCategory.addEntry(ConfigEntryBuilder.create()
-                .startIntField(Text.literal("Minimum Prize"), EventUtils.MINIMUM_PRIZE)
-                .setDefaultValue(() -> EventUtils.MINIMUM_PRIZE)
-                .setTooltip(Text.literal("The minimum prize of a money event required to ping you."))
-                .setSaveConsumer(newValue -> {
-                    EventUtils.MINIMUM_PRIZE = newValue;
-                    CONFIG.saveObject("minimum-prize", EventUtils.MINIMUM_PRIZE);
-                    CONFIG.saveConfig(CONFIG.JSON);
-                })
-                .build());
         ConfigCategory alertCategory = builder.getOrCreateCategory(Text.literal("Alerts"));
         alertEntry(alertCategory, "Famous Events", EventUtils.FAMOUS_EVENT, newValue -> EventUtils.FAMOUS_EVENT = newValue);
         alertEntry(alertCategory, "Potential Famous Events", EventUtils.POTENTIAL_FAMOUS_EVENT, newValue -> EventUtils.POTENTIAL_FAMOUS_EVENT = newValue);
