@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class NotificationToast implements Toast {
-    private static final Identifier TEXTURE = new Identifier("eventutils:toast/notification");
+    private static final Identifier TEXTURE = Identifier.of("eventutils:toast/notification");
     private final NotificationToast.Type type;
     private final Text title;
     private final List<OrderedText> lines;
@@ -153,7 +153,7 @@ public class NotificationToast implements Toast {
             MutableText type = text("Type ").formatted(Formatting.WHITE);
             MutableText command = text("/eventtp " + eventType).formatted(Formatting.YELLOW);
             MutableText teleport = text(" to teleport!").formatted(Formatting.WHITE);
-            client.player.playSound(SoundEvent.of(new Identifier("eventutils:alert")), 1 ,1);
+            client.player.playSound(SoundEvent.of(Identifier.of("eventutils:alert")), 1 ,1);
             add(client.getToastManager(), NotificationToast.Type.DEFAULT, text, append(type, command, teleport));
         }
     }
