@@ -358,6 +358,26 @@ public class EventUtil {
                     CONFIG.saveConfig(CONFIG.JSON);
                 })
                 .build());
+        generalCategory.addEntry(ConfigEntryBuilder.create()
+                .startBooleanToggle(Text.literal("Confirm Window Close"), EventUtils.CONFIRM_WINDOW_CLOSE)
+                .setDefaultValue(() -> EventUtils.CONFIRM_WINDOW_CLOSE)
+                .setTooltip(Text.literal("Whether a confirmation should pop up confirming you want to close your game window."))
+                .setSaveConsumer(newValue -> {
+                    EventUtils.CONFIRM_WINDOW_CLOSE = newValue;
+                    CONFIG.saveObject("confirm-window-close", EventUtils.CONFIRM_WINDOW_CLOSE);
+                    CONFIG.saveConfig(CONFIG.JSON);
+                })
+                .build());
+        generalCategory.addEntry(ConfigEntryBuilder.create()
+                .startBooleanToggle(Text.literal("Confirm Disconnect"), EventUtils.CONFIRM_DISCONNECT)
+                .setDefaultValue(() -> EventUtils.CONFIRM_DISCONNECT)
+                .setTooltip(Text.literal("Whether a confirmation should pop up confirming you want to leave your server."))
+                .setSaveConsumer(newValue -> {
+                    EventUtils.CONFIRM_DISCONNECT = newValue;
+                    CONFIG.saveObject("confirm-disconnect", EventUtils.CONFIRM_DISCONNECT);
+                    CONFIG.saveConfig(CONFIG.JSON);
+                })
+                .build());
         ConfigCategory alertCategory = builder.getOrCreateCategory(Text.literal("Alerts"));
         alertEntry(alertCategory, "Famous Events", EventUtils.FAMOUS_EVENT, newValue -> EventUtils.FAMOUS_EVENT = newValue);
         alertEntry(alertCategory, "Potential Famous Events", EventUtils.POTENTIAL_FAMOUS_EVENT, newValue -> EventUtils.POTENTIAL_FAMOUS_EVENT = newValue);

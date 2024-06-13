@@ -1,5 +1,6 @@
 package cc.aabss.eventutils.mixin;
 
+import cc.aabss.eventutils.EventUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
@@ -20,22 +21,24 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
 
     @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
     private void onPress(CallbackInfo ci){
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.currentScreen instanceof GameMenuScreen){
-            Text text = this.getMessage();
-            if (Text.translatable("menu.disconnect").equals(text)){
-                if (client.world == null){
-                    return;
-                }
-                ci.cancel();
-                Screen current = client.currentScreen;
-                client.setScreen(new ConfirmScreen(t -> {
-                    if (t){
-                        client.disconnect(new MultiplayerScreen(new TitleScreen()));
-                    } else {
-                        client.setScreen(current);
+        if (EventUtils.CONFIRM_DISCONNECT) {
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client.currentScreen instanceof GameMenuScreen) {
+                Text text = this.getMessage();
+                if (Text.translatable("menu.disconnect").equals(text)) {
+                    if (client.world == null) {
+                        return;
                     }
-                }, Text.literal("Confirm Disconnect"), Text.literal("Are you sure you want to disconnect?")));
+                    ci.cancel();
+                    Screen current = client.currentScreen;
+                    client.setScreen(new ConfirmScreen(t -> {
+                        if (t) {
+                            client.disconnect(new MultiplayerScreen(new TitleScreen()));
+                        } else {
+                            client.setScreen(current);
+                        }
+                    }, Text.literal("Confirm Disconnect"), Text.literal("Are you sure you want to disconnect?")));
+                }
             }
         }
     }
