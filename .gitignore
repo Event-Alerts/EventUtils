@@ -1,2 +1,10 @@
+# Intellij
+.idea/
+
+# Gradle
+.gradle/
+build/
+
+# Mod
 /logs/
 /run/
