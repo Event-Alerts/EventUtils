@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "eventutils",
-  "version": "${version}",
+  "version": "${mod_version}",
   "name": "${name}",
   "description": "${description}",
   "authors": ["aabss"],
@@ -26,6 +26,6 @@
   "depends": {
     "fabricloader": ">=0.15.11",
     "fabric": "*",
-    "minecraft": "*"
+    "minecraft": "${mc_version}"
   }
 }
