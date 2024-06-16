@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "id": "eventutils",
-  "version": "${version}",
-  "name": "EventUtils",
-  "description": "Utility mod for events",
+  "version": "${mod_version}",
+  "name": "${name}",
+  "description": "${description}",
   "authors": ["aabss"],
   "contributors": ["srnyx"],
   "contact": {
@@ -17,15 +17,17 @@
   ],
   "entrypoints": {
     "client": [
-      "cc.aabss.eventutils.EventUtils"
+      "${group}.eventutils.EventUtils"
     ],
     "modmenu":  [
-      "cc.aabss.eventutils.api.EventUtilsMenuApiImpl"
+      "${group}.eventutils.api.EventUtilsMenuApiImpl"
     ]
   },
   "depends": {
     "fabricloader": ">=0.15.11",
     "fabric": "*",
-    "minecraft": "*"
+    "minecraft": [
+      "1.21"
+    ]
   }
 }

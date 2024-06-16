@@ -1,6 +1,7 @@
 import xyz.srnyx.gradlegalaxy.enums.Repository
 import xyz.srnyx.gradlegalaxy.enums.repository
 import xyz.srnyx.gradlegalaxy.utility.addReplacementsTask
+import xyz.srnyx.gradlegalaxy.utility.getDefaultReplacements
 import xyz.srnyx.gradlegalaxy.utility.setupJava
 
 plugins {
@@ -9,8 +10,10 @@ plugins {
     id("xyz.srnyx.gradle-galaxy") version "1.1.3"
 }
 
+var modVersion = "1.4"
 setupJava("cc.aabss", "1.21-${project.version}", "Alerting for Event Alerts Minecraft events")
-addReplacementsTask(setOf("fabric.mod.json"))
+
+addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf("mod_version" to modVersion))
 
 repository(Repository.MAVEN_CENTRAL, Repository.JITPACK)
 repository("https://maven.shedaniel.me", "https://maven.fabricmc.net", "https://maven.terraformersmc.com/releases")
