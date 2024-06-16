@@ -3,8 +3,9 @@ package cc.aabss.eventutils.api;
 import cc.aabss.eventutils.config.EventUtil;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import me.shedaniel.clothconfig2.api.ConfigBuilder;
-import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import dev.isxander.yacl3.api.ConfigCategory;
+import dev.isxander.yacl3.api.Option;
+import dev.isxander.yacl3.api.YetAnotherConfigLib;
 import net.minecraft.text.Text;
 
 import java.util.HashMap;
@@ -21,17 +22,15 @@ public class EventUtilsMenuApiImpl implements ModMenuApi {
     public Map<String, ConfigScreenFactory<?>> getProvidedConfigScreenFactories() {
         Map<String, ConfigScreenFactory<?>> factories = new HashMap<>();
         factories.put("category_name", parent -> {
-            ConfigBuilder builder = ConfigBuilder.create()
-                    .setParentScreen(parent)
-                    .setTitle(Text.literal("Additional Config"));
+            YetAnotherConfigLib.Builder builder = YetAnotherConfigLib.createBuilder()
+                    .title(Text.literal("Additional Config"));
 
-            builder.getOrCreateCategory(Text.literal("Options")).addEntry(ConfigEntryBuilder.create()
-                    .startIntField(Text.literal("Option Value"), 42)
-                    .build());
-
-            return builder.build();
+            builder.category(
+                    ConfigCategory.createBuilder().name(Text.literal("Options"))
+                            .option(Option.<Integer>createBuilder().name(Text.literal("Option Value")).build())
+                            .build());
+            return builder.build().generateScreen(parent);
         });
-
         return factories;
     }
 

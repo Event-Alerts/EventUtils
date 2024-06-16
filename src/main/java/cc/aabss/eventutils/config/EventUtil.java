@@ -8,9 +8,10 @@ import cc.aabss.eventutils.commands.TestNotificationCommand;
 import club.bottomservices.discordrpc.lib.exceptions.DiscordException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import me.shedaniel.clothconfig2.api.ConfigBuilder;
-import me.shedaniel.clothconfig2.api.ConfigCategory;
-import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import dev.isxander.yacl3.api.*;
+import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
+import dev.isxander.yacl3.api.controller.StringControllerBuilder;
+import dev.isxander.yacl3.api.controller.TickBoxControllerBuilder;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -293,116 +294,135 @@ public class EventUtil {
         return false;
     }
 
-    public static Screen screen(Screen parent) {
-        ConfigBuilder builder = ConfigBuilder.create()
-                .setParentScreen(parent)
-                .setTitle(Text.literal("Event Utils Mod Config"));
-        ConfigCategory generalCategory = builder.getOrCreateCategory(Text.literal("General"));
-        generalCategory.addEntry(ConfigEntryBuilder.create()
-                .startTextField(Text.literal("Default Famous IP"), EventUtils.DEFAULT_FAMOUS_IP)
-                .setDefaultValue(() -> EventUtils.DEFAULT_FAMOUS_IP)
-                .setTooltip(Text.literal("The default ip for if a [potential] famous event is pinged with no ip inputted."))
-                .setSaveConsumer(newValue -> {
-                    EventUtils.DEFAULT_FAMOUS_IP = newValue;
-                    CONFIG.saveObject("default-famous-ip", EventUtils.DEFAULT_FAMOUS_IP);
-                    CONFIG.saveConfig(CONFIG.JSON);
-                })
-                .build());
-        generalCategory.addEntry(ConfigEntryBuilder.create()
-                .startBooleanToggle(Text.literal("Auto Teleport"), EventUtils.AUTO_TP)
-                .setDefaultValue(() -> EventUtils.AUTO_TP)
-                .setTooltip(Text.literal("Whether you should be automatically teleported to the server where the event resides."))
-                .setSaveConsumer(newValue -> {
-                    EventUtils.AUTO_TP = newValue;
-                    CONFIG.saveObject("auto-tp", EventUtils.AUTO_TP);
-                    CONFIG.saveConfig(CONFIG.JSON);
-                })
-                .build());
-        generalCategory.addEntry(ConfigEntryBuilder.create()
-                .startBooleanToggle(Text.literal("Discord RPC"), EventUtils.DISCORD_RPC)
-                .setDefaultValue(() -> EventUtils.DISCORD_RPC)
-                .setTooltip(Text.literal("Whether the Discord rich presence should be shown."))
-                .setSaveConsumer(newValue -> {
-                    EventUtils.DISCORD_RPC = newValue;
-                    CONFIG.saveObject("discord-rpc", EventUtils.DISCORD_RPC);
-                    CONFIG.saveConfig(CONFIG.JSON);
-                    if (client != null) {
-                        try {
-                            if (newValue)
-                                EventUtils.client.connect();
-                            else
-                                EventUtils.client.disconnect();
-                        } catch (DiscordException ignored){}
-                    }
-                })
-                .build());
-        generalCategory.addEntry(ConfigEntryBuilder.create()
-                .startBooleanToggle(Text.literal("Simplified Queue Message"), EventUtils.SIMPLE_QUEUE_MSG)
-                .setDefaultValue(() -> EventUtils.SIMPLE_QUEUE_MSG)
-                .setTooltip(Text.literal("Whether the queue message for InvadedLands should be simplified."))
-                .setSaveConsumer(newValue -> {
-                    EventUtils.SIMPLE_QUEUE_MSG = newValue;
-                    CONFIG.saveObject("simple-queue-msg", EventUtils.SIMPLE_QUEUE_MSG);
-                    CONFIG.saveConfig(CONFIG.JSON);
-                })
-                .build());
-        generalCategory.addEntry(ConfigEntryBuilder.create()
-                .startStrList(Text.literal("Whitelisted Players"), EventUtils.WHITELISTED_PLAYERS)
-                .setDefaultValue(() -> EventUtils.WHITELISTED_PLAYERS)
-                .setTooltip(Text.literal("The names of the players you can see when players are hidden."))
-                .setSaveConsumer(newValue -> {
-                    List<String> names = new ArrayList<>();
-                    newValue.forEach(name -> names.add(name.toLowerCase()));
-                    EventUtils.WHITELISTED_PLAYERS = names;
-                    CONFIG.saveObject("whitelisted-players", EventUtils.WHITELISTED_PLAYERS);
-                    CONFIG.saveConfig(CONFIG.JSON);
-                })
-                .build());
-        generalCategory.addEntry(ConfigEntryBuilder.create()
-                .startBooleanToggle(Text.literal("Confirm Window Close"), EventUtils.CONFIRM_WINDOW_CLOSE)
-                .setDefaultValue(() -> EventUtils.CONFIRM_WINDOW_CLOSE)
-                .setTooltip(Text.literal("Whether a confirmation should pop up confirming you want to close your game window."))
-                .setSaveConsumer(newValue -> {
-                    EventUtils.CONFIRM_WINDOW_CLOSE = newValue;
-                    CONFIG.saveObject("confirm-window-close", EventUtils.CONFIRM_WINDOW_CLOSE);
-                    CONFIG.saveConfig(CONFIG.JSON);
-                })
-                .build());
-        generalCategory.addEntry(ConfigEntryBuilder.create()
-                .startBooleanToggle(Text.literal("Confirm Disconnect"), EventUtils.CONFIRM_DISCONNECT)
-                .setDefaultValue(() -> EventUtils.CONFIRM_DISCONNECT)
-                .setTooltip(Text.literal("Whether a confirmation should pop up confirming you want to leave your server."))
-                .setSaveConsumer(newValue -> {
-                    EventUtils.CONFIRM_DISCONNECT = newValue;
-                    CONFIG.saveObject("confirm-disconnect", EventUtils.CONFIRM_DISCONNECT);
-                    CONFIG.saveConfig(CONFIG.JSON);
-                })
-                .build());
-        ConfigCategory alertCategory = builder.getOrCreateCategory(Text.literal("Alerts"));
-        alertEntry(alertCategory, "Famous Events", EventUtils.FAMOUS_EVENT, newValue -> EventUtils.FAMOUS_EVENT = newValue);
-        alertEntry(alertCategory, "Potential Famous Events", EventUtils.POTENTIAL_FAMOUS_EVENT, newValue -> EventUtils.POTENTIAL_FAMOUS_EVENT = newValue);
-        alertEntry(alertCategory, "Money Events", EventUtils.MONEY_EVENT, newValue -> EventUtils.MONEY_EVENT = newValue);
-        alertEntry(alertCategory, "Partner Events", EventUtils.PARTNER_EVENT, newValue -> EventUtils.PARTNER_EVENT = newValue);
-        alertEntry(alertCategory, "Fun Events", EventUtils.FUN_EVENT, newValue -> EventUtils.FUN_EVENT = newValue);
-        alertEntry(alertCategory, "Housing Events", EventUtils.HOUSING_EVENT, newValue -> EventUtils.HOUSING_EVENT = newValue);
-        alertEntry(alertCategory, "Community Events", EventUtils.COMMUNITY_EVENT, newValue -> EventUtils.COMMUNITY_EVENT = newValue);
-        alertEntry(alertCategory, "Civilization Events", EventUtils.CIVILIZATION_EVENT, newValue -> EventUtils.CIVILIZATION_EVENT = newValue);
-        return builder.build();
+    public static Screen screen(Screen parent){
+        YetAnotherConfigLib.Builder builder = YetAnotherConfigLib.createBuilder()
+                .title(Text.literal("Event Utils Mod Config"));
+        ConfigCategory.Builder generalCategory = ConfigCategory.createBuilder().name(Text.literal("General"));
+        ConfigCategory.Builder alertsCategory = ConfigCategory.createBuilder().name(Text.literal("Alerts"));
+        builder
+                .category(generalCategory
+                        .option(ListOption.<String>createBuilder()
+                                .name(Text.literal("Whitelisted Players"))
+                                .description(OptionDescription.of(Text.literal("The names of the players you can see when players are hidden.")))
+                                .binding(EventUtils.WHITELISTED_PLAYERS, () -> EventUtils.WHITELISTED_PLAYERS,
+                                        newValue -> {
+                                            List<String> names = new ArrayList<>();
+                                            newValue.forEach(name -> names.add(name.toLowerCase()));
+                                            EventUtils.WHITELISTED_PLAYERS = names;
+                                            CONFIG.saveObject("whitelisted-players", EventUtils.WHITELISTED_PLAYERS);
+                                            CONFIG.saveConfig(CONFIG.JSON);
+                                        })
+                                .controller(StringControllerBuilder::create)
+                                .initial("Skeppy")
+                                .build()
+                        )
+                        .option(Option.<String>createBuilder()
+                                .name(Text.literal("Default Famous IP"))
+                                .description(OptionDescription.of(Text.literal("The default ip for if a [potential] famous event is pinged with no ip inputted.")))
+                                .binding(EventUtils.DEFAULT_FAMOUS_IP, () -> EventUtils.DEFAULT_FAMOUS_IP,
+                                        newValue -> {
+                                            EventUtils.DEFAULT_FAMOUS_IP = newValue;
+                                            CONFIG.saveObject("default-famous-ip", EventUtils.DEFAULT_FAMOUS_IP);
+                                            CONFIG.saveConfig(CONFIG.JSON);
+                                        })
+                                .controller(StringControllerBuilder::create)
+                                .build()
+                        )
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.literal("Auto Teleport"))
+                                .description(OptionDescription.of(Text.literal("Whether you should be automatically teleported to the server where the event resides.")))
+                                .binding(EventUtils.AUTO_TP, () -> EventUtils.AUTO_TP,
+                                        newValue -> {
+                                            EventUtils.AUTO_TP = newValue;
+                                            CONFIG.saveObject("auto-tp", EventUtils.AUTO_TP);
+                                            CONFIG.saveConfig(CONFIG.JSON);
+                                        })
+                                .controller(BooleanControllerBuilder::create)
+                                .build()
+                        )
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.literal("Discord RPC"))
+                                .description(OptionDescription.of(Text.literal("Whether the Discord rich presence should be shown.")))
+                                .binding(EventUtils.DISCORD_RPC, () -> EventUtils.DISCORD_RPC,
+                                        newValue -> {
+                                            EventUtils.DISCORD_RPC = newValue;
+                                            CONFIG.saveObject("discord-rpc", EventUtils.DISCORD_RPC);
+                                            CONFIG.saveConfig(CONFIG.JSON);
+                                            if (client != null) {
+                                                try {
+                                                    if (newValue)
+                                                        EventUtils.client.connect();
+                                                    else
+                                                        EventUtils.client.disconnect();
+                                                } catch (DiscordException ignored){}
+                                            }
+                                        })
+                                .controller(BooleanControllerBuilder::create)
+                                .build()
+                        )
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.literal("Simplified Queue Message"))
+                                .description(OptionDescription.of(Text.literal("Whether the queue message for InvadedLands should be simplified.")))
+                                .binding(EventUtils.SIMPLE_QUEUE_MSG, () -> EventUtils.SIMPLE_QUEUE_MSG,
+                                        newValue -> {
+                                            EventUtils.SIMPLE_QUEUE_MSG = newValue;
+                                            CONFIG.saveObject("simple-queue-msg", EventUtils.SIMPLE_QUEUE_MSG);
+                                            CONFIG.saveConfig(CONFIG.JSON);
+                                        })
+                                .controller(BooleanControllerBuilder::create)
+                                .build()
+                        )
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.literal("Confirm Window Close"))
+                                .description(OptionDescription.of(Text.literal("Whether a confirmation should pop up confirming you want to close your game window.")))
+                                .binding(EventUtils.CONFIRM_WINDOW_CLOSE, () -> EventUtils.CONFIRM_WINDOW_CLOSE,
+                                        newValue -> {
+                                            EventUtils.CONFIRM_WINDOW_CLOSE = newValue;
+                                            CONFIG.saveObject("confirm-window-close", EventUtils.CONFIRM_WINDOW_CLOSE);
+                                            CONFIG.saveConfig(CONFIG.JSON);
+                                        })
+                                .controller(BooleanControllerBuilder::create)
+                                .build()
+                        )
+                        .option(Option.<Boolean>createBuilder()
+                                .name(Text.literal("Confirm Disconnect"))
+                                .description(OptionDescription.of(Text.literal("Whether a confirmation should pop up confirming you want to leave your server.")))
+                                .binding(EventUtils.CONFIRM_DISCONNECT, () -> EventUtils.CONFIRM_DISCONNECT,
+                                        newValue -> {
+                                            EventUtils.CONFIRM_DISCONNECT = newValue;
+                                            CONFIG.saveObject("confirm-disconnect", EventUtils.CONFIRM_DISCONNECT);
+                                            CONFIG.saveConfig(CONFIG.JSON);
+                                        })
+                                .controller(BooleanControllerBuilder::create)
+                                .build()
+                        ).build())
+                .category(alertsCategory
+                        .option(alertEntry("Famous Events", EventUtils.FAMOUS_EVENT, newValue -> EventUtils.FAMOUS_EVENT = newValue))
+                        .option(alertEntry("Potential Famous Events", EventUtils.POTENTIAL_FAMOUS_EVENT, newValue -> EventUtils.POTENTIAL_FAMOUS_EVENT = newValue))
+                        .option(alertEntry("Money Events", EventUtils.MONEY_EVENT, newValue -> EventUtils.MONEY_EVENT = newValue))
+                        .option(alertEntry("Partner Events", EventUtils.PARTNER_EVENT, newValue -> EventUtils.PARTNER_EVENT = newValue))
+                        .option(alertEntry("Fun Events", EventUtils.FUN_EVENT, newValue -> EventUtils.FUN_EVENT = newValue))
+                        .option(alertEntry("Housing Events", EventUtils.HOUSING_EVENT, newValue -> EventUtils.HOUSING_EVENT = newValue))
+                        .option(alertEntry("Community Events", EventUtils.COMMUNITY_EVENT, newValue -> EventUtils.COMMUNITY_EVENT = newValue))
+                        .option(alertEntry("Civilization Events", EventUtils.CIVILIZATION_EVENT, newValue -> EventUtils.CIVILIZATION_EVENT = newValue))
+                        .build()
+                );
+        return builder.build().generateScreen(parent);
     }
 
-    private static void alertEntry(
-            ConfigCategory category,
+    private static Option<Boolean> alertEntry(
             String name,
             Boolean booleanToggle,
             Consumer<Boolean> consumer
     ){
-        category.addEntry(ConfigEntryBuilder.create()
-                .startBooleanToggle(Text.literal(name), booleanToggle)
-                .setDefaultValue(() -> booleanToggle)
-                .setTooltip(Text.literal("Whether you should be alerted for "+name.toLowerCase()+"."))
-                .setSaveConsumer(consumer
-                        .andThen(newValue -> CONFIG.saveConfig(CONFIG.JSON))
-                        .andThen(newValue -> CONFIG.saveObject(name.replaceAll("s$", ""), newValue)))
-                .build());
+        return Option.<Boolean>createBuilder()
+                .name(Text.literal(name))
+                .description(OptionDescription.of(Text.literal("Whether you should be pinged for "+name.toLowerCase())))
+                .binding(booleanToggle, () -> booleanToggle,
+                        consumer
+                                .andThen(newValueue -> CONFIG.saveConfig(CONFIG.JSON))
+                                .andThen(newValueue -> CONFIG.saveObject(name.replaceAll("s$", ""), newValueue)))
+                .controller(BooleanControllerBuilder::create)
+                .build();
     }
 }

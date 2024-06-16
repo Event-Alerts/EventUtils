@@ -28,6 +28,7 @@
     "fabric": "*",
     "minecraft": [
       "1.21"
-    ]
+    ],
+    "yet_another_config_lib_v3": "*"
   }
 }
