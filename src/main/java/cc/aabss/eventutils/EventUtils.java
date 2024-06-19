@@ -7,6 +7,7 @@ import club.bottomservices.discordrpc.lib.DiscordRPCClient;
 import com.google.common.reflect.TypeToken;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.EntityType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,6 +35,9 @@ public class EventUtils implements ClientModInitializer {
             new TypeToken<List<String>>() {}.getType());
     public static boolean CONFIRM_WINDOW_CLOSE = CONFIG.loadObject("confirm-window-close", true);
     public static boolean CONFIRM_DISCONNECT = CONFIG.loadObject("confirm-disconnect", true);
+    public static List<EntityType<?>> HIDDEN_ENTITY_TYPES = CONFIG.loadObject("hidden-entity-types",
+            List.of(EntityType.GLOW_ITEM_FRAME),
+            new TypeToken<List<EntityType<?>>>() {}.getType());
 
     public static boolean FAMOUS_EVENT = CONFIG.loadObject("famous-event", true);
     public static boolean POTENTIAL_FAMOUS_EVENT = CONFIG.loadObject("potential-famous-event", true);

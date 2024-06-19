@@ -24,6 +24,7 @@ import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.entity.EntityType;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -45,6 +46,8 @@ import static cc.aabss.eventutils.config.HidePlayers.HIDEPLAYERS;
 import static cc.aabss.eventutils.config.HidePlayers.HIDEPLAYERSBIND;
 
 public class EventUtil {
+
+    public static List<EntityType<?>> entityTypes = new ArrayList<>();
 
     public static void connect(String ip){
         MinecraftClient client = MinecraftClient.getInstance();
@@ -71,13 +74,12 @@ public class EventUtil {
     }
 
     public static Text replace(Text text){
-        Text originalText = text;
         if (!SIMPLE_QUEUE_MSG) {
-            return originalText;
+            return text;
         }
-        String originalString = originalText.getString();
+        String originalString = text.getString();
         if (!originalString.contains(TEXT)) {
-            return originalText;
+            return text;
         }
         String modifiedString = originalString.replace(TEXT, "").replaceFirst("\n", "");
         String[] lines = modifiedString.split("\n");
@@ -153,7 +155,7 @@ public class EventUtil {
             }
         }
         if (string.size() == 1){
-            return string.get(0);
+            return string.getFirst();
         } else if (string.size() > 1){
             for (String s : string){
                 if (validIp(s)) return s;
