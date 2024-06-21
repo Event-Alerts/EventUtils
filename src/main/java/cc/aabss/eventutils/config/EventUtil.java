@@ -25,6 +25,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.entity.EntityType;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -49,7 +50,7 @@ import static cc.aabss.eventutils.config.HidePlayers.HIDEPLAYERSBIND;
 
 public class EventUtil {
 
-    public static List<EntityType<?>> entityTypes = new ArrayList<>();
+    public static List<EntityType<?>> entityTypes = Registries.ENTITY_TYPE.stream().toList();
 
     public static void connect(String ip){
         MinecraftClient client = MinecraftClient.getInstance();
