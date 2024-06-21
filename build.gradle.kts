@@ -11,7 +11,7 @@ plugins {
 }
 
 var modVersion = "1.4"
-setupJava("cc.aabss", "1.21-${project.version}", "Alerting for Event Alerts Minecraft events")
+setupJava("cc.aabss", "1.21-${modVersion}", "Alerting for Event Alerts Minecraft events")
 
 addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf("mod_version" to modVersion))
 
