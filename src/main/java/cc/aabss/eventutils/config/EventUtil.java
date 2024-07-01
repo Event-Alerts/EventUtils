@@ -13,7 +13,6 @@ import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import dev.isxander.yacl3.api.controller.DropdownStringControllerBuilder;
 import dev.isxander.yacl3.api.controller.StringControllerBuilder;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -35,10 +34,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -115,11 +111,6 @@ public class EventUtil {
             TestNotificationCommand.register(dispatcher);
         });
 
-        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            EVENT_POSTED.webSocket.sendClose(1000, "EventUtils client ("+client.getSession().getUsername()+") closed");
-            FAMOUS_EVENTS.webSocket.sendClose(1000, "EventUtils client ("+client.getSession().getUsername()+") closed");
-            POTENTIAL_FAMOUS_EVENTS.webSocket.sendClose(1000, "EventUtils client ("+client.getSession().getUsername()+") closed");
-        });
 
         ClientReceiveMessageEvents.ALLOW_GAME.register(((text, overlay) -> true));
         ClientReceiveMessageEvents.MODIFY_GAME.register(((text, overlay) -> replace(text)));

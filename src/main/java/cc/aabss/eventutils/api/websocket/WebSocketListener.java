@@ -2,6 +2,8 @@ package cc.aabss.eventutils.api.websocket;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.client.MinecraftClient;
+import org.lwjgl.glfw.GLFW;
 
 import java.net.http.WebSocket;
 import java.util.concurrent.CompletionStage;
@@ -21,6 +23,13 @@ public class WebSocketListener implements WebSocket.Listener {
         this.endpoint = endpoint;
         this.latch = latch;
         this.webSocketEvent = webSocketEvent;
+    }
+
+    @Override
+    public void onOpen(WebSocket webSocket) {
+        GLFW.glfwSetWindowCloseCallback(MinecraftClient.getInstance().getWindow().getHandle(), window ->
+                webSocket.sendClose(1000, "EventUtils client ("+MinecraftClient.getInstance().getSession().getUsername()+") closed"));
+        WebSocket.Listener.super.onOpen(webSocket);
     }
 
     @Override
