@@ -18,6 +18,9 @@ import static cc.aabss.eventutils.EventUtils.LOGGER;
 public class DiscordRPC {
 
     public static void discordConnect(){
+        if (!EventUtils.DISCORD_RPC){
+            return;
+        }
         if (EventUtils.client == null) {
             login();
             try {
@@ -41,6 +44,9 @@ public class DiscordRPC {
                 new Timer().scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
+                        if (!EventUtils.DISCORD_RPC){
+                            return;
+                        }
                         RichPresence presence = new RichPresence.Builder()
                                 .addButton("Event Alerts Mod", "https://modrinth.com/mod/alerts")
                                 .addButton("Event Alerts Discord", "https://discord.gg/uFPFNYzAWC")

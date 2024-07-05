@@ -5,6 +5,7 @@ import cc.aabss.eventutils.api.websocket.EventListener;
 import cc.aabss.eventutils.config.EventUtil;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -13,15 +14,8 @@ import net.minecraft.util.Formatting;
 
 public class EventTeleportCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher){
-        register(dispatcher, "eventteleport");
-        register(dispatcher, "eventutils");
-        register(dispatcher, "eventtp");
-        register(dispatcher, "evtp");
-    }
-
-    public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, String name){
-        dispatcher.register(
-                ClientCommandManager.literal(name)
+        LiteralCommandNode<FabricClientCommandSource> node = dispatcher.register(
+                ClientCommandManager.literal("eventteleport")
                         .then(ClientCommandManager.argument("eventType", StringArgumentType.greedyString())
                                 .suggests((context, builder) -> builder
                                         .suggest("famous")
@@ -34,6 +28,9 @@ public class EventTeleportCommand {
                                         .suggest("civilization").buildFuture())
                                 .executes(context -> run(context.getSource().getPlayer(), context.getInput()))
                         ));
+        dispatcher.register(ClientCommandManager.literal("eventutils").redirect(node));
+        dispatcher.register(ClientCommandManager.literal("eventtp").redirect(node));
+        dispatcher.register(ClientCommandManager.literal("evtp").redirect(node));
     }
 
     public static int run(ClientPlayerEntity client, String command){
