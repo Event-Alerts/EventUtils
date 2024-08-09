@@ -20,3 +20,4 @@ jobs:
     with:
       name: EventUtils
       java: 21
+      task: "chiseledBuild"
