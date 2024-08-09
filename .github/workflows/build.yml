@@ -10,6 +10,7 @@ on:
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - 'stonecutter.gradle.kts'
+      - 'gradle.properties'
       - 'gradlew'
       - 'gradlew.bat'
   workflow_dispatch:
