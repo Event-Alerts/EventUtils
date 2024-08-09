@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "eventutils",
   "version": "${mod_version}",
-  "name": "${name}",
+  "name": "${mod_name}",
   "description": "${description}",
   "authors": ["aabss", "srnyx"],
   "contact": {
@@ -23,11 +23,9 @@
     ]
   },
   "depends": {
-    "fabricloader": ">=0.15.11",
-    "fabric": "*",
-    "minecraft": [
-      "1.21"
-    ],
-    "yet_another_config_lib_v3": "*"
+    "minecraft": "${deps_minecraft}",
+    "fabricloader": ">=${deps_fabric_loader}",
+    "fabric": ">=${deps_fabric_api}",
+    "yet_another_config_lib_v3": ">=${deps_yacl}"
   }
 }

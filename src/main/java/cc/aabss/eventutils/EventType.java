@@ -116,7 +116,7 @@ public enum EventType {
                 .append("/eventtp " + name().toLowerCase()).formatted(Formatting.YELLOW)
                 .append(" to teleport!").formatted(Formatting.WHITE);
         client.getToastManager().add(new NotificationToast(toast.apply(prize), description));
-        if (client.player != null) client.player.playSound(SoundEvent.of(Identifier.of("eventutils:alert")), 1 ,1);
+        if (client.player != null) client.player.playSound(SoundEvent.of(Identifier.of("eventutils", "alert")), 1 ,1);
     }
 
     @Nullable

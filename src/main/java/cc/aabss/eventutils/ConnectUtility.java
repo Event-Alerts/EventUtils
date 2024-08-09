@@ -2,7 +2,11 @@ package cc.aabss.eventutils;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
+//?if <=1.20.2 {
+//import net.minecraft.client.gui.screen.ConnectScreen;
+//?} else {
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
+//?}
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 
@@ -26,12 +30,19 @@ public class ConnectUtility {
         final ServerInfo currentServer = client.getCurrentServerEntry();
         if (currentServer != null && currentServer.address.equalsIgnoreCase(ip)) return;
 
+        final TitleScreen screen = new TitleScreen();
+        final ServerAddress address = ServerAddress.parse(ip);
         client.execute(() -> {
             try {
                 client.disconnect();
-                ConnectScreen.connect(new TitleScreen(), client, ServerAddress.parse(ip),
-                        new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER),
-                        true, null);
+
+                //?if <=1.20.1 {
+                //ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, true), true);
+                //?} else if <=1.20.4 {
+                //ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true);
+                //?} else {
+                ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true, null);
+                //?}
             } catch (final Exception e) {
                 EventUtils.LOGGER.error("Failed to connect to server: {}", e.getMessage());
                 throw new RuntimeException(e);
