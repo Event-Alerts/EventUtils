@@ -28,7 +28,7 @@ public class ConfigScreen {
     public static YetAnotherConfigLib.Builder getConfigScreen(@NotNull EventUtils mod) {
         final EventConfig config = mod.config;
         return YetAnotherConfigLib.createBuilder()
-            .title(Text.literal("Event Utils Mod Config"))
+            .title(Text.literal("EventUtils Mod Config"))
             .category(ConfigCategory.createBuilder().name(Text.literal("General"))
                     .option(Option.<Boolean>createBuilder()
                             .name(Text.literal("Auto Teleport"))

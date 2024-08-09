@@ -61,7 +61,6 @@ public abstract class EventCommand {
     /**
      * This is the method that will be executed when the command is run
      *
-     * @param   mod     the {@link EventUtils} instance
      * @param   context the {@link CommandContext} of the command
      */
     protected abstract void run(@NotNull CommandContext<FabricClientCommandSource> context);
