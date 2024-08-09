@@ -46,12 +46,18 @@ java {
     targetCompatibility = version
 }
 
+// Copy built jar to root project's build/libs
+tasks.named("build") {
+    doLast {
+        val targetDir = layout.projectDirectory.dir("../../build/libs").asFile
+        layout.projectDirectory.dir("build/libs").asFile.listFiles()?.forEach { it.copyTo(targetDir.resolve(it.name), true) }
+    }
+}
+
 if (stonecutter.current.isActive) {
-    loom {
-        runConfigs.all {
-            ideConfigGenerated(true)
-            runDir = "../../run"
-        }
+    loom.runConfigs.all {
+        ideConfigGenerated(true)
+        runDir = "../../run"
     }
 
     rootProject.tasks.register("buildActive") {
