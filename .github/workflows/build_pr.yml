@@ -1,0 +1,20 @@
+name: Build [PR]
+on:
+  pull_request:
+    paths:
+      - 'gradle/**'
+      - 'src/**'
+      - 'versions/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'stonecutter.gradle.kts'
+      - 'gradlew'
+      - 'gradlew.bat'
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: srnyx/tools/.github/workflows/build.yml@main
+    with:
+      name: EventUtils
+      java: 21

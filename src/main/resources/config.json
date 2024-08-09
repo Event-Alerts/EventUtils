@@ -1,0 +1,26 @@
+{
+  "discord-rpc": true,
+  "auto-tp": false,
+  "simple-queue-msg": false,
+  "update-checker": true,
+  "confirm-window-close": true,
+  "confirm-disconnect": true,
+  "default-famous-ip": "play.invadedlands.net",
+  "hidden-entity-types": [
+    "minecraft:glow_item_frame"
+  ],
+  "whitelisted-players": [
+    "skeppy",
+    "badboyhalo"
+  ],
+  "notifications": [
+    "FAMOUS",
+    "POTENTIAL_FAMOUS",
+    "PARTNER",
+    "COMMUNITY",
+    "MONEY",
+    "FUN",
+    "HOUSING",
+    "CIVILIZATION"
+  ]
+}

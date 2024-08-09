@@ -1,4 +1,5 @@
 {
-  "key.category.eventutils": "Event Utils",
-  "key.eventutils.hideplayers": "Hide Players"
+  "key.category.eventutils": "EventUtils",
+  "key.eventutils.hideplayers": "Hide Players",
+  "subtitles.eventutils.alert": "Event alert"
 }

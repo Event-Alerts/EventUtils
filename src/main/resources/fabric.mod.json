@@ -2,14 +2,13 @@
   "schemaVersion": 1,
   "id": "eventutils",
   "version": "${mod_version}",
-  "name": "${name}",
+  "name": "${mod_name}",
   "description": "${description}",
-  "authors": ["aabss"],
-  "contributors": ["srnyx"],
+  "authors": ["aabss", "srnyx"],
   "contact": {
     "repo": "https://github.com/aabssmc/EventUtils"
   },
-  "license": "All-Rights-Reserved",
+  "license": "MIT",
   "icon": "assets/icon.png",
   "environment": "*",
   "mixins": [
@@ -20,15 +19,13 @@
       "${group}.eventutils.EventUtils"
     ],
     "modmenu":  [
-      "${group}.eventutils.api.EventUtilsMenuApiImpl"
+      "${group}.eventutils.ModMenuImpl"
     ]
   },
   "depends": {
-    "fabricloader": ">=0.15.11",
-    "fabric": "*",
-    "minecraft": [
-      "1.21"
-    ],
-    "yet_another_config_lib_v3": "*"
+    "minecraft": "${deps_minecraft}",
+    "fabricloader": ">=${deps_fabric_loader}",
+    "fabric": ">=${deps_fabric_api}",
+    "yet_another_config_lib_v3": ">=${deps_yacl}"
   }
 }
