@@ -1,60 +1,191 @@
 package cc.aabss.eventutils;
 
-import cc.aabss.eventutils.api.websocket.WebSocketEvent;
-import cc.aabss.eventutils.config.EventUtil;
-import cc.aabss.eventutils.config.JsonConfig;
-import club.bottomservices.discordrpc.lib.DiscordRPCClient;
-import com.google.common.reflect.TypeToken;
+import cc.aabss.eventutils.config.ConfigScreen;
+import cc.aabss.eventutils.websocket.SocketEndpoint;
+import cc.aabss.eventutils.websocket.WebSocketClient;
+import cc.aabss.eventutils.commands.EventTeleportCmd;
+import cc.aabss.eventutils.commands.EventUtilsConfigCmd;
+import cc.aabss.eventutils.config.EventConfig;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import dev.isxander.yacl3.api.YetAnotherConfigLib;
+
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.EntityType;
+
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import static cc.aabss.eventutils.api.DiscordRPC.discordConnect;
+import org.lwjgl.glfw.GLFW;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 
 public class EventUtils implements ClientModInitializer {
+    /**
+     * Only use if it is absolutely impossible to access the mod instance through other (safer) means
+     * <br>This is usually only necessary for mixins!
+     */
+    public static EventUtils MOD;
+    @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class);
+    @Nullable public static final String MC_VERSION = getVersion("minecraft");
+    @Nullable public static final String EU_VERSION = getVersion("eventutils");
+    @NotNull public static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(2);
+    @NotNull public static String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
 
-    public static WebSocketEvent EVENT_POSTED;
-    public static WebSocketEvent FAMOUS_EVENTS;
-    public static String TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
-    public static WebSocketEvent POTENTIAL_FAMOUS_EVENTS;
-    public static final Logger LOGGER = LogManager.getLogger(EventUtils.class);
-    public static DiscordRPCClient client = null;
-    public static JsonConfig CONFIG = new JsonConfig(new File(FabricLoader.getInstance().getConfigDir().toString(), "eventutils.json"));
+    @NotNull public final EventConfig config = new EventConfig();
+    @NotNull public DiscordRPC discordRPC = new DiscordRPC(this);
+    @NotNull public Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
+    public boolean hidePlayers = false;
+    @NotNull public final YetAnotherConfigLib.Builder configScreen = ConfigScreen.getConfigScreen(this);
 
-    public static String DEFAULT_FAMOUS_IP = CONFIG.loadObject("default-famous-ip", "play.invadedlands.net");
-    public static boolean AUTO_TP = CONFIG.loadObject("auto-tp", false);
-    public static boolean DISCORD_RPC = CONFIG.loadObject("discord-rpc", true);
-    public static boolean SIMPLE_QUEUE_MSG = CONFIG.loadObject("simple-queue-msg", false);
-    public static boolean UPDATE_CHECKER = CONFIG.loadObject("update-checker", true);
-    public static List<String> WHITELISTED_PLAYERS = CONFIG.loadObject("whitelisted-players", List.of("Skeppy", "BadBoyHalo"),
-            new TypeToken<List<String>>() {}.getType());
-    public static boolean CONFIRM_WINDOW_CLOSE = CONFIG.loadObject("confirm-window-close", true);
-    public static boolean CONFIRM_DISCONNECT = CONFIG.loadObject("confirm-disconnect", true);
-    public static List<EntityType<?>> HIDDEN_ENTITY_TYPES = CONFIG.loadObject("hidden-entity-types",
-            List.of(EntityType.GLOW_ITEM_FRAME),
-            new TypeToken<List<EntityType<?>>>() {}.getType());
-
-    public static boolean FAMOUS_EVENT = CONFIG.loadObject("famous-event", true);
-    public static boolean POTENTIAL_FAMOUS_EVENT = CONFIG.loadObject("potential-famous-event", true);
-    public static boolean MONEY_EVENT = CONFIG.loadObject("money-event", false);
-    public static boolean PARTNER_EVENT = CONFIG.loadObject("partner-event", false);
-    public static boolean FUN_EVENT = CONFIG.loadObject("fun-event", false);
-    public static boolean HOUSING_EVENT = CONFIG.loadObject("housing-event", false);
-    public static boolean COMMUNITY_EVENT = CONFIG.loadObject("community-event", false);
-    public static boolean CIVILIZATION_EVENT = CONFIG.loadObject("civilization-event", false);
+    public EventUtils() {
+        MOD = this;
+    }
 
     @Override
     public void onInitializeClient() {
-        EVENT_POSTED = new WebSocketEvent(WebSocketEvent.SocketEndpoint.EVENT_POSTED);
-        FAMOUS_EVENTS = new WebSocketEvent(WebSocketEvent.SocketEndpoint.FAMOUS_EVENT);
-        POTENTIAL_FAMOUS_EVENTS = new WebSocketEvent(WebSocketEvent.SocketEndpoint.POTENTIAL_FAMOUS_EVENT);
-        EventUtil.registerEvents();
-        discordConnect();
+        discordRPC.connect();
+        updateCheck();
+
+        // Websockets
+        final Set<WebSocketClient> webSockets = new HashSet<>();
+        webSockets.add(new WebSocketClient(this, SocketEndpoint.EVENT_POSTED));
+        webSockets.add(new WebSocketClient(this, SocketEndpoint.FAMOUS_EVENT));
+        webSockets.add(new WebSocketClient(this, SocketEndpoint.POTENTIAL_FAMOUS_EVENT));
+
+        // Commands
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            new EventTeleportCmd(this).register(dispatcher);
+            new EventUtilsConfigCmd(this).register(dispatcher);
+        });
+
+        // Game closed
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+            webSockets.forEach(WebSocketClient::close);
+            discordRPC.disconnect();
+        });
+
+        // Hide players keybind
+        final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.eventutils.hideplayers",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_F10,
+                "key.category.eventutils"));
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (hidePlayersKey.wasPressed()) {
+                hidePlayers = !hidePlayers;
+                if (client.player != null) client.player.sendMessage(Text.literal((hidePlayers ? "§aEnabled" : "§cDisabled") + " hide players"), true);
+            }
+        });
+
+        // Simple queue message
+        ClientReceiveMessageEvents.ALLOW_GAME.register(((text, overlay) -> true));
+        ClientReceiveMessageEvents.MODIFY_GAME.register(((text, overlay) -> {
+            if (!config.simpleQueueMsg) return text;
+            final String original = text.getString();
+            if (!original.contains(QUEUE_TEXT)) return text;
+            final MutableText resultText = Text.literal("");
+            for (final String line : original.replace(QUEUE_TEXT, "").replaceFirst("\n", "").split("\n")) {
+                final String[] parts = line.split(": ");
+                if (parts.length <= 1) {
+                    resultText.append(Text.literal(line).formatted(Formatting.GOLD));
+                    continue;
+                }
+                if (!resultText.getSiblings().isEmpty()) resultText.append("\n");
+                final String[] valueParts = parts[1].split("/");
+                resultText.append(Text.literal(parts[0]).formatted(Formatting.GOLD).append(": ")
+                        .append(Text.literal(valueParts[0]).formatted(Formatting.YELLOW))
+                        .append(Text.literal("/").formatted(Formatting.GOLD))
+                        .append(Text.literal(valueParts[1]).formatted(Formatting.YELLOW)));
+            }
+            return resultText;
+        }));
     }
 
+    public void updateCheck() {
+        if (config.updateChecker && MC_VERSION != null && EU_VERSION != null) try (final HttpClient httpClient = HttpClient.newHttpClient()) {
+            final JsonArray json = JsonParser.parseString(httpClient.sendAsync(HttpRequest.newBuilder()
+                            .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + MC_VERSION + "%22%5D"))
+                            .header("User-Agent", "EventUtils/" + EU_VERSION + " (Minecraft/" + MC_VERSION + ")").build(), HttpResponse.BodyHandlers.ofString())
+                    .get().body()).getAsJsonArray();
+            final String newVersion = json.get(0).getAsJsonObject().get("version_number").getAsString();
+
+            // Using latest version
+            if (Objects.equals(newVersion, EU_VERSION)) return;
+
+            // Using outdated version, notify to update
+            final MinecraftClient client = MinecraftClient.getInstance();
+            client.execute(() -> {
+                if (client.player != null) client.player.sendMessage(Text.literal("§6[EVENTUTILS]§r §eThere is a new update available!§r §7(v" + EU_VERSION.replaceAll(MC_VERSION + "-", "") + " -> v" + newVersion.replaceAll(MC_VERSION + "-", "") + ")").setStyle(Style.EMPTY
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("§eClick to open download.")))
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/alerts/version/" + newVersion))), false);
+            });
+        } catch (final URISyntaxException | ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Nullable
+    public String getIpAndConnect(@NotNull EventType eventType, @NotNull Object message) {
+        // Check if Famous/Potential Famous
+        if (message instanceof String messageString) {
+            final String ip = ConnectUtility.getIp(messageString);
+            if (config.autoTp) ConnectUtility.connect(ip == null ? config.defaultFamousIp : ip);
+            return ip;
+        }
+        if (!(message instanceof JsonObject messageJson)) return null;
+
+        // Get IP
+        String ip = "hypixel.net";
+        if (eventType != EventType.HOUSING) {
+            final JsonElement messageIp = messageJson.get("ip");
+            if (messageIp != null) { // Specifically provided
+                ip = messageIp.getAsString();
+            } else { // Extract from description
+                final JsonElement messageDescription = messageJson.get("description");
+                if (messageDescription != null) ip = ConnectUtility.getIp(messageDescription.getAsString());
+            }
+        }
+
+        // Auto TP if enabled
+        if (config.autoTp && ip != null) ConnectUtility.connect(ip);
+        return ip;
+    }
+
+    @Nullable
+    private static String getVersion(@NotNull String id) {
+        return FabricLoader.getInstance().getModContainer(id)
+                .map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString())
+                .orElse(null);
+    }
 }

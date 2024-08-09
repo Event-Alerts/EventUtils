@@ -1,16 +1,19 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.text.Text;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
 
 @Mixin(ButtonWidget.class)
 public abstract class ButtonWidgetMixin extends PressableWidget {
@@ -21,25 +24,23 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
 
     @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
     private void onPress(CallbackInfo ci){
-        if (EventUtils.CONFIRM_DISCONNECT) {
-            MinecraftClient client = MinecraftClient.getInstance();
-            if (client.currentScreen instanceof GameMenuScreen) {
-                Text text = this.getMessage();
-                if (Text.translatable("menu.disconnect").equals(text)) {
-                    if (client.world == null) {
-                        return;
-                    }
-                    ci.cancel();
-                    Screen current = client.currentScreen;
-                    client.setScreen(new ConfirmScreen(t -> {
-                        if (t) {
-                            client.disconnect(new MultiplayerScreen(new TitleScreen()));
-                        } else {
-                            client.setScreen(current);
-                        }
-                    }, Text.literal("Confirm Disconnect"), Text.literal("Are you sure you want to disconnect?")));
-                }
+        if (!EventUtils.MOD.config.confirmDisconnect) return;
+
+        final MinecraftClient client = MinecraftClient.getInstance();
+        if (!(client.currentScreen instanceof GameMenuScreen)) return;
+
+        final Text text = this.getMessage();
+        if (!Text.translatable("menu.disconnect").equals(text)) return;
+        if (client.world == null) return;
+
+        ci.cancel();
+        Screen current = client.currentScreen;
+        client.setScreen(new ConfirmScreen(t -> {
+            if (t) {
+                client.disconnect(new MultiplayerScreen(new TitleScreen()));
+                return;
             }
-        }
+            client.setScreen(current);
+        }, Text.literal("Confirm Disconnect"), Text.literal("Are you sure you want to disconnect?")));
     }
 }

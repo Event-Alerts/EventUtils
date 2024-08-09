@@ -1,16 +1,15 @@
 {
   "alert": {
+    "subtitle": "subtitles.eventutils.alert",
     "sounds": [
-      "eventutils:alert",
-      "eventutils:alert",
-      "eventutils:alert",
-      "eventutils:alert",
-      "eventutils:alert",
-      "eventutils:alert",
-      "eventutils:alert",
-      "eventutils:alert",
-      "eventutils:alert",
-      "eventutils:alert2"
+      {
+        "name": "eventutils:alert",
+        "weight": 10
+      },
+      {
+        "name": "eventutils:alert_secret",
+        "weight": 1
+      }
     ]
   }
 }
