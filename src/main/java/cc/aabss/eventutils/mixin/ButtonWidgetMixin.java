@@ -12,6 +12,7 @@ import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.text.Text;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -40,6 +41,7 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
         }, Text.literal("Confirm Disconnect"), Text.literal("Are you sure you want to disconnect?")));
     }
 
+    @Unique
     private void disconnect() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) {
