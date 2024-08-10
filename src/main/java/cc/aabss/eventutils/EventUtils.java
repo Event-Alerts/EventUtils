@@ -4,7 +4,7 @@ import cc.aabss.eventutils.config.ConfigScreen;
 import cc.aabss.eventutils.websocket.SocketEndpoint;
 import cc.aabss.eventutils.websocket.WebSocketClient;
 import cc.aabss.eventutils.commands.EventTeleportCmd;
-import cc.aabss.eventutils.commands.EventUtilsConfigCmd;
+import cc.aabss.eventutils.commands.EventUtilsCmd;
 import cc.aabss.eventutils.config.EventConfig;
 
 import com.google.gson.JsonElement;
@@ -83,7 +83,7 @@ public class EventUtils implements ClientModInitializer {
         // Commands
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             new EventTeleportCmd(this).register(dispatcher);
-            new EventUtilsConfigCmd(this).register(dispatcher);
+            new EventUtilsCmd(this).register(dispatcher);
         });
 
         // Game closed

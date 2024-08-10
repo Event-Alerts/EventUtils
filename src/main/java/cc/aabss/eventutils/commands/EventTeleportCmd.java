@@ -29,7 +29,6 @@ public class EventTeleportCmd extends EventCommand {
     @NotNull
     protected Set<String> getAliases() {
         return Set.of(
-                "eventutils",
                 "eventtp",
                 "evtp");
     }
@@ -54,14 +53,10 @@ public class EventTeleportCmd extends EventCommand {
         final ClientPlayerEntity client = context.getSource().getPlayer();
 
         // Get event type
-        if (context.getInput().split(" ").length <= 1){
-            client.sendMessage(Text.literal("Usage: /" + context.getRootNode().getName() + " <famous|potential_famous|money|partner|fun|housing|community|civilization>").formatted(Formatting.RED));
-            return;
-        }
         final String eventTypeArg = context.getArgument("eventType", String.class);
         final EventType eventType = EventType.fromString(eventTypeArg);
         if (eventType == null) {
-            client.sendMessage(Text.literal("Usage: /" + context.getRootNode().getName() + " <famous|potential_famous|money|partner|fun|housing|community|civilization>").formatted(Formatting.RED));
+            client.sendMessage(Text.literal("Usage: /" + context.getInput().split(" ")[0] + " <famous|potential_famous|money|partner|fun|housing|community|civilization>").formatted(Formatting.RED));
             return;
         }
 

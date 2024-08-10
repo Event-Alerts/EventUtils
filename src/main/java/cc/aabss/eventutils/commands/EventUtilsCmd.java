@@ -13,8 +13,8 @@ import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
 
-public class EventUtilsConfigCmd extends EventCommand {
-    public EventUtilsConfigCmd(@NotNull EventUtils mod) {
+public class EventUtilsCmd extends EventCommand {
+    public EventUtilsCmd(@NotNull EventUtils mod) {
         super(mod);
     }
 
