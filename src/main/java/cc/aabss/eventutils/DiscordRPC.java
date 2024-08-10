@@ -19,6 +19,8 @@ import java.util.function.Supplier;
 
 
 public class DiscordRPC {
+    private static final long START = System.currentTimeMillis() / 1000;
+
     @NotNull private final EventUtils mod;
     @Nullable public DiscordRPCClient client;
 
@@ -30,11 +32,10 @@ public class DiscordRPC {
         if (!mod.config.discordRpc || client != null) return;
 
         final String username = MinecraftClient.getInstance().getSession().getUsername();
-        final long start = System.currentTimeMillis() / 1000;
         client = new DiscordRPCClient(new EventListener() {
             @Override
             public void onReady(@NotNull DiscordRPCClient newClient, @NotNull User user) {
-                EventUtils.LOGGER.info("[DISCORD] Logged in as {}#{}", user.username, user.discriminator);
+                EventUtils.LOGGER.info("DISCORD RPC: Logged in as {}", user.username);
                 EventUtils.SCHEDULER.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
@@ -42,7 +43,7 @@ public class DiscordRPC {
                         newClient.sendPresence(new RichPresence.Builder()
                                 .addButton("Minecraft Mod", "https://modrinth.com/mod/alerts")
                                 .addButton("Discord Server", "https://discord.gg/uFPFNYzAWC")
-                                .setTimestamps(start, null)
+                                .setTimestamps(START, null)
                                 .setText("Playing as " + username, "Currently in " + status.text)
                                 .setAssets(status.asset.get(), "Minecraft v" + (Versions.MC_VERSION != null ? Versions.MC_VERSION : "???"), "event_alerts", "EventUtils v" + (Versions.EU_VERSION != null ? Versions.EU_VERSION : "???"))
                                 .build());

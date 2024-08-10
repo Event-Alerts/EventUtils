@@ -2,8 +2,6 @@ package cc.aabss.eventutils.websocket;
 
 import cc.aabss.eventutils.EventUtils;
 
-import net.minecraft.client.MinecraftClient;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +42,7 @@ public class WebSocketClient implements WebSocket.Listener {
                         }
                         webSocket = newSocket;
                         webSocket.request(1);
-                        EventUtils.LOGGER.info("{} WebSocket connection established", name);
+                        EventUtils.LOGGER.info("{} socket connection established", name);
                         keepAlive = EventUtils.SCHEDULER.scheduleAtFixedRate(() -> {
                             if (newSocket.isInputClosed()) {
                                 retryConnection("Keep-alive detected closed input");
@@ -60,12 +58,12 @@ public class WebSocketClient implements WebSocket.Listener {
         if (isRetrying) return;
         isRetrying = true;
         EventUtils.LOGGER.warn("Retrying websocket connection for {} with reason \"{}\"", endpoint, reason);
-        close();
+        close("Retrying connection");
         EventUtils.SCHEDULER.schedule(this::connect, 5, TimeUnit.SECONDS);
     }
 
-    public void close() {
-        if (webSocket != null) webSocket.sendClose(1000, "EventUtils client (" + MinecraftClient.getInstance().getSession().getUsername() + ") closed");
+    public void close(@NotNull String reason) {
+        if (webSocket != null) webSocket.sendClose(1000, reason);
     }
 
     @Override
@@ -83,7 +81,7 @@ public class WebSocketClient implements WebSocket.Listener {
             retryConnection("Experienced abnormal closure");
             return null;
         }
-        EventUtils.LOGGER.info("{} WEBSOCKET CLOSED | STATUS: {} | REASON: {}", endpoint.name(), statusCode, reason);
+        EventUtils.LOGGER.info("{} socket closed with status code {} and reason \"{}\"", endpoint.name(), statusCode, reason);
         return null;
     }
 

@@ -8,7 +8,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -37,10 +36,14 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
 
 public class EventUtils implements ClientModInitializer {
     /**
@@ -48,7 +51,7 @@ public class EventUtils implements ClientModInitializer {
      * <br>This is usually only necessary for mixins!
      */
     public static EventUtils MOD;
-    @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class);
+    @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
     @NotNull public static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(2);
     @NotNull public static String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
 
@@ -79,7 +82,7 @@ public class EventUtils implements ClientModInitializer {
 
         // Game closed
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            webSockets.forEach(WebSocketClient::close);
+            webSockets.forEach(socket -> socket.close("Game closed"));
             discordRPC.disconnect();
         });
 
