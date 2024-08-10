@@ -28,7 +28,8 @@ dependencies {
     include(implementation("com.github.NepNep21", "DiscordRPC4j16", "1.2.2"))
 }
 
-addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
+// Replacements for fabric.mod.json and config.json
+addReplacementsTask(setOf("fabric.mod.json", "config.json"), getDefaultReplacements() + mapOf(
     "mod_name" to property("mod.name").toString(),
     "mod_version" to property("mod.version").toString(),
     "deps_minecraft" to property("deps.minecraft").toString(),

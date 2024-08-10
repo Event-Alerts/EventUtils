@@ -35,7 +35,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(Text.literal("Automatically teleports you to the server when an event starts")))
                             .binding(false, () -> config.autoTp, newValue -> {
                                 config.autoTp = newValue;
-                                config.setSave("auto-tp", config.autoTp);
+                                config.setSave("auto_tp", config.autoTp);
                             })
                             .controller(option -> getBooleanBuilder(option).yesNoFormatter()).build())
                     .option(Option.<Boolean>createBuilder()
@@ -43,7 +43,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(Text.literal("Simplifies the queue message for InvadedLands")))
                             .binding(false, () -> config.simpleQueueMsg, newValue -> {
                                 config.simpleQueueMsg = newValue;
-                                config.setSave("simple-queue-msg", config.simpleQueueMsg);
+                                config.setSave("simple_queue_message", config.simpleQueueMsg);
                             })
                             .controller(option -> getBooleanBuilder(option).yesNoFormatter()).build())
                     .option(Option.<Boolean>createBuilder()
@@ -51,7 +51,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(Text.literal("Whether the Discord rich presence should be shown")))
                             .binding(true, () -> config.discordRpc, newValue -> {
                                 config.discordRpc = newValue;
-                                config.setSave("discord-rpc", config.discordRpc);
+                                config.setSave("discord_rpc", config.discordRpc);
                                 if (Boolean.TRUE.equals(newValue)) {
                                     mod.discordRPC.connect();
                                 } else {
@@ -64,7 +64,8 @@ public class ConfigScreen {
                             .description(OptionDescription.of(Text.literal("Whether the mod should check and notify for updates")))
                             .binding(true, () -> config.updateChecker, newValue -> {
                                 config.updateChecker = newValue;
-                                config.setSave("update-checker", config.updateChecker);
+                                config.setSave("update_checker", config.updateChecker);
+                                if (Boolean.TRUE.equals(newValue)) mod.updateCheck();
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
                     .option(Option.<Boolean>createBuilder()
@@ -72,7 +73,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(Text.literal("Whether a confirmation should pop up confirming you want to close your game window")))
                             .binding(true, () -> config.confirmWindowClose, newValue -> {
                                 config.confirmWindowClose = newValue;
-                                config.setSave("confirm-window-close", config.confirmWindowClose);
+                                config.setSave("confirm_window_close", config.confirmWindowClose);
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
                     .option(Option.<Boolean>createBuilder()
@@ -80,7 +81,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(Text.literal("Whether a confirmation should pop up confirming you want to leave your server")))
                             .binding(true, () -> config.confirmDisconnect, newValue -> {
                                 config.confirmDisconnect = newValue;
-                                config.setSave("confirm-disconnect", config.confirmDisconnect);
+                                config.setSave("confirm_disconnect", config.confirmDisconnect);
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
                     .option(Option.<String>createBuilder()
@@ -88,7 +89,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(Text.literal("The default ip for if a [potential] famous event is pinged with no ip inputted")))
                             .binding("play.invadedlands.net", () -> config.defaultFamousIp, newValue -> {
                                 config.defaultFamousIp = newValue;
-                                config.setSave("default-famous-ip", config.defaultFamousIp);
+                                config.setSave("default_famous_ip", config.defaultFamousIp);
                             })
                             .controller(StringControllerBuilder::create).build())
                     .option(ListOption.<String>createBuilder()
@@ -102,7 +103,7 @@ public class ConfigScreen {
                                         config.hiddenEntityTypes = newValue.stream()
                                                 .map(id -> EntityType.get(id).orElse(null))
                                                 .collect(Collectors.toList());
-                                        config.setSave("hidden-entity-types", config.hiddenEntityTypes);
+                                        config.setSave("hidden_entity_types", config.hiddenEntityTypes);
                                     })
                             .controller(option -> DropdownStringControllerBuilder.create(option).values(ENTITY_TYPES))
                             .initial(EntityType.getId(EntityType.ALLAY).toString()).build())
@@ -113,7 +114,7 @@ public class ConfigScreen {
                                 config.whitelistedPlayers = newValue.stream()
                                         .map(String::toLowerCase)
                                         .toList();
-                                config.setSave("whitelisted-players", config.whitelistedPlayers);
+                                config.setSave("whitelisted_players", config.whitelistedPlayers);
                             })
                             .controller(StringControllerBuilder::create)
                             .initial("skeppy").build()).build())

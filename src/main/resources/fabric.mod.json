@@ -6,7 +6,7 @@
   "description": "${description}",
   "authors": ["aabss", "srnyx"],
   "contact": {
-    "repo": "https://github.com/aabssmc/EventUtils"
+    "repo": "https://github.com/Event-Alerts/EventUtils"
   },
   "license": "MIT",
   "icon": "assets/icon.png",

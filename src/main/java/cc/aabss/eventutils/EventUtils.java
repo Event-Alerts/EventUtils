@@ -7,7 +7,6 @@ import cc.aabss.eventutils.commands.EventTeleportCmd;
 import cc.aabss.eventutils.commands.EventUtilsConfigCmd;
 import cc.aabss.eventutils.config.EventConfig;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -20,7 +19,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.loader.api.Version;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -54,8 +54,6 @@ public class EventUtils implements ClientModInitializer {
      */
     public static EventUtils MOD;
     @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class);
-    @Nullable public static final String MC_VERSION = getVersion("minecraft");
-    @Nullable public static final String EU_VERSION = getVersion("eventutils");
     @NotNull public static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(2);
     @NotNull public static String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
 
@@ -64,6 +62,8 @@ public class EventUtils implements ClientModInitializer {
     @NotNull public Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     public boolean hidePlayers = false;
     @NotNull public final YetAnotherConfigLib.Builder configScreen = ConfigScreen.getConfigScreen(this);
+    @Nullable private Boolean isOutdated = null;
+    @Nullable private String latestVersion = null;
 
     public EventUtils() {
         MOD = this;
@@ -90,6 +90,18 @@ public class EventUtils implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             webSockets.forEach(WebSocketClient::close);
             discordRPC.disconnect();
+        });
+
+        // Notify of update when joining server
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            if (config.updateChecker && Boolean.TRUE.equals(isOutdated) && latestVersion != null) client.execute(() -> {
+                if (client.player != null)
+                    client.player.sendMessage(Text.literal("§6[EVENTUTILS]§r §eThere is a new update available!§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
+                            .setStyle(Style.EMPTY
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("§eClick to open download.")))
+                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/alerts/version/" + latestVersion)))
+                            .append(Text.literal("§7§oYou can disable this message in the config")), false);
+            });
         });
 
         // Hide players keybind
@@ -130,23 +142,23 @@ public class EventUtils implements ClientModInitializer {
     }
 
     public void updateCheck() {
-        if (config.updateChecker && MC_VERSION != null && EU_VERSION != null) try (final HttpClient httpClient = HttpClient.newHttpClient()) {
-            final JsonArray json = JsonParser.parseString(httpClient.sendAsync(HttpRequest.newBuilder()
-                            .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + MC_VERSION + "%22%5D"))
-                            .header("User-Agent", "EventUtils/" + EU_VERSION + " (Minecraft/" + MC_VERSION + ")").build(), HttpResponse.BodyHandlers.ofString())
-                    .get().body()).getAsJsonArray();
-            final String newVersion = json.get(0).getAsJsonObject().get("version_number").getAsString();
+        if (isOutdated != null || !config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) {
+            isOutdated = false;
+            return;
+        }
+        final MinecraftClient client = MinecraftClient.getInstance();
+        if (client.player != null) try (final HttpClient httpClient = HttpClient.newHttpClient()) {
+            // latestVersion (Modrinth)
+            latestVersion = JsonParser.parseString(httpClient.sendAsync(HttpRequest.newBuilder()
+                                    .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
+                                    .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")").build(), HttpResponse.BodyHandlers.ofString())
+                            .get().body()).getAsJsonArray()
+                    .get(0).getAsJsonObject()
+                    .get("version_number").getAsString();
 
-            // Using latest version
-            if (Objects.equals(newVersion, EU_VERSION)) return;
-
-            // Using outdated version, notify to update
-            final MinecraftClient client = MinecraftClient.getInstance();
-            client.execute(() -> {
-                if (client.player != null) client.player.sendMessage(Text.literal("§6[EVENTUTILS]§r §eThere is a new update available!§r §7(v" + EU_VERSION.replaceAll(MC_VERSION + "-", "") + " -> v" + newVersion.replaceAll(MC_VERSION + "-", "") + ")").setStyle(Style.EMPTY
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("§eClick to open download.")))
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/alerts/version/" + newVersion))), false);
-            });
+            // isOutdated
+            final Version latestVersionSemantic = Versions.getSemantic(latestVersion.replaceAll(Versions.MC_VERSION + "-", ""));
+            isOutdated = latestVersionSemantic != null && Versions.EU_VERSION_SEMANTIC.compareTo(latestVersionSemantic) < 0;
         } catch (final URISyntaxException | ExecutionException e) {
             throw new RuntimeException(e);
         } catch (final InterruptedException e) {
@@ -180,12 +192,5 @@ public class EventUtils implements ClientModInitializer {
         // Auto TP if enabled
         if (config.autoTp && ip != null) ConnectUtility.connect(ip);
         return ip;
-    }
-
-    @Nullable
-    private static String getVersion(@NotNull String id) {
-        return FabricLoader.getInstance().getModContainer(id)
-                .map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString())
-                .orElse(null);
     }
 }
