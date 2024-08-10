@@ -6,105 +6,69 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: "ubuntu-latest"
     steps:
-      - uses: "actions/checkout@v4.1.7"
-      - uses: "gradle/actions/wrapper-validation@v3.5.0"
+      - name: Checkout repository
+        uses: "actions/checkout@v4.1.7"
       - name: Set up JDK
         uses: "actions/setup-java@v4.2.2"
         with:
           distribution: temurin
           java-version: 21
           cache: gradle
+      - name: Cache Gradle files
+        uses: "actions/cache@v4.0.2"
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper/
+          key: ${{ runner.os }}-gradle
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Build jar with Gradle
-        run: ./gradlew chiseledBuild
-      - name: GitHub
+      - name: Build JARs
+        uses: Wandalen/wretry.action@master
+        with:
+          command: "gradlew chiseledBuild"
+          attempt_limit: 3
+      - name: Upload built JARs
+        uses: "actions/upload-artifact@v4.3.6"
+        with:
+          name: EventUtils
+          path: |
+            ./versions/**/build/libs/*.jar
+
+  distribute:
+    needs: build
+    runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        # REMINDER: Update this when adding new game versions
+        game_version: [
+          "1.20.1",
+          "1.20.2",
+          "1.20.4",
+          "1.20.6",
+          "1.21"
+        ]
+    steps:
+      - name: Checkout repository
+        uses: "actions/checkout@v4.1.7"
+      - name: Download Built JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: EventUtils
+          path: ./versions
+      - name: Publish
         uses: "Kir-Antipov/mc-publish@v3.3.0"
         with:
-          github-changelog: ${{ github.event.release.body }}
-          fail-mode: warn
-          files: build/libs/*.jar
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Modrinth 1.21
-        uses: "Kir-Antipov/mc-publish@v3.3.0"
-        with:
-          game-version-filter: releases
-          changelog: ${{ github.event.release.html_url }}
           fail-mode: warn
           modrinth-id: ZcRRACSs
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          github-token: ${{ secrets.CLASSIC_GITHUB_TOKEN }}
+          files: versions/${{ matrix.game_version }}/build/libs/*.jar
+          version: ${{ matrix.game_version }}-${{ github.ref_name }}
           loaders: fabric
           dependencies: |
             fabric-api
             yacl
-
-          version: 1.21-${{ github.event.release.tag_name }}
-          game-versions: 1.21
-          files: versions/1.21/build/libs/*.jar
-      - name: Modrinth 1.20.6
-        uses: "Kir-Antipov/mc-publish@v3.3.0"
-        with:
-          game-version-filter: releases
-          changelog: ${{ github.event.release.html_url }}
-          fail-mode: warn
-          modrinth-id: ZcRRACSs
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          loaders: fabric
-          dependencies: |
-            fabric-api
-            yacl
-
-          version: 1.20.6-${{ github.event.release.tag_name }}
-          game-versions: 1.20.6
-          files: versions/1.20.6/build/libs/*.jar
-      - name: Modrinth 1.20.4
-        uses: "Kir-Antipov/mc-publish@v3.3.0"
-        with:
-          game-version-filter: releases
-          changelog: ${{ github.event.release.html_url }}
-          fail-mode: warn
-          modrinth-id: ZcRRACSs
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          loaders: fabric
-          dependencies: |
-            fabric-api
-            yacl
-
-          version: 1.20.4-${{ github.event.release.tag_name }}
-          game-versions: 1.20.4
-          files: versions/1.20.4/build/libs/*.jar
-      - name: Modrinth 1.20.2
-        uses: "Kir-Antipov/mc-publish@v3.3.0"
-        with:
-          game-version-filter: releases
-          changelog: ${{ github.event.release.html_url }}
-          fail-mode: warn
-          modrinth-id: ZcRRACSs
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          loaders: fabric
-          dependencies: |
-            fabric-api
-            yacl
-
-          version: 1.20.2-${{ github.event.release.tag_name }}
-          game-versions: 1.20.2
-          files: versions/1.20.2/build/libs/*.jar
-      - name: Modrinth 1.20.1
-        uses: "Kir-Antipov/mc-publish@v3.3.0"
-        with:
-          game-version-filter: releases
-          changelog: ${{ github.event.release.html_url }}
-          fail-mode: warn
-          modrinth-id: ZcRRACSs
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          loaders: fabric
-          dependencies: |
-            fabric-api
-            yacl
-
-          version: 1.20.1-${{ github.event.release.tag_name }}
-          game-versions: 1.20.1
-          files: versions/1.20.1/build/libs/*.jar
