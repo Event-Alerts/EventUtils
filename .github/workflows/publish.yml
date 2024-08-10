@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        uses: srnyx/tools/.github/workflows/just_build.yml@main
+        uses: ./.github/workflows/build.yml@main
         with:
           java: 21
           task: "chiseledBuild"
