@@ -2,6 +2,7 @@ package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventUtils;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -63,17 +64,23 @@ public abstract class EventCommand {
      *
      * @param   context the {@link CommandContext} of the command
      */
-    protected abstract int run(@NotNull CommandContext<FabricClientCommandSource> context);
+    protected abstract void run(@NotNull CommandContext<FabricClientCommandSource> context);
 
     public void register(@NotNull CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralArgumentBuilder<FabricClientCommandSource> builder = ClientCommandManager.literal(getName())
-                .executes(this::run);
-        if (getArguments() != null) for (final ArgumentBuilder<FabricClientCommandSource, ?> argumentBuilder : getArguments()){
-            builder.then(argumentBuilder).executes(this::run);
-        }
-        LiteralCommandNode<FabricClientCommandSource> command = dispatcher.register(builder);
-        if (getAliases() != null) for (final String name : getAliases()) {
-            dispatcher.register(ClientCommandManager.literal(name).redirect(command));
-        }
+        // Create full executor with return value
+        final Command<FabricClientCommandSource> runFull = context -> {
+            run(context);
+            return 0;
+        };
+
+        // Add executor and arguments
+        final LiteralArgumentBuilder<FabricClientCommandSource> builder = ClientCommandManager.literal(getName()).executes(runFull);
+        if (getArguments() != null) for (final ArgumentBuilder<FabricClientCommandSource, ?> argumentBuilder : getArguments()) builder.then(argumentBuilder.executes(runFull));
+
+        // Register command
+        final LiteralCommandNode<FabricClientCommandSource> command = dispatcher.register(builder);
+
+        // Add aliases
+        if (getAliases() != null) for (final String name : getAliases()) dispatcher.register(ClientCommandManager.literal(name).redirect(command));
     }
 }

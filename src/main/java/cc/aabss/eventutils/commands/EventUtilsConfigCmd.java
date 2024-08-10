@@ -19,12 +19,11 @@ public class EventUtilsConfigCmd extends EventCommand {
     }
 
     @Override
-    protected int run(@NotNull CommandContext<FabricClientCommandSource> context) {
+    protected void run(@NotNull CommandContext<FabricClientCommandSource> context) {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             client.setScreen(mod.configScreen.build().generateScreen(client.currentScreen));
             if (client.player != null) client.player.sendMessage(Text.literal("Opening screen..").formatted(Formatting.GREEN));
         });
-        return 0;
     }
 }

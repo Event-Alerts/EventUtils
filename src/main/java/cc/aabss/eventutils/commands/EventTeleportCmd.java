@@ -38,7 +38,6 @@ public class EventTeleportCmd extends EventCommand {
     protected Collection<ArgumentBuilder<FabricClientCommandSource, ? extends ArgumentBuilder<FabricClientCommandSource, ?>>> getArguments() {
         return Set.of(ClientCommandManager
                 .argument("eventType", StringArgumentType.string())
-                        .executes(this::run)
                 .suggests((context, builder) -> builder
                         .suggest("famous")
                         .suggest("potential")
@@ -51,30 +50,29 @@ public class EventTeleportCmd extends EventCommand {
     }
 
     @Override
-    protected int run(@NotNull CommandContext<FabricClientCommandSource> context) {
+    protected void run(@NotNull CommandContext<FabricClientCommandSource> context) {
         final ClientPlayerEntity client = context.getSource().getPlayer();
 
         // Get event type
         if (context.getInput().split(" ").length <= 1){
             client.sendMessage(Text.literal("Usage: /" + context.getRootNode().getName() + " <famous|potential_famous|money|partner|fun|housing|community|civilization>").formatted(Formatting.RED));
-            return 0;
+            return;
         }
         final String eventTypeArg = context.getArgument("eventType", String.class);
         final EventType eventType = EventType.fromString(eventTypeArg);
         if (eventType == null) {
             client.sendMessage(Text.literal("Usage: /" + context.getRootNode().getName() + " <famous|potential_famous|money|partner|fun|housing|community|civilization>").formatted(Formatting.RED));
-            return 0;
+            return;
         }
 
         // Get last IP
         final String lastIP = mod.lastIps.get(eventType);
         if (lastIP == null) {
             client.sendMessage(Text.literal("No " + eventTypeArg + " event found!").formatted(Formatting.RED));
-            return 0;
+            return;
         }
 
         // Connect to last IP
         ConnectUtility.connect(lastIP);
-        return 0;
     }
 }
