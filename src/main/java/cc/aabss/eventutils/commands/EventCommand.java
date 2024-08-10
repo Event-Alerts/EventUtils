@@ -1,86 +1,92 @@
 package cc.aabss.eventutils.commands;
 
+import cc.aabss.eventutils.ConnectUtility;
+import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.EventUtils;
-
-import com.mojang.brigadier.Command;
+import cc.aabss.eventutils.config.ConfigScreen;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 
-public abstract class EventCommand {
-    @NotNull protected final EventUtils mod;
+public class EventCommand {
+    @NotNull protected final CommandDispatcher<FabricClientCommandSource> dispatcher;
+    protected final int returnValue = 1;
 
-    protected EventCommand(@NotNull EventUtils mod) {
-        this.mod = mod;
+    public EventCommand(@NotNull CommandDispatcher<FabricClientCommandSource> dispatcher) {
+        this.dispatcher = dispatcher;
+        register();
     }
 
-    /**
-     * <i>{@code OPTIONAL}</i> This is the name of the command
-     * <p>If not specified, the lowercase class name will be used ({@code Command} will be removed)
-     * <p><b>Example:</b> the command class {@code MyEpicCommand} would be registered as {@code myepic}
-     *
-     * @return  the name of the command
-     */
-    @NotNull
-    protected String getName() {
-        return getClass().getSimpleName().toLowerCase().replace("command", "").replace("cmd", "");
+    private void register() {
+        LiteralCommandNode<FabricClientCommandSource> main = ClientCommandManager
+                .literal("eventutils")
+                .executes(this::help)
+                .build();
+        LiteralCommandNode<FabricClientCommandSource> config = ClientCommandManager
+                .literal("config")
+                .executes(this::config)
+                .build();
+        LiteralCommandNode<FabricClientCommandSource> teleport = ClientCommandManager
+                .literal("teleport")
+                .executes(context -> teleport(context, null))
+                .build();
+        LiteralCommandNode<FabricClientCommandSource> help = ClientCommandManager
+                .literal("help")
+                .executes(this::help)
+                .build();
+        List<LiteralCommandNode<FabricClientCommandSource>> eventTypes = new ArrayList<>();
+        for (EventType eventType : EventType.values()) {
+            eventTypes.add(ClientCommandManager
+                    .literal(eventType.name().toLowerCase())
+                    .executes((context -> teleport(context, eventType)))
+                    .build());
+        }
+        dispatcher.getRoot().addChild(main);
+        main.addChild(config);
+        main.addChild(teleport);
+        main.addChild(help);
+        for (LiteralCommandNode<FabricClientCommandSource> eventType : eventTypes) {
+            teleport.addChild(eventType);
+        }
     }
 
-    /**
-     * <i>{@code OPTIONAL}</i> These are the aliases for the command
-     * <p>If not specified (or {@code null}), no aliases will be added
-     *
-     * @return  the aliases for the command
-     */
-    @Nullable
-    protected Collection<String> getAliases() {
-        return null;
+    private int config(CommandContext<FabricClientCommandSource> context) {
+        context.getSource().getPlayer().sendMessage(Text.literal("Opening screen...").formatted(Formatting.GREEN));
+        context.getSource().getClient().send(() ->
+                context.getSource().getClient().setScreen(ConfigScreen.getConfigScreen(context.getSource().getClient().currentScreen))
+        );
+        return returnValue;
     }
 
-    /**
-     * <i>{@code OPTIONAL}</i> These are the arguments for the command
-     * <p>If not specified (or {@code null}), no arguments will be added
-     *
-     * @return  the arguments for the command
-     */
-    @Nullable
-    protected Collection<ArgumentBuilder<FabricClientCommandSource, ? extends ArgumentBuilder<FabricClientCommandSource, ?>>> getArguments() {
-        return null;
+    private int teleport(CommandContext<FabricClientCommandSource> context, EventType eventType) {
+        if (eventType == null) {
+            context.getSource().getPlayer().sendMessage(Text.literal("No event type specified."));
+            return returnValue;
+        }
+        if (!EventUtils.MOD.lastIps.containsKey(eventType)) {
+            context.getSource().getPlayer().sendMessage(Text.literal("No event found for "+eventType.displayName.toLowerCase()+".").formatted(Formatting.RED));
+            return returnValue;
+        }
+        ConnectUtility.connect(EventUtils.MOD.lastIps.get(eventType));
+        return returnValue;
     }
 
-    /**
-     * This is the method that will be executed when the command is run
-     *
-     * @param   context the {@link CommandContext} of the command
-     */
-    protected abstract void run(@NotNull CommandContext<FabricClientCommandSource> context);
-
-    public void register(@NotNull CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        // Create full executor with return value
-        final Command<FabricClientCommandSource> runFull = context -> {
-            run(context);
-            return 0;
-        };
-
-        // Add executor and arguments
-        final LiteralArgumentBuilder<FabricClientCommandSource> builder = ClientCommandManager.literal(getName()).executes(runFull);
-        if (getArguments() != null) for (final ArgumentBuilder<FabricClientCommandSource, ?> argumentBuilder : getArguments()) builder.then(argumentBuilder.executes(runFull));
-
-        // Register command
-        final LiteralCommandNode<FabricClientCommandSource> command = dispatcher.register(builder);
-
-        // Add aliases
-        if (getAliases() != null) for (final String name : getAliases()) dispatcher.register(ClientCommandManager.literal(name).redirect(command));
+    private int help(CommandContext<FabricClientCommandSource> context) {
+        context.getSource().getPlayer().sendMessage(
+                Text.literal("""
+                        /eventutils config - Opens config screen.
+                        /eventutils teleport <eventType> - Teleports to the last posted event of that type.
+                        /eventutils help - Shows this screen."""
+                ).formatted(Formatting.RED));
+        return returnValue;
     }
 }

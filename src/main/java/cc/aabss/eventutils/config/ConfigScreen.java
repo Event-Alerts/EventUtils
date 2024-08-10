@@ -8,11 +8,13 @@ import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import dev.isxander.yacl3.api.controller.DropdownStringControllerBuilder;
 import dev.isxander.yacl3.api.controller.StringControllerBuilder;
 
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,8 @@ public class ConfigScreen {
             .toList();
 
     @NotNull
-    public static YetAnotherConfigLib.Builder getConfigScreen(@NotNull EventUtils mod) {
+    public static Screen getConfigScreen(@Nullable Screen parent) {
+        final EventUtils mod = EventUtils.MOD;
         final EventConfig config = mod.config;
         return YetAnotherConfigLib.createBuilder()
             .title(Text.literal("EventUtils Mod Config"))
@@ -125,7 +128,8 @@ public class ConfigScreen {
                     .option(EventType.MONEY.getOption(config))
                     .option(EventType.FUN.getOption(config))
                     .option(EventType.HOUSING.getOption(config))
-                    .option(EventType.CIVILIZATION.getOption(config)).build());
+                    .option(EventType.CIVILIZATION.getOption(config)).build())
+                .build().generateScreen(parent);
     }
 
     @NotNull

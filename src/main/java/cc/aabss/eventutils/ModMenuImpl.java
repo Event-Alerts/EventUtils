@@ -1,5 +1,6 @@
 package cc.aabss.eventutils;
 
+import cc.aabss.eventutils.config.ConfigScreen;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 
@@ -16,6 +17,6 @@ public class ModMenuImpl implements ModMenuApi {
 
     @Override @NotNull
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return parent -> EventUtils.MOD.configScreen.build().generateScreen(parent);
+        return ConfigScreen::getConfigScreen;
     }
 }

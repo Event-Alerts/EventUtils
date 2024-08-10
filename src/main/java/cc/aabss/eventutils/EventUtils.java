@@ -1,17 +1,14 @@
 package cc.aabss.eventutils;
 
-import cc.aabss.eventutils.config.ConfigScreen;
+import cc.aabss.eventutils.commands.EventCommand;
 import cc.aabss.eventutils.websocket.SocketEndpoint;
 import cc.aabss.eventutils.websocket.WebSocketClient;
-import cc.aabss.eventutils.commands.EventTeleportCmd;
-import cc.aabss.eventutils.commands.EventUtilsCmd;
 import cc.aabss.eventutils.config.EventConfig;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import dev.isxander.yacl3.api.YetAnotherConfigLib;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -46,7 +43,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-
 public class EventUtils implements ClientModInitializer {
     /**
      * Only use if it is absolutely impossible to access the mod instance through other (safer) means
@@ -61,7 +57,6 @@ public class EventUtils implements ClientModInitializer {
     @NotNull public DiscordRPC discordRPC = new DiscordRPC(this);
     @NotNull public Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     public boolean hidePlayers = false;
-    @NotNull public final YetAnotherConfigLib.Builder configScreen = ConfigScreen.getConfigScreen(this);
     @Nullable private Boolean isOutdated = null;
     @Nullable private String latestVersion = null;
 
@@ -82,8 +77,7 @@ public class EventUtils implements ClientModInitializer {
 
         // Commands
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            new EventTeleportCmd(this).register(dispatcher);
-            new EventUtilsCmd(this).register(dispatcher);
+            new EventCommand(dispatcher);
         });
 
         // Game closed
