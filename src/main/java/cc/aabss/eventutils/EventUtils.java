@@ -1,6 +1,5 @@
 package cc.aabss.eventutils;
 
-import cc.aabss.eventutils.commands.EventCommand;
 import cc.aabss.eventutils.websocket.SocketEndpoint;
 import cc.aabss.eventutils.websocket.WebSocketClient;
 import cc.aabss.eventutils.config.EventConfig;
@@ -75,10 +74,8 @@ public class EventUtils implements ClientModInitializer {
         webSockets.add(new WebSocketClient(this, SocketEndpoint.FAMOUS_EVENT));
         webSockets.add(new WebSocketClient(this, SocketEndpoint.POTENTIAL_FAMOUS_EVENT));
 
-        // Commands
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            new EventCommand(dispatcher);
-        });
+        // Command registration
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> CommandRegister.register(dispatcher));
 
         // Game closed
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
