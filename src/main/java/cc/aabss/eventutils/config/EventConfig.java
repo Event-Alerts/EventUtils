@@ -42,6 +42,7 @@ public class EventConfig extends FileLoader {
         boolean created = false;
         if (!file.exists()) {
             json = new JsonObject();
+            json.addProperty("version", Versions.EU_VERSION);
             created = true;
         } else {
             load();
