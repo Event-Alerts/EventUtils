@@ -9,11 +9,18 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Build
-        uses: "srnyx/tools/.github/actions/build.yml@main"
+      - uses: "actions/checkout@v4.1.7"
+      - uses: "gradle/actions/wrapper-validation@v3.5.0"
+      - name: Set up JDK
+        uses: "actions/setup-java@v4.2.2"
         with:
-          java: 21
-          task: "chiseledBuild"
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build jar with Gradle
+        run: ./gradlew chiseledBuild
       - name: GitHub
         uses: "Kir-Antipov/mc-publish@v3.3.0"
         with:
