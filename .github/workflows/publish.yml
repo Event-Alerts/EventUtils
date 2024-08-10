@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        uses: ./.github/actions/build.yml
+        uses: "srnyx/tools/.github/actions/build.yml@main"
         with:
           java: 21
           task: "chiseledBuild"
