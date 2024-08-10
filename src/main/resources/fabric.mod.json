@@ -24,8 +24,8 @@
   },
   "depends": {
     "minecraft": "${deps_minecraft}",
-    "fabricloader": ">=${deps_fabric_loader}",
-    "fabric": ">=${deps_fabric_api}",
-    "yet_another_config_lib_v3": ">=${deps_yacl}"
+    "fabricloader": "*",
+    "fabric": "*",
+    "yet_another_config_lib_v3": "*"
   }
 }
