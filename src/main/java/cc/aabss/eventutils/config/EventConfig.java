@@ -1,6 +1,7 @@
 package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.EventType;
+import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.Versions;
 
 import com.google.common.reflect.TypeToken;
@@ -9,7 +10,6 @@ import com.google.gson.*;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.impl.util.version.SemanticVersionImpl;
 
 import net.minecraft.entity.EntityType;
@@ -144,15 +144,10 @@ public class EventConfig {
     private void update() {
         // Get old version
         final String oldVersionString = get("version", "1.4.0");
-        SemanticVersion oldVersion;
-        try {
-            oldVersion = SemanticVersion.parse(oldVersionString);
-        } catch (final VersionParsingException e) {
-            try {
-                oldVersion = SemanticVersion.parse(oldVersionString + ".0");
-            } catch (final VersionParsingException e2) {
-                throw new RuntimeException("Failed to parse version", e2);
-            }
+        final SemanticVersion oldVersion = Versions.getSemantic(oldVersionString);
+        if (oldVersion == null) {
+            EventUtils.LOGGER.error("Failed to parse config version: " + oldVersionString);
+            return;
         }
 
         // Older than 2.0.0
