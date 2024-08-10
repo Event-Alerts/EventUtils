@@ -44,7 +44,7 @@ public class DiscordRPC {
                                 .addButton("Discord Server", "https://discord.gg/uFPFNYzAWC")
                                 .setTimestamps(start, null)
                                 .setText("Playing as " + username, "Currently in " + status.text)
-                                .setAssets(status.asset.get(), "Minecraft v" + (EventUtils.MC_VERSION != null ? EventUtils.MC_VERSION : "???"), "event_alerts", "EventUtils v" + (EventUtils.EU_VERSION != null ? EventUtils.EU_VERSION : "???"))
+                                .setAssets(status.asset.get(), "Minecraft v" + (Versions.MC_VERSION != null ? Versions.MC_VERSION : "???"), "event_alerts", "EventUtils v" + (Versions.EU_VERSION != null ? Versions.EU_VERSION : "???"))
                                 .build());
                     }
                 }, 0, 5, TimeUnit.SECONDS);

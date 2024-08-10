@@ -27,46 +27,14 @@ import java.util.function.Function;
 
 
 public enum EventType {
-    FAMOUS(
-            "famous",
-            "Famous Events",
-            Text.literal("New Famous Event!").formatted(Formatting.AQUA),
-            null),
-    POTENTIAL_FAMOUS(
-            "potential-famous",
-            "Potential Famous Events",
-            Text.literal("New Potential Famous Event!").formatted(Formatting.DARK_AQUA),
-            null),
-    PARTNER(
-            "partner",
-            "Partner Events",
-            Text.literal("New Partner Event!").formatted(Formatting.LIGHT_PURPLE),
-            970434201990070424L),
-    COMMUNITY(
-            "community",
-            "Community Events",
-            prize -> Text.literal("New Community Event!").formatted(Formatting.DARK_GRAY),
-            980950599946362900L),
-    MONEY(
-            "money",
-            "Money Events",
-            prize -> Text.literal("New Money Event! ").formatted(Formatting.GREEN).append("($" + prize + ")").formatted(Formatting.GRAY),
-            970434305203511359L),
-    FUN(
-            "fun",
-            "Fun Events",
-            Text.literal("New Fun Event!").formatted(Formatting.RED),
-            970434303391576164L),
-    HOUSING(
-            "housing",
-            "Housing Events",
-            Text.literal("New Housing Event!").formatted(Formatting.GOLD),
-            970434294893928498L),
-    CIVILIZATION(
-            "civilization",
-            "Civilization Events",
-            Text.literal("New Civilization Event!").formatted(Formatting.BLUE),
-            1134932175821734119L);
+    FAMOUS("Famous Events", Text.literal("New Famous Event!").formatted(Formatting.AQUA)),
+    POTENTIAL_FAMOUS("Potential Famous Events", Text.literal("New Potential Famous Event!").formatted(Formatting.DARK_AQUA)),
+    PARTNER("Partner Events", Text.literal("New Partner Event!").formatted(Formatting.LIGHT_PURPLE)),
+    COMMUNITY("Community Events", Text.literal("New Community Event!").formatted(Formatting.DARK_GRAY)),
+    MONEY("Money Events", prize -> Text.literal("New Money Event! ").formatted(Formatting.GREEN).append("($" + prize + ")").formatted(Formatting.GRAY)),
+    FUN("Fun Events", Text.literal("New Fun Event!").formatted(Formatting.RED)),
+    HOUSING("Housing Events", Text.literal("New Housing Event!").formatted(Formatting.GOLD)),
+    CIVILIZATION("Civilization Events", Text.literal("New Civilization Event!").formatted(Formatting.BLUE));
 
     @NotNull private static final Map<Long, EventType> FROM_ROLE_ID = Map.of(
             970434201990070424L, PARTNER,
@@ -76,20 +44,16 @@ public enum EventType {
             970434294893928498L, HOUSING,
             1134932175821734119L, CIVILIZATION);
 
-    @NotNull public final String configName;
     @NotNull public final String displayName;
     @NotNull public final Function<Integer, MutableText> toast;
-    @Nullable public final Long pingRoleId;
 
-    EventType(@NotNull String configName, @NotNull String displayName, @NotNull Function<Integer, MutableText> toast, @Nullable Long pingRoleId) {
-        this.configName = configName;
+    EventType(@NotNull String displayName, @NotNull Function<Integer, MutableText> toast) {
         this.displayName = displayName;
         this.toast = toast;
-        this.pingRoleId = pingRoleId;
     }
 
-    EventType(@NotNull String configName, @NotNull String displayName, @NotNull MutableText toast, @Nullable Long pingRoleId) {
-        this(configName, displayName, prize -> toast, pingRoleId);
+    EventType(@NotNull String displayName, @NotNull MutableText toast) {
+        this(displayName, prize -> toast);
     }
 
     @NotNull

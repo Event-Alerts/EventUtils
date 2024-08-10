@@ -1,17 +1,18 @@
 {
-  "discord-rpc": true,
-  "auto-tp": false,
-  "simple-queue-msg": false,
-  "update-checker": true,
-  "confirm-window-close": true,
-  "confirm-disconnect": true,
-  "default-famous-ip": "play.invadedlands.net",
-  "hidden-entity-types": [
+  "config_version": "${mod_version}",
+  "discord_rpc": true,
+  "auto_tp": false,
+  "simple_queue_msg": false,
+  "update_checker": true,
+  "confirm_window_close": true,
+  "confirm_disconnect": true,
+  "default_famous_ip": "play.invadedlands.net",
+  "hidden_entity_types": [
     "minecraft:glow_item_frame"
   ],
-  "whitelisted-players": [
-    "Skeppy",
-    "BadBoyHalo"
+  "whitelisted_players": [
+    "skeppy",
+    "badboyhalo"
   ],
   "notifications": [
     "FAMOUS",
