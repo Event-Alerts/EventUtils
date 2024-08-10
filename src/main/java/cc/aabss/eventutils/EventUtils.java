@@ -120,7 +120,7 @@ public class EventUtils implements ClientModInitializer {
         // Simple queue message
         ClientReceiveMessageEvents.ALLOW_GAME.register(((text, overlay) -> true));
         ClientReceiveMessageEvents.MODIFY_GAME.register(((text, overlay) -> {
-            if (!config.simpleQueueMsg) return text;
+            if (!config.simpleQueueMessage) return text;
             final String original = text.getString();
             if (!original.contains(QUEUE_TEXT)) return text;
             final MutableText resultText = Text.literal("");

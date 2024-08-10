@@ -5,7 +5,7 @@ import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.Versions;
 
 import com.google.common.reflect.TypeToken;
-import com.google.gson.*;
+import com.google.gson.JsonObject;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.SemanticVersion;
@@ -15,28 +15,18 @@ import net.fabricmc.loader.impl.util.version.SemanticVersionImpl;
 import net.minecraft.entity.EntityType;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.File;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 
-public class EventConfig {
-    @NotNull private static final Gson GSON = new GsonBuilder()
-            .setPrettyPrinting()
-            .registerTypeAdapter(EntityType.class, new EntityTypeAdapter())
-            .registerTypeAdapter(new TypeToken<List<EntityType<?>>>(){}.getType(), new EntityTypeListAdapter())
-            .registerTypeAdapter(new TypeToken<List<EventType>>(){}.getType(), new EventTypeListAdapter()).create();
-
-    @NotNull private final File file;
-    @NotNull private JsonObject json = new JsonObject();
-
+public class EventConfig extends FileLoader {
     public boolean discordRpc;
     public boolean autoTp;
-    public boolean simpleQueueMsg;
+    public boolean simpleQueueMessage;
     public boolean updateChecker;
     public boolean confirmWindowClose;
     public boolean confirmDisconnect;
@@ -46,99 +36,32 @@ public class EventConfig {
     @NotNull public final Set<EventType> eventTypes;
 
     public EventConfig() {
-        file = new File(FabricLoader.getInstance().getConfigDir().toString(), "eventutils.json");
+        super(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
 
+        // Create empty file if it doesn't exist
+        boolean created = false;
         if (!file.exists()) {
-            // Create default file if it doesn't exist
-            createDefault();
-        } else try (final FileReader fileReader = new FileReader(file)) {
-            // Load existing file
-            json = JsonParser.parseReader(fileReader).getAsJsonObject();
-        } catch (final IOException | JsonParseException e) {
-            save(); // Save empty config if loading fails
+            json = new JsonObject();
+            created = true;
+        } else {
+            load();
+            update();
         }
-
-        // Check for updates
-        update();
 
         // Get values
-        discordRpc = get("discord_rpc", true);
-        autoTp = get("auto_tp", false);
-        simpleQueueMsg = get("simple_queue_message", false);
-        updateChecker = get("update_checker", true);
-        confirmWindowClose = get("confirm_window_close", true);
-        confirmDisconnect = get("confirm_disconnect", true);
-        defaultFamousIp = get("default_famous_ip", "play.invadedlands.net");
-        hiddenEntityTypes = get("hidden_entity_types", List.of(EntityType.GLOW_ITEM_FRAME), new TypeToken<List<EntityType<?>>>(){}.getType());
-        whitelistedPlayers = get("whitelisted_players", List.of("skeppy", "badboyhalo"), new TypeToken<List<String>>(){}.getType());
-        eventTypes = get("notifications", Set.of(EventType.values()), new TypeToken<Set<EventType>>(){}.getType());
-    }
+        discordRpc = get("discord_rpc", Defaults.DISCORD_RPC);
+        autoTp = get("auto_tp", Defaults.AUTO_TP);
+        simpleQueueMessage = get("simple_queue_message", Defaults.SIMPLE_QUEUE_MESSAGE);
+        updateChecker = get("update_checker", Defaults.UPDATE_CHECKER);
+        confirmWindowClose = get("confirm_window_close", Defaults.CONFIRM_WINDOW_CLOSE);
+        confirmDisconnect = get("confirm_disconnect", Defaults.CONFIRM_DISCONNECT);
+        defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
+        hiddenEntityTypes = get("hidden_entity_types", Defaults.HIDDEN_ENTITY_TYPES, new TypeToken<List<EntityType<?>>>(){}.getType());
+        whitelistedPlayers = get("whitelisted_players", Defaults.WHITELISTED_PLAYERS, new TypeToken<List<String>>(){}.getType());
+        eventTypes = get("notifications", Defaults.EVENT_TYPES, new TypeToken<Set<EventType>>(){}.getType());
 
-    private void createDefault() {
-        // Get default file
-        final InputStream resource = getClass().getResourceAsStream("/config.json");
-        if (resource == null) throw new RuntimeException("Failed to get resource file");
-
-        // Load default file
-        try (final InputStreamReader fileReader = new InputStreamReader(resource)) {
-            json = JsonParser.parseReader(fileReader).getAsJsonObject();
-        } catch (final IOException | JsonParseException e) {
-            throw new RuntimeException("Failed to load resource file", e);
-        }
-
-        // Save default file to config file
-        save();
-    }
-
-    @Nullable
-    public JsonElement get(@NotNull String key) {
-        return json.get(key);
-    }
-
-    @NotNull
-    public <T> T get(@NotNull String key, @NotNull T defaultValue) {
-        return get(key, defaultValue, TypeToken.of(defaultValue.getClass()).getType());
-    }
-
-    @NotNull
-    public <T> T get(@NotNull String key, @NotNull T defaultValue, @NotNull Type typeOfT) {
-        final JsonElement element = json.get(key);
-        if (element == null || element.isJsonNull()) {
-            setSave(key, defaultValue);
-            return defaultValue;
-        }
-        try {
-            return GSON.fromJson(element, typeOfT);
-        } catch (final JsonSyntaxException | IllegalStateException e) {
-            setSave(key, defaultValue);
-            e.printStackTrace();
-            return defaultValue;
-        }
-    }
-
-    public <T> void set(@NotNull String key, @Nullable T value) {
-        if (value == null) {
-            json.remove(key);
-            return;
-        }
-        json.add(key, GSON.toJsonTree(value));
-    }
-
-    public <T> void setSave(@NotNull String key, @Nullable T value) {
-        set(key, value);
-        save();
-    }
-
-    public void remove(@NotNull String key) {
-        json.remove(key);
-    }
-
-    public void save() {
-        try (final FileWriter fileWriter = new FileWriter(file)) {
-            fileWriter.write(GSON.toJson(json));
-        } catch (final IOException e) {
-            throw new RuntimeException("Failed to save config", e);
-        }
+        // Save if created (default values)
+        if (created) save();
     }
 
     private void update() {
@@ -152,16 +75,16 @@ public class EventConfig {
 
         // Older than 2.0.0
         if (oldVersion.compareTo((Version) new SemanticVersionImpl(new int[]{2, 0, 0}, null, null)) < 0) {
-            update("discord-rpc", "discord_rpc", true);
-            update("auto-tp", "auto_tp", false);
-            update("simple-queue-msg", "simple_queue_message", false);
-            update("update-checker", "update_checker", true);
-            update("confirm-window-close", "confirm_window_close", true);
-            update("confirm-disconnect", "confirm_disconnect", true);
-            update("default-famous-ip", "default_famous_ip", "play.invadedlands.net");
+            update("discord-rpc", "discord_rpc", Boolean.class);
+            update("auto-tp", "auto_tp", Boolean.class);
+            update("simple-queue-msg", "simple_queue_message", Boolean.class);
+            update("update-checker", "update_checker", Boolean.class);
+            update("confirm-window-close", "confirm_window_close", Boolean.class);
+            update("confirm-disconnect", "confirm_disconnect", Boolean.class);
+            update("default-famous-ip", "default_famous_ip", String.class);
 
             // whitelisted_players
-            set("whitelisted_players", get("whitelisted-players", List.of("skeppy", "badboyhalo"), new TypeToken<List<String>>(){}.getType()).stream()
+            set("whitelisted_players", get("whitelisted-players", Defaults.WHITELISTED_PLAYERS, new TypeToken<List<String>>(){}.getType()).stream()
                     .map(String::toLowerCase)
                     .toList());
             remove("whitelisted-players");
@@ -181,8 +104,22 @@ public class EventConfig {
         save();
     }
 
-    private <T> void update(@NotNull String oldKey, @NotNull String newKey, @NotNull T def) {
-        set(newKey, get(oldKey, def));
+    private void update(@NotNull String oldKey, @NotNull String newKey, @NotNull Type type) {
+        set(newKey, get(oldKey, type));
         remove(oldKey);
+    }
+
+    public static class Defaults {
+        public static final boolean DISCORD_RPC = true;
+        public static final boolean AUTO_TP = false;
+        public static final boolean SIMPLE_QUEUE_MESSAGE = false;
+        public static final boolean UPDATE_CHECKER = true;
+        public static final boolean CONFIRM_WINDOW_CLOSE = true;
+        public static final boolean CONFIRM_DISCONNECT = true;
+        @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
+        @NotNull public static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = List.of(EntityType.GLOW_ITEM_FRAME);
+        @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = List.of("minecraft:glow_item_frame");
+        @NotNull public static final List<String> WHITELISTED_PLAYERS = List.of("skeppy", "badboyhalo");
+        @NotNull public static final Set<EventType> EVENT_TYPES = Set.of(EventType.values());
     }
 }
