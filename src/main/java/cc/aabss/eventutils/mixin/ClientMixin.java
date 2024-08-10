@@ -4,7 +4,12 @@ import cc.aabss.eventutils.EventUtils;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmScreen;
+import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.text.Text;
 
 import org.lwjgl.glfw.GLFW;
@@ -14,6 +19,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static net.minecraft.text.Text.translatable;
 
 
 @Mixin(MinecraftClient.class)
@@ -35,8 +42,8 @@ public class ClientMixin {
                         GLFW.glfwSetWindowShouldClose(handle, false);
                         client.setScreen(current);
                     },
-                    Text.of("Confirm Exit"),
-                    Text.of("Are you sure you want to exit the game?")));
+                    translatable("eventutils.confirmexit.title"),
+                    translatable("eventutils.confirmexit.message")));
         }));
         if (callback != null) callback.free();
     }

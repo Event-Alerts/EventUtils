@@ -1,5 +1,66 @@
 {
   "key.category.eventutils": "EventUtils",
   "key.eventutils.hideplayers": "Hide Players",
-  "subtitles.eventutils.alert": "Event alert"
+  "subtitles.eventutils.alert": "Event alert",
+
+  "eventutils.famous.display": "Famous Events",
+  "eventutils.potential_famous.display": "Potential Famous Events",
+  "eventutils.partner.display": "Partner Events",
+  "eventutils.community.display": "Community Events",
+  "eventutils.money.display": "Money Events",
+  "eventutils.fun.display": "Fun Events",
+  "eventutils.housing.display": "Housing Events",
+  "eventutils.civilization.display": "Civilization Events",
+
+  "eventutils.famous.new": "New Famous Event!",
+  "eventutils.potential_famous.new": "New Potentially Famous Event!",
+  "eventutils.partner.new": "New Famous Event!",
+  "eventutils.community.new": "New Community Event!",
+  "eventutils.money.new": "New Money Event!",
+  "eventutils.fun.new": "New Fun Event!",
+  "eventutils.housing.new": "New Housing Event!",
+  "eventutils.civilization.new": "New Civilization Event!",
+
+  "eventutils.event.teleport": "Type {command} to teleport!",
+
+  "eventutils.hideplayers.enabled": "Enabled hide players!",
+  "eventutils.hideplayers.disabled": "Disabled hide players!",
+
+  "eventutils.updatechecker.new": "There is a new update available!",
+  "eventutils.updatechecker.hover": "Click to open download.",
+  "eventutils.updatechecker.config": "You can disable this message in the config",
+
+  "eventutils.command.noeventspecified": "No event type specified!",
+  "eventutils.command.noeventfound": "No event found for ",
+  "eventutils.command.config": "Opens EventUtils' config screen",
+  "eventutils.command.teleport": "Teleports to the last posted event of that type",
+
+  "eventutils.confirmexit.title": "Confirm Exit",
+  "eventutils.confirmexit.message": "Are you sure you want to exit the game?",
+
+  "eventutils.confirmdisconnect.title": "Confirm Disconnect",
+  "eventutils.confirmdisconnect.message": "Are you sure you want to disconnect?",
+
+  "eventutils.config.title": "EventUtils Mod Config",
+  "eventutils.config.alerts": "Alerts",
+  "eventutils.config.general": "General",
+  "eventutils.config.eventdescription": "Whether you should be pinged for {event}.",
+  "eventutils.config.teleport.title": "Auto Teleport",
+  "eventutils.config.teleport.description": "Automatically teleports you to the server when an event starts",
+  "eventutils.config.queue.title": "Simplify Queue Message",
+  "eventutils.config.queue.description": "Simplifies the queue message for InvadedLands",
+  "eventutils.config.discord.title": "Discord RPC",
+  "eventutils.config.discord.description": "Whether the Discord rich presence should be shown",
+  "eventutils.config.update.title": "Mod Update Checker",
+  "eventutils.config.update.description": "Whether the mod should check and notify for updates",
+  "eventutils.config.window.title": "Confirm Window Close",
+  "eventutils.config.window.description": "Whether a confirmation should pop up confirming you want to close your game window",
+  "eventutils.config.disconnect.title": "Confirm Disconnect",
+  "eventutils.config.disconnect.description": "Whether a confirmation should pop up confirming you want to leave your server",
+  "eventutils.config.famous.title": "Default Famous IP",
+  "eventutils.config.famous.description": "The default ip for if a [potential] famous event is pinged with no ip inputted",
+  "eventutils.config.entity.title": "Hidden Entity Types",
+  "eventutils.config.entity.description": "The types of entities that will be hidden",
+  "eventutils.config.players.title": "Whitelisted Players",
+  "eventutils.config.players.description": "The names of the players you can see when players are hidden"
 }

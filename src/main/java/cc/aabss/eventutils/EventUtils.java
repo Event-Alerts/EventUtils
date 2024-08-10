@@ -18,11 +18,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.Version;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
+import net.minecraft.util.Language;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,6 +45,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import static net.minecraft.text.Text.translatable;
 
 
 public class EventUtils implements ClientModInitializer {
@@ -90,11 +94,11 @@ public class EventUtils implements ClientModInitializer {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             if (config.updateChecker && Boolean.TRUE.equals(isOutdated) && latestVersion != null) client.execute(() -> {
                 if (client.player != null)
-                    client.player.sendMessage(Text.literal("§6[EVENTUTILS]§r §eThere is a new update available!§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
+                    client.player.sendMessage(Text.literal("§6[EVENTUTILS]§r §e"+translate("eventutils.updatechecker.new")+"§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
                             .setStyle(Style.EMPTY
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("§eClick to open download.")))
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, translatable("eventutils.updatechecker.hover")))
                                     .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/alerts/version/" + latestVersion)))
-                            .append(Text.literal("§7§oYou can disable this message in the config")), false);
+                            .append(Text.literal("§7§o"+translate("eventutils.updatechecker.config"))), false);
             });
         });
 
@@ -107,7 +111,9 @@ public class EventUtils implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (hidePlayersKey.wasPressed()) {
                 hidePlayers = !hidePlayers;
-                if (client.player != null) client.player.sendMessage(Text.literal((hidePlayers ? "§aEnabled" : "§cDisabled") + " hide players"), true);
+                if (client.player != null) client.player.sendMessage(
+                        translatable(hidePlayers ? "eventutils.hideplayers.enabled" : "eventutils.hideplayers.disabled")
+                                .formatted(hidePlayers ? Formatting.GREEN : Formatting.RED), true);
             }
         });
 
@@ -186,5 +192,9 @@ public class EventUtils implements ClientModInitializer {
         // Auto TP if enabled
         if (config.autoTp && ip != null) ConnectUtility.connect(ip);
         return ip;
+    }
+
+    public static String translate(String key) {
+        return Language.getInstance().get(key);
     }
 }

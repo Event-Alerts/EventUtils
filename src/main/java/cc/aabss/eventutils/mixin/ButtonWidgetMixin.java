@@ -17,6 +17,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static net.minecraft.text.Text.translatable;
+
 
 @Mixin(ButtonWidget.class)
 public abstract class ButtonWidgetMixin extends PressableWidget {
@@ -26,7 +28,7 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
 
     @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
     private void onPress(CallbackInfo ci){
-        if (!EventUtils.MOD.config.confirmDisconnect || !Text.translatable("menu.disconnect").equals(getMessage())) return;
+        if (!EventUtils.MOD.config.confirmDisconnect || !translatable("menu.disconnect").equals(getMessage())) return;
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null || !(client.currentScreen instanceof GameMenuScreen)) return;
 
@@ -38,7 +40,7 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
                 return;
             }
             client.setScreen(current);
-        }, Text.literal("Confirm Disconnect"), Text.literal("Are you sure you want to disconnect?")));
+        }, translatable("eventutils.confirmdisconnect.title"), Text.literal("eventutils.confirmdisconnect.message")));
     }
 
     @Unique
@@ -51,7 +53,7 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
         ServerInfo serverInfo = MinecraftClient.getInstance().getCurrentServerEntry();
         client.world.disconnect();
         if (bl) {
-            client.disconnect(new MessageScreen(Text.translatable("menu.savingLevel")));
+            client.disconnect(new MessageScreen(translatable("menu.savingLevel")));
         } else {
             client.disconnect();
         }
