@@ -17,26 +17,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ButtonWidget.class)
 public abstract class ButtonWidgetMixin extends PressableWidget {
-
     public ButtonWidgetMixin(int i, int j, int k, int l, Text text) {
         super(i, j, k, l, text);
     }
 
     @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
     private void onPress(CallbackInfo ci){
-        if (!EventUtils.MOD.config.confirmDisconnect) return;
-
+        if (!EventUtils.MOD.config.confirmDisconnect || !Text.translatable("menu.disconnect").equals(getMessage())) return;
         final MinecraftClient client = MinecraftClient.getInstance();
-        if (!(client.currentScreen instanceof GameMenuScreen)) return;
-
-        final Text text = this.getMessage();
-        if (!Text.translatable("menu.disconnect").equals(text)) return;
-        if (client.world == null) return;
+        if (client.world == null || !(client.currentScreen instanceof GameMenuScreen)) return;
 
         ci.cancel();
-        Screen current = client.currentScreen;
-        client.setScreen(new ConfirmScreen(t -> {
-            if (t) {
+        final Screen current = client.currentScreen;
+        client.setScreen(new ConfirmScreen(yes -> {
+            if (yes) {
                 client.disconnect(new MultiplayerScreen(new TitleScreen()));
                 return;
             }
