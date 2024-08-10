@@ -95,7 +95,7 @@ public class ConfigScreen {
                                 config.setSave("default_famous_ip", config.defaultFamousIp);
                             })
                             .controller(StringControllerBuilder::create).build())
-                    .option(ListOption.<String>createBuilder()
+                    .group(ListOption.<String>createBuilder()
                             .name(Text.literal("Hidden Entity Types"))
                             .description(OptionDescription.of(Text.literal("The types of entities that will be hidden")))
                             .binding(EventConfig.Defaults.HIDDEN_ENTITY_TYPES_STRING, () -> config.hiddenEntityTypes.stream()
@@ -109,7 +109,7 @@ public class ConfigScreen {
                                     })
                             .controller(option -> DropdownStringControllerBuilder.create(option).values(ENTITY_TYPES))
                             .initial(EntityType.getId(EntityType.ALLAY).toString()).build())
-                    .option(ListOption.<String>createBuilder()
+                    .group(ListOption.<String>createBuilder()
                             .name(Text.literal("Whitelisted Players"))
                             .description(OptionDescription.of(Text.literal("The names of the players you can see when players are hidden")))
                             .binding(EventConfig.Defaults.WHITELISTED_PLAYERS, () -> new ArrayList<>(config.whitelistedPlayers), newValue -> {
