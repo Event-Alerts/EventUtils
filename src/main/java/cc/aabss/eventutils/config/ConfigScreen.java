@@ -109,14 +109,14 @@ public class ConfigScreen {
                     .option(ListOption.<String>createBuilder()
                             .name(Text.literal("Whitelisted Players"))
                             .description(OptionDescription.of(Text.literal("The names of the players you can see when players are hidden")))
-                            .binding(List.of("skeppy", "badboyhalo"), () -> new ArrayList<>(config.whitelistedPlayers), newValue -> {
+                            .binding(List.of("Skeppy", "BadBoyHalo"), () -> new ArrayList<>(config.whitelistedPlayers), newValue -> {
                                 config.whitelistedPlayers = newValue.stream()
                                         .map(String::toLowerCase)
                                         .toList();
                                 config.setSave("whitelisted-players", config.whitelistedPlayers);
                             })
                             .controller(StringControllerBuilder::create)
-                            .initial("skeppy").build()).build())
+                            .initial("Skeppy").build()).build())
             .category(ConfigCategory.createBuilder().name(Text.literal("Alerts"))
                     .option(EventType.FAMOUS.getOption(config))
                     .option(EventType.POTENTIAL_FAMOUS.getOption(config))
