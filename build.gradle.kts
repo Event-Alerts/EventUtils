@@ -29,13 +29,10 @@ dependencies {
 }
 
 // Replacements for fabric.mod.json and config.json
-addReplacementsTask(setOf("fabric.mod.json", "config.json"), getDefaultReplacements() + mapOf(
+addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "mod_name" to property("mod.name").toString(),
     "mod_version" to property("mod.version").toString(),
-    "deps_minecraft" to property("deps.minecraft").toString(),
-    "deps_fabric_loader" to property("deps.fabric_loader").toString(),
-    "deps_fabric_api" to property("deps.fabric_api").toString(),
-    "deps_yacl" to property("deps.yacl").toString()))
+    "deps_minecraft" to property("deps.minecraft").toString()))
 
 base {
     archivesName = rootProject.name

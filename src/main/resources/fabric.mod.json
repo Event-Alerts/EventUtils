@@ -23,7 +23,7 @@
     ]
   },
   "depends": {
-    "minecraft": "${deps_minecraft}",
+    "minecraft": ">=${deps_minecraft}",
     "fabricloader": "*",
     "fabric": "*",
     "yet_another_config_lib_v3": "*"
