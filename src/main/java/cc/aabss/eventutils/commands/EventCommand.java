@@ -63,26 +63,17 @@ public abstract class EventCommand {
      *
      * @param   context the {@link CommandContext} of the command
      */
-    protected abstract void run(@NotNull CommandContext<FabricClientCommandSource> context);
+    protected abstract int run(@NotNull CommandContext<FabricClientCommandSource> context);
 
     public void register(@NotNull CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        final LiteralArgumentBuilder<FabricClientCommandSource> command = ClientCommandManager.literal(getName());
-
-        // Add arguments
-        final Collection<ArgumentBuilder<FabricClientCommandSource, ? extends ArgumentBuilder<FabricClientCommandSource, ?>>> arguments = getArguments();
-        if (arguments != null) for (final ArgumentBuilder<FabricClientCommandSource, ? extends ArgumentBuilder<FabricClientCommandSource, ?>> argument : arguments) command.then(argument);
-
-        // Add executor
-        command.executes(context -> {
-            run(context);
-            return 0;
-        });
-
-        // Register command
-        final LiteralCommandNode<FabricClientCommandSource> node = dispatcher.register(command);
-
-        // Add aliases
-        final Collection<String> aliases = getAliases();
-        if (aliases != null) for (final String alias : aliases) dispatcher.register(ClientCommandManager.literal(alias).redirect(node));
+        final LiteralArgumentBuilder<FabricClientCommandSource> builder = ClientCommandManager.literal(getName())
+                .executes(this::run);
+        if (getArguments() != null) for (final ArgumentBuilder<FabricClientCommandSource, ?> argumentBuilder : getArguments()){
+            builder.then(argumentBuilder).executes(this::run);
+        }
+        LiteralCommandNode<FabricClientCommandSource> command = dispatcher.register(builder);
+        if (getAliases() != null) for (final String name : getAliases()) {
+            dispatcher.register(ClientCommandManager.literal(name).redirect(command));
+        }
     }
 }
