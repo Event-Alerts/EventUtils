@@ -70,7 +70,7 @@ public class EventConfig extends FileLoader {
         final String oldVersionString = get("version", "1.4.0");
         final SemanticVersion oldVersion = Versions.getSemantic(oldVersionString);
         if (oldVersion == null) {
-            EventUtils.LOGGER.error("Failed to parse config version: " + oldVersionString);
+            EventUtils.LOGGER.error("Failed to parse config version: {}", oldVersionString);
             return;
         }
 

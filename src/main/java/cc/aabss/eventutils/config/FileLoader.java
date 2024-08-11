@@ -76,8 +76,7 @@ public abstract class FileLoader {
             return GSON.fromJson(element, type);
         } catch (final JsonSyntaxException | IllegalStateException e) {
             setSave(key, null);
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 

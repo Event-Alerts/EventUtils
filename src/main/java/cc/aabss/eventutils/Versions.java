@@ -25,7 +25,7 @@ public class Versions {
         try {
             return SemanticVersion.parse(string);
         } catch (final VersionParsingException e) {
-            EventUtils.LOGGER.error("Failed to parse version: " + string, e);
+            EventUtils.LOGGER.error("Failed to parse version: {}", string, e);
             return null;
         }
     }

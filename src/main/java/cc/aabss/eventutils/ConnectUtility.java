@@ -60,7 +60,11 @@ public class ConnectUtility {
 
         // Get IP
         final int size = strings.size();
-        if (size == 1) return strings.get(0);
+        //?if >1.20.4 {
+        if (size == 1) return strings.getFirst();
+        //?} else {
+        // if (size == 1) return strings.get(0);
+        //?}
         if (size > 1) for (final String string : strings) if (isValidIp(string)) return string;
 
         // No IP found
