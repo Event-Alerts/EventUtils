@@ -19,11 +19,6 @@ public class PrefixMessageFactory extends AbstractMessageFactory {
     }
 
     @Override
-    public Message newMessage(final String message) {
-        return new SimpleMessage(PREFIX + message);
-    }
-
-    @Override
     public Message newMessage(final String message, final Object... params) {
         return new ParameterizedMessage(PREFIX + message, params);
     }
