@@ -31,27 +31,28 @@ public class WebSocketClient implements WebSocket.Listener {
 
     private void connect() {
         final String name = endpoint.name().toLowerCase();
-        try (final HttpClient client = HttpClient.newHttpClient()) {
-            client.newWebSocketBuilder()
-                    .buildAsync(URI.create("wss://eventalerts.venox.network/api/v1/socket/" + name), this)
-                    .whenComplete((newSocket, throwable) -> {
-                        if (throwable != null) {
-                            EventUtils.LOGGER.error("Failed to establish WebSocket connection: {}", throwable.getMessage());
-                            retryConnection("Error thrown when establishing connection");
+        final HttpClient client = HttpClient.newHttpClient();
+        client.newWebSocketBuilder()
+                .buildAsync(URI.create("wss://eventalerts.venox.network/api/v1/socket/" + name), this)
+                .whenComplete((newSocket, throwable) -> {
+                    if (throwable != null) {
+                        EventUtils.LOGGER.error("Failed to establish WebSocket connection: {}", throwable.getMessage());
+                        retryConnection("Error thrown when establishing connection");
+                        return;
+                    }
+                    webSocket = newSocket;
+                    webSocket.request(1);
+                    EventUtils.LOGGER.info("{} socket connection established", name);
+                    keepAlive = EventUtils.SCHEDULER.scheduleAtFixedRate(() -> {
+                        if (newSocket.isInputClosed()) {
+                            retryConnection("Keep-alive detected closed input");
                             return;
                         }
-                        webSocket = newSocket;
-                        webSocket.request(1);
-                        EventUtils.LOGGER.info("{} socket connection established", name);
-                        keepAlive = EventUtils.SCHEDULER.scheduleAtFixedRate(() -> {
-                            if (newSocket.isInputClosed()) {
-                                retryConnection("Keep-alive detected closed input");
-                                return;
-                            }
-                            newSocket.sendPing(PING);
-                        }, 0, 30, TimeUnit.SECONDS);
-                    });
-        }
+                        newSocket.sendPing(PING);
+                    }, 0, 30, TimeUnit.SECONDS);
+                });
+        //? if >=1.20.6
+        //client.close();
     }
 
     public void retryConnection(@NotNull String reason) {

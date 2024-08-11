@@ -45,25 +45,31 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
 
     @Unique
     private void disconnect() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null) {
+        final MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.world == null) return;
+        final TitleScreen titleScreen = new TitleScreen();
+        client.world.disconnect();
+
+        // Singleplayer
+        if (client.isInSingleplayer()) {
+            client.disconnect(new MessageScreen(translatable("menu.savingLevel")));
+            client.setScreen(titleScreen);
             return;
         }
-        boolean bl = client.isInSingleplayer();
-        ServerInfo serverInfo = MinecraftClient.getInstance().getCurrentServerEntry();
-        client.world.disconnect();
-        if (bl) {
-            client.disconnect(new MessageScreen(translatable("menu.savingLevel")));
-        } else {
-            client.disconnect();
-        }
-        TitleScreen titleScreen = new TitleScreen();
-        if (bl) {
-            client.setScreen(titleScreen);
-        } else if (serverInfo != null && serverInfo.isRealm()) {
+        client.disconnect();
+
+        // Realms
+        final ServerInfo serverInfo = MinecraftClient.getInstance().getCurrentServerEntry();
+        //?if <=1.20.1 {
+        //if (serverInfo != null && client.isConnectedToRealms()) {
+        //?} else {
+        if (serverInfo != null && serverInfo.isRealm()) {
+        //?}
             client.setScreen(new RealmsMainScreen(titleScreen));
-        } else {
-            client.setScreen(new MultiplayerScreen(titleScreen));
+            return;
         }
+
+        // Multiplayer
+        client.setScreen(new MultiplayerScreen(titleScreen));
     }
 }

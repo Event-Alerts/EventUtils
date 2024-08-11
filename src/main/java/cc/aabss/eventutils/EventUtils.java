@@ -18,13 +18,12 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.Version;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
-
 import net.minecraft.util.Language;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -56,7 +55,7 @@ public class EventUtils implements ClientModInitializer {
      */
     public static EventUtils MOD;
     @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
-    @NotNull public static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(2);
+    @NotNull public static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(3);
     @NotNull public static String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
 
     @NotNull public final EventConfig config = new EventConfig();
@@ -147,7 +146,9 @@ public class EventUtils implements ClientModInitializer {
             return;
         }
         final MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player != null) try (final HttpClient httpClient = HttpClient.newHttpClient()) {
+        if (client.player == null) return;
+        final HttpClient httpClient = HttpClient.newHttpClient();
+        try {
             // latestVersion (Modrinth)
             latestVersion = JsonParser.parseString(httpClient.sendAsync(HttpRequest.newBuilder()
                                     .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
@@ -155,7 +156,8 @@ public class EventUtils implements ClientModInitializer {
                             .get().body()).getAsJsonArray()
                     .get(0).getAsJsonObject()
                     .get("version_number").getAsString();
-
+            //? if >=1.20.6
+            //httpClient.close();
             // isOutdated
             final Version latestVersionSemantic = Versions.getSemantic(latestVersion.replaceAll(Versions.MC_VERSION + "-", ""));
             isOutdated = latestVersionSemantic != null && Versions.EU_VERSION_SEMANTIC.compareTo(latestVersionSemantic) < 0;

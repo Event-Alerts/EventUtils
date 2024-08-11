@@ -77,15 +77,16 @@ public class ConnectUtility {
         }
 
         // Check if valid
-        try (final HttpClient client = HttpClient.newHttpClient()) {
+        final HttpClient client = HttpClient.newHttpClient();
+        try {
             final String body = client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).get().body();
+            //? if >=1.20.6
+            //client.close();
             return !body.endsWith(":null}") && !body.endsWith("Not Found") && !body.endsWith("Invalid address value");
-        } catch (final ExecutionException e) {
-            return false;
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
-            return false;
-        }
+        } catch (final ExecutionException ignored) {}
+        return false;
     }
 
     @NotNull
