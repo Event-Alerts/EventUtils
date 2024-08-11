@@ -38,7 +38,7 @@ base {
     archivesName = rootProject.name
 }
 
-val java = if (stonecutter.eval(stonecutter.current.version, ">1.20.4")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
+val java = if (stonecutter.eval(stonecutter.current.version, ">=1.20.5")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
 stonecutter.dependency("java", java.majorVersion)
 
 java {
