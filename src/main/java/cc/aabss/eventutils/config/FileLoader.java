@@ -69,20 +69,20 @@ public abstract class FileLoader {
     public <T> T get(@NotNull String key, @NotNull Type type) {
         final JsonElement element = json.get(key);
         if (element == null) {
-            setSave(key, null);
+            remove(key);
             return null;
         }
         try {
             return GSON.fromJson(element, type);
         } catch (final JsonSyntaxException | IllegalStateException e) {
-            setSave(key, null);
+            remove(key);
             throw new RuntimeException(e);
         }
     }
 
     public <T> void set(@NotNull String key, @Nullable T value) {
         if (value == null) {
-            json.remove(key);
+            remove(key);
             return;
         }
         json.add(key, GSON.toJsonTree(value));
