@@ -60,9 +60,9 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
 
         // Realms
         final ServerInfo serverInfo = MinecraftClient.getInstance().getCurrentServerEntry();
-        //?if <=1.20.1 {
-        //if (serverInfo != null && client.isConnectedToRealms()) {
-        //?} else {
+        //? if <=1.20.1 {
+        /*if (serverInfo != null && client.isConnectedToRealms()) {
+        *///?} else {
         if (serverInfo != null && serverInfo.isRealm()) {
         //?}
             client.setScreen(new RealmsMainScreen(titleScreen));

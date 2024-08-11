@@ -2,9 +2,9 @@ package cc.aabss.eventutils;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
-//?if <=1.20.2 {
-//import net.minecraft.client.gui.screen.ConnectScreen;
-//?} else {
+//? if <=1.20.2 {
+/*import net.minecraft.client.gui.screen.ConnectScreen;
+*///?} else {
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 //?}
 import net.minecraft.client.network.ServerAddress;
@@ -36,11 +36,11 @@ public class ConnectUtility {
             try {
                 client.disconnect();
 
-                //?if <=1.20.1 {
-                //ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, true), true);
-                //?} else if <=1.20.4 {
-                //ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true);
-                //?} else {
+                //? if <=1.20.1 {
+                /*ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, true), true);
+                *///?} else if <=1.20.4 {
+                /*ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true);
+                *///?} else {
                 ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true, null);
                 //?}
             } catch (final Exception e) {
@@ -60,10 +60,10 @@ public class ConnectUtility {
 
         // Get IP
         final int size = strings.size();
-        //?if >1.20.4 {
+        //? if java: <21 {
+        /*if (size == 1) return strings.get(0);
+        *///?} else {
         if (size == 1) return strings.getFirst();
-        //?} else {
-        // if (size == 1) return strings.get(0);
         //?}
         if (size > 1) for (final String string : strings) if (isValidIp(string)) return string;
 
@@ -84,8 +84,8 @@ public class ConnectUtility {
         final HttpClient client = HttpClient.newHttpClient();
         try {
             final String body = client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).get().body();
-            //? if >=1.20.6
-            //client.close();
+            //? if java: >=21
+            client.close();
             return !body.endsWith(":null}") && !body.endsWith("Not Found") && !body.endsWith("Invalid address value");
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();

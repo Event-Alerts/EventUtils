@@ -156,8 +156,9 @@ public class EventUtils implements ClientModInitializer {
                             .get().body()).getAsJsonArray()
                     .get(0).getAsJsonObject()
                     .get("version_number").getAsString();
-            //? if >=1.20.6
-            //httpClient.close();
+            //? if java: >=21
+            httpClient.close();
+
             // isOutdated
             final Version latestVersionSemantic = Versions.getSemantic(latestVersion.replaceAll(Versions.MC_VERSION + "-", ""));
             isOutdated = latestVersionSemantic != null && Versions.EU_VERSION_SEMANTIC.compareTo(latestVersionSemantic) < 0;

@@ -51,8 +51,8 @@ public class WebSocketClient implements WebSocket.Listener {
                         newSocket.sendPing(PING);
                     }, 0, 30, TimeUnit.SECONDS);
                 });
-        //? if >=1.20.6
-        //client.close();
+        //? if java: >=21
+        client.close();
     }
 
     public void retryConnection(@NotNull String reason) {

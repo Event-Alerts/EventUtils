@@ -38,10 +38,12 @@ base {
     archivesName = rootProject.name
 }
 
+val java = if (stonecutter.eval(stonecutter.current.version, ">1.20.4")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
+stonecutter.dependency("java", java.majorVersion)
+
 java {
-    val version = if (stonecutter.eval(stonecutter.current.version, ">1.20.4")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
-    sourceCompatibility = version
-    targetCompatibility = version
+    sourceCompatibility = java
+    targetCompatibility = java
 }
 
 // Copy built jar to root project's build/libs
