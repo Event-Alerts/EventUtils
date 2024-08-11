@@ -4,13 +4,7 @@ import cc.aabss.eventutils.EventUtils;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
-import net.minecraft.text.Text;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
@@ -42,8 +36,8 @@ public class ClientMixin {
                         GLFW.glfwSetWindowShouldClose(handle, false);
                         client.setScreen(current);
                     },
-                    translatable("eventutils.confirmexit.title"),
-                    translatable("eventutils.confirmexit.message")));
+                    translatable("eventutils.confirm_exit.title"),
+                    translatable("eventutils.confirm_exit.message")));
         }));
         if (callback != null) callback.free();
     }

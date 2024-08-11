@@ -40,7 +40,7 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
                 return;
             }
             client.setScreen(current);
-        }, translatable("eventutils.confirmdisconnect.title"), Text.literal("eventutils.confirmdisconnect.message")));
+        }, translatable("eventutils.confirm_disconnect.title"), translatable("eventutils.confirm_disconnect.message")));
     }
 
     @Unique

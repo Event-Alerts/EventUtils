@@ -1,6 +1,5 @@
 {
   "key.category.eventutils": "EventUtils",
-  "key.eventutils.hideplayers": "Hide Players",
   "subtitles.eventutils.alert": "Event alert",
 
   "eventutils.famous.display": "Famous Events",
@@ -23,28 +22,29 @@
 
   "eventutils.event.teleport": "Type {command} to teleport!",
 
-  "eventutils.hideplayers.enabled": "Enabled hide players!",
-  "eventutils.hideplayers.disabled": "Disabled hide players!",
+  "key.eventutils.hide_players": "Hide Players",
+  "eventutils.hide_players.enabled": "Enabled hide players!",
+  "eventutils.hide_players.disabled": "Disabled hide players!",
 
-  "eventutils.updatechecker.new": "There is a new update available!",
-  "eventutils.updatechecker.hover": "Click to open download.",
-  "eventutils.updatechecker.config": "You can disable this message in the config",
+  "eventutils.update_checker.new": "There is a new update available!",
+  "eventutils.update_checker.hover": "Click to open download.",
+  "eventutils.update_checker.config": "You can disable this message in the config",
 
-  "eventutils.command.noeventspecified": "No event type specified!",
-  "eventutils.command.noeventfound": "No event found for ",
+  "eventutils.command.no_event_specified": "No event type specified!",
+  "eventutils.command.no_event_found": "No event found for ",
   "eventutils.command.config": "Opens EventUtils' config screen",
   "eventutils.command.teleport": "Teleports to the last posted event of that type",
 
-  "eventutils.confirmexit.title": "Confirm Exit",
-  "eventutils.confirmexit.message": "Are you sure you want to exit the game?",
+  "eventutils.confirm_exit.title": "Confirm Exit",
+  "eventutils.confirm_exit.message": "Are you sure you want to exit the game?",
 
-  "eventutils.confirmdisconnect.title": "Confirm Disconnect",
-  "eventutils.confirmdisconnect.message": "Are you sure you want to disconnect?",
+  "eventutils.confirm_disconnect.title": "Confirm Disconnect",
+  "eventutils.confirm_disconnect.message": "Are you sure you want to disconnect?",
 
   "eventutils.config.title": "EventUtils Mod Config",
   "eventutils.config.alerts": "Alerts",
   "eventutils.config.general": "General",
-  "eventutils.config.eventdescription": "Whether you should be pinged for {event}.",
+  "eventutils.config.event_description": "Whether you should be pinged for {event}.",
   "eventutils.config.teleport.title": "Auto Teleport",
   "eventutils.config.teleport.description": "Automatically teleports you to the server when an event starts",
   "eventutils.config.queue.title": "Simplify Queue Message",

@@ -16,8 +16,8 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-
 import net.minecraft.util.Language;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import static cc.aabss.eventutils.EventUtils.translate;
 import static net.minecraft.text.Text.translatable;
 
 
@@ -40,7 +39,7 @@ public enum EventType {
     COMMUNITY(translatable("eventutils.community.display"),
             translatable("eventutils.community.new").formatted(Formatting.DARK_GRAY)),
     MONEY(translatable("eventutils.money.display"),
-            prize -> translatable("eventutils.money.new").formatted(Formatting.GREEN).append("($" + prize + ")").formatted(Formatting.GRAY)),
+            prize -> translatable("eventutils.money.new").formatted(Formatting.GREEN).append(" ($" + prize + ")").formatted(Formatting.GRAY)),
     FUN(translatable("eventutils.fun.display"),
             translatable("eventutils.fun.new").formatted(Formatting.RED)),
     HOUSING(translatable("eventutils.housing.display"),
@@ -90,10 +89,10 @@ public enum EventType {
     public void sendToast(@Nullable Integer prize) {
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
-        String[] args = translate("eventutils.event.teleport").split(" \\{command} ");
-        final MutableText description = Text.literal(args[0]).formatted(Formatting.WHITE)
-                .append("/eventtp " + name().toLowerCase()).formatted(Formatting.YELLOW)
-                .append(args[1]).formatted(Formatting.WHITE);
+        final String[] split = EventUtils.translate("eventutils.event.teleport").split("\\{command}");
+        final MutableText description = Text.literal(split[0]).formatted(Formatting.WHITE)
+                .append("/eventutils teleport " + name().toLowerCase()).formatted(Formatting.YELLOW)
+                .append(split[1]).formatted(Formatting.WHITE);
         client.getToastManager().add(new NotificationToast(toast.apply(prize), description));
         if (client.player != null) client.player.playSound(SoundEvent.of(Identifier.of("eventutils", "alert")), 1 ,1);
     }

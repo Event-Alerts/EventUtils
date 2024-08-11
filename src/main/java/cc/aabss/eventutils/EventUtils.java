@@ -94,11 +94,11 @@ public class EventUtils implements ClientModInitializer {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             if (config.updateChecker && Boolean.TRUE.equals(isOutdated) && latestVersion != null) client.execute(() -> {
                 if (client.player != null)
-                    client.player.sendMessage(Text.literal("§6[EVENTUTILS]§r §e"+translate("eventutils.updatechecker.new")+"§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
+                    client.player.sendMessage(Text.literal("§6[EVENTUTILS]§r §e" + translate("eventutils.updatechecker.new")+"§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
                             .setStyle(Style.EMPTY
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, translatable("eventutils.updatechecker.hover")))
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, translatable("eventutils.update_checker.hover")))
                                     .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/alerts/version/" + latestVersion)))
-                            .append(Text.literal("§7§o"+translate("eventutils.updatechecker.config"))), false);
+                            .append(Text.literal("§7§o" + translate("eventutils.updatechecker.config"))), false);
             });
         });
 
@@ -194,7 +194,8 @@ public class EventUtils implements ClientModInitializer {
         return ip;
     }
 
-    public static String translate(String key) {
+    @NotNull
+    public static String translate(@NotNull String key) {
         return Language.getInstance().get(key);
     }
 }

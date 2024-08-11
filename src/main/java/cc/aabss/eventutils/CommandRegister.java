@@ -15,7 +15,6 @@ import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static cc.aabss.eventutils.EventUtils.translate;
 import static net.minecraft.text.Text.translatable;
 
 
@@ -58,11 +57,7 @@ public class CommandRegister {
     }
 
     private static void help(@NotNull CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendError(Text.literal("""
-                /eventutils config - {$1}
-                /eventutils teleport <type> - {$2}"""
-                .replace("{$1}", translate("eventutils.command.config"))
-                .replace("{$2}", translate("eventutils.command.teleport"))));
+        context.getSource().sendError(Text.literal("/eventutils config - " + EventUtils.translate("eventutils.command.config") + "\n/eventutils teleport <type> - " + EventUtils.translate("eventutils.command.teleport")));
     }
 
     private static void config(@NotNull CommandContext<FabricClientCommandSource> context) {
@@ -73,14 +68,14 @@ public class CommandRegister {
     private static void teleport(@NotNull CommandContext<FabricClientCommandSource> context, @Nullable EventType type) {
         final FabricClientCommandSource source = context.getSource();
         if (type == null) {
-            source.sendError(translatable("eventutils.command.noeventspecified"));
+            source.sendError(translatable("eventutils.command.no_event_specified"));
             return;
         }
 
         // Get lastIp
         final String lastIp = EventUtils.MOD.lastIps.get(type);
         if (lastIp == null) {
-            source.sendError(translatable("eventutils.command.noeventfound").append(Text.literal(type.displayNameString.toLowerCase() + "!")));
+            source.sendError(translatable("eventutils.command.no_event_found").append(Text.literal(type.displayNameString.toLowerCase() + "!")));
             return;
         }
 
