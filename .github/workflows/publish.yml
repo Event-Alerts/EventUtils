@@ -74,6 +74,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           files: versions/${{ matrix.game_version }}/build/libs/*.jar
           version: ${{ matrix.game_version }}-${{ github.ref_name }}
+          game-versions: ${{ matrix.game_version }}
           loaders: fabric
           dependencies: |
             fabric-api
