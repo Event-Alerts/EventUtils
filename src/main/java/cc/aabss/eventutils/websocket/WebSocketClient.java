@@ -20,6 +20,7 @@ public class WebSocketClient implements WebSocket.Listener {
     @NotNull private final EventUtils mod;
     @NotNull private final SocketEndpoint endpoint;
     @Nullable private WebSocket webSocket;
+    @Nullable private HttpClient httpClient; // Do we even need to store/close this?
     @Nullable private ScheduledFuture<?> keepAlive;
     private boolean isRetrying = false;
 
@@ -30,19 +31,18 @@ public class WebSocketClient implements WebSocket.Listener {
     }
 
     private void connect() {
-        final String name = endpoint.name().toLowerCase();
-        final HttpClient client = HttpClient.newHttpClient();
-        client.newWebSocketBuilder()
-                .buildAsync(URI.create("wss://eventalerts.venox.network/api/v1/socket/" + name), this)
+        httpClient = HttpClient.newHttpClient();
+        httpClient.newWebSocketBuilder()
+                .buildAsync(URI.create("wss://eventalerts.venox.network/api/v1/socket/" + endpoint.name().toLowerCase()), this)
                 .whenComplete((newSocket, throwable) -> {
+                    isRetrying = false;
                     if (throwable != null) {
-                        EventUtils.LOGGER.error("Failed to establish WebSocket connection: {}", throwable.getMessage());
+                        EventUtils.LOGGER.error("Failed to establish WebSocket connection!", throwable);
                         retryConnection("Error thrown when establishing connection");
                         return;
                     }
                     webSocket = newSocket;
                     webSocket.request(1);
-                    EventUtils.LOGGER.info("{} socket connection established", name);
                     keepAlive = EventUtils.SCHEDULER.scheduleAtFixedRate(() -> {
                         if (newSocket.isInputClosed()) {
                             retryConnection("Keep-alive detected closed input");
@@ -50,21 +50,28 @@ public class WebSocketClient implements WebSocket.Listener {
                         }
                         newSocket.sendPing(PING);
                     }, 0, 30, TimeUnit.SECONDS);
+                    EventUtils.LOGGER.info("{} socket connection established", endpoint);
                 });
-        //? if java: >=21
-        client.close();
     }
 
     public void retryConnection(@NotNull String reason) {
         if (isRetrying) return;
         isRetrying = true;
-        EventUtils.LOGGER.warn("Retrying websocket connection for {} with reason \"{}\"", endpoint, reason);
         close("Retrying connection");
-        EventUtils.SCHEDULER.schedule(this::connect, 5, TimeUnit.SECONDS);
+        EventUtils.SCHEDULER.schedule(() -> {
+            EventUtils.LOGGER.warn("Retrying websocket connection for {} with reason \"{}\"", endpoint, reason);
+            connect();
+        }, 10, TimeUnit.SECONDS);
     }
 
     public void close(@NotNull String reason) {
         if (webSocket != null) webSocket.sendClose(1000, reason);
+        closeTasks();
+    }
+
+    private void closeTasks() {
+        if (httpClient != null) httpClient.close();
+        if (keepAlive != null) keepAlive.cancel(true);
     }
 
     @Override
@@ -77,8 +84,8 @@ public class WebSocketClient implements WebSocket.Listener {
 
     @Override
     public CompletionStage<?> onClose(@NotNull WebSocket webSocket, int statusCode, @NotNull String reason) {
-        if (keepAlive != null) keepAlive.cancel(true);
-        if (statusCode == 1006) { // Abnormal closure
+        closeTasks();
+        if (statusCode == 1006) {
             retryConnection("Experienced abnormal closure");
             return null;
         }
