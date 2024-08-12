@@ -160,7 +160,7 @@ public class EventUtils implements ClientModInitializer {
             httpClient.close();
 
             // isOutdated
-            final Version latestVersionSemantic = Versions.getSemantic(latestVersion.replaceAll(Versions.MC_VERSION + "-", ""));
+            final Version latestVersionSemantic = latestVersion == null ? null : Versions.getSemantic(latestVersion.replace(Versions.MC_VERSION + "-", ""));
             isOutdated = latestVersionSemantic != null && Versions.EU_VERSION_SEMANTIC.compareTo(latestVersionSemantic) < 0;
         } catch (final URISyntaxException | ExecutionException e) {
             throw new RuntimeException(e);
