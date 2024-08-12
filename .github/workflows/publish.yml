@@ -43,6 +43,8 @@ jobs:
   distribute:
     needs: build
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
     strategy:
       matrix:
         game_version: [ # Update this when adding new game versions!
@@ -69,7 +71,7 @@ jobs:
           fail-mode: warn
           modrinth-id: ZcRRACSs
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          github-token: ${{ secrets.CLASSIC_GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           files: versions/${{ matrix.game_version }}/build/libs/*.jar
           version: ${{ matrix.game_version }}-${{ github.ref_name }}
           loaders: fabric
