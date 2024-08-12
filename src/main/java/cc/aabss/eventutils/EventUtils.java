@@ -6,7 +6,6 @@ import cc.aabss.eventutils.config.EventConfig;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -15,9 +14,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.loader.api.Version;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.*;
@@ -32,16 +29,10 @@ import org.jetbrains.annotations.Nullable;
 
 import org.lwjgl.glfw.GLFW;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -56,14 +47,13 @@ public class EventUtils implements ClientModInitializer {
     public static EventUtils MOD;
     @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
     @NotNull public static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(3);
-    @NotNull public static String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
+    @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
 
     @NotNull public final EventConfig config = new EventConfig();
-    @NotNull public DiscordRPC discordRPC = new DiscordRPC(this);
-    @NotNull public Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
+    @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
+    @NotNull public final DiscordRPC discordRPC = new DiscordRPC(this);
+    @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     public boolean hidePlayers = false;
-    @Nullable private Boolean isOutdated = null;
-    @Nullable private String latestVersion = null;
 
     public EventUtils() {
         MOD = this;
@@ -72,7 +62,7 @@ public class EventUtils implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         discordRPC.connect();
-        updateCheck();
+        updateChecker.checkUpdate();
 
         // Websockets
         final Set<WebSocketClient> webSockets = new HashSet<>();
@@ -89,17 +79,8 @@ public class EventUtils implements ClientModInitializer {
             discordRPC.disconnect();
         });
 
-        // Notify of update when joining server
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            if (config.updateChecker && Boolean.TRUE.equals(isOutdated) && latestVersion != null) client.execute(() -> {
-                if (client.player != null)
-                    client.player.sendMessage(Text.literal("§6[EVENTUTILS]§r §e" + translate("eventutils.updatechecker.new")+"§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
-                            .setStyle(Style.EMPTY
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, translatable("eventutils.update_checker.hover")))
-                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/alerts/version/" + latestVersion)))
-                            .append(Text.literal("§7§o" + translate("eventutils.updatechecker.config"))), false);
-            });
-        });
+        // Update check notifier
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> updateChecker.notifyUpdate());
 
         // Hide players keybind
         final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
@@ -138,36 +119,6 @@ public class EventUtils implements ClientModInitializer {
             }
             return resultText;
         }));
-    }
-
-    public void updateCheck() {
-        if (isOutdated != null || !config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) {
-            isOutdated = false;
-            return;
-        }
-        final MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null) return;
-        final HttpClient httpClient = HttpClient.newHttpClient();
-        try {
-            // latestVersion (Modrinth)
-            latestVersion = JsonParser.parseString(httpClient.sendAsync(HttpRequest.newBuilder()
-                                    .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
-                                    .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")").build(), HttpResponse.BodyHandlers.ofString())
-                            .get().body()).getAsJsonArray()
-                    .get(0).getAsJsonObject()
-                    .get("version_number").getAsString();
-            //? if java: >=21
-            httpClient.close();
-
-            // isOutdated
-            final Version latestVersionSemantic = latestVersion == null ? null : Versions.getSemantic(latestVersion.replace(Versions.MC_VERSION + "-", ""));
-            isOutdated = latestVersionSemantic != null && Versions.EU_VERSION_SEMANTIC.compareTo(latestVersionSemantic) < 0;
-        } catch (final URISyntaxException | ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (final InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        }
     }
 
     @Nullable

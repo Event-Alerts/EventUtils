@@ -69,7 +69,7 @@ public class ConfigScreen {
                             .binding(EventConfig.Defaults.UPDATE_CHECKER, () -> config.updateChecker, newValue -> {
                                 config.updateChecker = newValue;
                                 config.setSave("update_checker", config.updateChecker);
-                                if (Boolean.TRUE.equals(newValue)) mod.updateCheck();
+                                if (Boolean.TRUE.equals(newValue)) mod.updateChecker.checkUpdate();
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
                     .option(Option.<Boolean>createBuilder()
