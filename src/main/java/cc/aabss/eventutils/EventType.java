@@ -30,22 +30,14 @@ import static net.minecraft.text.Text.translatable;
 
 
 public enum EventType {
-    FAMOUS(translatable("eventutils.famous.display"),
-            translatable("eventutils.famous.new").formatted(Formatting.AQUA)),
-    POTENTIAL_FAMOUS(translatable("eventutils.potential_famous.display"),
-            translatable("eventutils.potential_famous.new").formatted(Formatting.DARK_AQUA)),
-    PARTNER(translatable("eventutils.partner.display"),
-            translatable("eventutils.partner.new").formatted(Formatting.LIGHT_PURPLE)),
-    COMMUNITY(translatable("eventutils.community.display"),
-            translatable("eventutils.community.new").formatted(Formatting.DARK_GRAY)),
-    MONEY(translatable("eventutils.money.display"),
-            prize -> translatable("eventutils.money.new").formatted(Formatting.GREEN).append(" ($" + prize + ")").formatted(Formatting.GRAY)),
-    FUN(translatable("eventutils.fun.display"),
-            translatable("eventutils.fun.new").formatted(Formatting.RED)),
-    HOUSING(translatable("eventutils.housing.display"),
-            translatable("eventutils.housing.new").formatted(Formatting.GOLD)),
-    CIVILIZATION(translatable("eventutils.civilization.display"),
-            translatable("eventutils.civilization.new").formatted(Formatting.BLUE));
+    FAMOUS("eventutils.famous.display", translatable("eventutils.famous.new").formatted(Formatting.AQUA)),
+    POTENTIAL_FAMOUS("eventutils.potential_famous.display", translatable("eventutils.potential_famous.new").formatted(Formatting.DARK_AQUA)),
+    PARTNER("eventutils.partner.display", translatable("eventutils.partner.new").formatted(Formatting.LIGHT_PURPLE)),
+    COMMUNITY("eventutils.community.display", translatable("eventutils.community.new").formatted(Formatting.GRAY)),
+    MONEY("eventutils.money.display", prize -> translatable("eventutils.money.new").formatted(Formatting.GREEN).append(" ($" + prize + ")").formatted(Formatting.GRAY)),
+    FUN("eventutils.fun.display", translatable("eventutils.fun.new").formatted(Formatting.RED)),
+    HOUSING("eventutils.housing.display", translatable("eventutils.housing.new").formatted(Formatting.GOLD)),
+    CIVILIZATION("eventutils.civilization.display", translatable("eventutils.civilization.new").formatted(Formatting.BLUE));
 
     @NotNull private static final Map<Long, EventType> FROM_ROLE_ID = Map.of(
             970434201990070424L, PARTNER,
@@ -59,13 +51,13 @@ public enum EventType {
     @NotNull public final String displayNameString;
     @NotNull public final Function<Integer, MutableText> toast;
 
-    EventType(@NotNull MutableText displayName, @NotNull Function<Integer, MutableText> toast) {
-        this.displayName = displayName;
+    EventType(@NotNull String translateKey, @NotNull Function<Integer, MutableText> toast) {
+        this.displayName = translatable(translateKey);
         this.displayNameString = this.name().toLowerCase().replace("_", "");
         this.toast = toast;
     }
 
-    EventType(@NotNull MutableText displayName, @NotNull MutableText toast) {
+    EventType(@NotNull String displayName, @NotNull MutableText toast) {
         this(displayName, prize -> toast);
     }
 
@@ -115,8 +107,7 @@ public enum EventType {
     public static Set<EventType> fromJson(@NotNull JsonObject json) {
         final Set<EventType> eventTypes = new HashSet<>();
         final JsonArray roles = json.getAsJsonArray("roles");
-        if (roles == null) return eventTypes;
-        for (final JsonElement role : roles) {
+        if (roles != null) for (final JsonElement role : roles) {
             final EventType eventType = fromRoleId(role.getAsLong());
             if (eventType != null) eventTypes.add(eventType);
         }
