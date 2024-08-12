@@ -41,7 +41,7 @@ public class ConfigScreen {
                                 config.autoTp = newValue;
                                 config.setSave("auto_tp", config.autoTp);
                             })
-                            .controller(option -> getBooleanBuilder(option).yesNoFormatter()).build())
+                            .controller(ConfigScreen::getBooleanBuilder).build())
                     .option(Option.<Boolean>createBuilder()
                             .name(translatable("eventutils.config.queue.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.queue.description")))
@@ -49,7 +49,7 @@ public class ConfigScreen {
                                 config.simpleQueueMessage = newValue;
                                 config.setSave("simple_queue_message", config.simpleQueueMessage);
                             })
-                            .controller(option -> getBooleanBuilder(option).yesNoFormatter()).build())
+                            .controller(ConfigScreen::getBooleanBuilder).build())
                     .option(Option.<Boolean>createBuilder()
                             .name(translatable("eventutils.config.discord.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.discord.description")))
@@ -135,6 +135,6 @@ public class ConfigScreen {
 
     @NotNull
     public static BooleanControllerBuilder getBooleanBuilder(@NotNull Option<Boolean> option) {
-        return BooleanControllerBuilder.create(option).coloured(true);
+        return BooleanControllerBuilder.create(option).coloured(true).onOffFormatter();
     }
 }
