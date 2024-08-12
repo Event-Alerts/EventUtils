@@ -27,7 +27,7 @@ public enum SocketEndpoint {
         for (final EventType eventType : EventType.fromJson(json)) {
             if (!mod.config.eventTypes.contains(eventType)) return;
             eventType.sendToast(eventType == EventType.MONEY ? prize(json) : null);
-            mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, message));
+            mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
         }
     }),
     FAMOUS_EVENT((mod, message) -> {
