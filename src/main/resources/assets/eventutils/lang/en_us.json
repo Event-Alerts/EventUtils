@@ -62,5 +62,7 @@
   "eventutils.config.entity.title": "Hidden Entity Types",
   "eventutils.config.entity.description": "The types of entities that will be hidden",
   "eventutils.config.players.title": "Whitelisted Players",
-  "eventutils.config.players.description": "The names of the players you can see when players are hidden"
+  "eventutils.config.players.description": "The names of the players you can see when players are hidden",
+  "eventutils.config.hideriders.title": "Hide Riders/Passengers",
+  "eventutils.config.hideriders.description": "Whether the passengers and vehicles of the hidden entity should be hidden as well."
 }

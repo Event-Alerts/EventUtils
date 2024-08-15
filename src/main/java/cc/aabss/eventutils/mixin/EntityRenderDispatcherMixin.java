@@ -9,13 +9,18 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Mixin(EntityRenderDispatcher.class)
 public class EntityRenderDispatcherMixin {
+
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private <E extends Entity> void render(E entity, double x, double y, double z, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
         if (!EventUtils.MOD.hidePlayers) return;
@@ -32,6 +37,21 @@ public class EntityRenderDispatcherMixin {
         if (!EventUtils.MOD.config.whitelistedPlayers.contains(name) // Check if player whitelisted
                 && !name.contains("[") && !name.contains("]") && !name.contains(" ") && !name.contains("-")) { // Check if player is an NPC
             ci.cancel();
+            if (EventUtils.MOD.config.hideRiders){
+                List<Entity> passengerEntities;
+                if (entity.getRootVehicle() != null && entity.getRootVehicle().getPassengerList() != null) {
+                    passengerEntities = new ArrayList<>(entity.getRootVehicle().getPassengerList());
+                } else {
+                    passengerEntities = null;
+                }
+                if (passengerEntities != null) {
+                    for (Entity hiddenEntity : passengerEntities) {
+                        if (entity.getUuid() == hiddenEntity.getUuid()) {
+                            ci.cancel();
+                        }
+                    }
+                }
+            }
         }
     }
 }
