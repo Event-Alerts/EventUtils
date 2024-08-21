@@ -37,21 +37,6 @@ public class EntityRenderDispatcherMixin {
         if (!EventUtils.MOD.config.whitelistedPlayers.contains(name) // Check if player whitelisted
                 && !name.contains("[") && !name.contains("]") && !name.contains(" ") && !name.contains("-")) { // Check if player is an NPC
             ci.cancel();
-            if (EventUtils.MOD.config.hideRiders){
-                List<Entity> passengerEntities;
-                if (entity.getRootVehicle() != null && entity.getRootVehicle().getPassengerList() != null) {
-                    passengerEntities = new ArrayList<>(entity.getRootVehicle().getPassengerList());
-                } else {
-                    passengerEntities = null;
-                }
-                if (passengerEntities != null) {
-                    for (Entity hiddenEntity : passengerEntities) {
-                        if (entity.getUuid() == hiddenEntity.getUuid()) {
-                            ci.cancel();
-                        }
-                    }
-                }
-            }
         }
     }
 }

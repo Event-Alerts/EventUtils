@@ -121,15 +121,6 @@ public class ConfigScreen {
                             })
                             .controller(StringControllerBuilder::create)
                             .initial("skeppy").build())
-                    .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.hideriders.title"))
-                            .description(OptionDescription.of(translatable("eventutils.config.hideriders.description")))
-                            .binding(EventConfig.Defaults.HIDE_RIDERS, () -> config.hideRiders, newValue -> {
-                                config.hideRiders = newValue;
-                                config.setSave("hide_riders", config.hideRiders);
-                            })
-                            .controller(BooleanControllerBuilder::create).build())
-
                     .build())
             .category(ConfigCategory.createBuilder().name(translatable("eventutils.config.alerts"))
                     .option(EventType.FAMOUS.getOption(config))
