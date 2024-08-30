@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -27,7 +28,7 @@ public abstract class FileLoader {
             .setPrettyPrinting()
             .registerTypeAdapter(EntityType.class, new EntityTypeAdapter())
             .registerTypeAdapter(new TypeToken<List<EntityType<?>>>(){}.getType(), new EntityTypeListAdapter())
-            .registerTypeAdapter(new TypeToken<List<EventType>>(){}.getType(), new EventTypeListAdapter()).create();
+            .registerTypeAdapter(new TypeToken<Set<EventType>>(){}.getType(), new EventTypeSetAdapter()).create();
 
     @NotNull protected final File file;
     @NotNull protected JsonObject json = new JsonObject();

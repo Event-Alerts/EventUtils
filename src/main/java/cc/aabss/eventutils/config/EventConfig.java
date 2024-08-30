@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -110,6 +111,8 @@ public class EventConfig extends FileLoader {
         remove(oldKey);
     }
 
+    // Make sure these are all mutable!
+    // List.of() -> new ArrayList<>(List.of()), Set.of() -> new HashSet<>(Set.of()), etc...
     public static class Defaults {
         public static final boolean DISCORD_RPC = true;
         public static final boolean AUTO_TP = false;
@@ -118,9 +121,9 @@ public class EventConfig extends FileLoader {
         public static final boolean CONFIRM_WINDOW_CLOSE = true;
         public static final boolean CONFIRM_DISCONNECT = true;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
-        @NotNull public static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = List.of(EntityType.GLOW_ITEM_FRAME);
-        @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = List.of("minecraft:glow_item_frame");
-        @NotNull public static final List<String> WHITELISTED_PLAYERS = List.of("skeppy", "badboyhalo");
-        @NotNull public static final Set<EventType> EVENT_TYPES = Set.of(EventType.values());
+        @NotNull public static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = new ArrayList<>(List.of(EntityType.GLOW_ITEM_FRAME));
+        @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = new ArrayList<>(List.of("minecraft:glow_item_frame"));
+        @NotNull public static final List<String> WHITELISTED_PLAYERS = new ArrayList<>(List.of("skeppy", "badboyhalo"));
+        @NotNull public static final Set<EventType> EVENT_TYPES = new HashSet<>(Set.of(EventType.values()));
     }
 }

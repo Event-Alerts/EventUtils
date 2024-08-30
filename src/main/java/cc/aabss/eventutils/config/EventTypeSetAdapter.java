@@ -13,17 +13,17 @@ import java.io.IOException;
 import java.util.*;
 
 
-class EventTypeListAdapter extends TypeAdapter<List<EventType>> {
+class EventTypeSetAdapter extends TypeAdapter<Set<EventType>> {
     @Override
-    public void write(@NotNull JsonWriter out, @NotNull List<EventType> value) throws IOException {
+    public void write(@NotNull JsonWriter out, @NotNull Set<EventType> value) throws IOException {
         out.beginArray();
         for (final EventType type : value) out.value(type.name());
         out.endArray();
     }
 
     @Override @NotNull
-    public List<EventType> read(@NotNull JsonReader in) throws IOException {
-        final List<EventType> eventTypes = new ArrayList<>();
+    public Set<EventType> read(@NotNull JsonReader in) throws IOException {
+        final Set<EventType> eventTypes = new HashSet<>();
         in.beginArray();
         while (in.hasNext()) {
             final String typeString = in.nextString();
