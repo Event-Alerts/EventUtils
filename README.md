@@ -1,5 +1,5 @@
 # EventUtils
-A Minecraft Fabric mod for receiving alerts from [Event Alerts](https://discord.gg/skeppy)
+A Minecraft Fabric mod for receiving alerts from [Event Alerts](https://discord.gg/uFPFNYzAWC)
 
 ## Building
 1. Clone the repository

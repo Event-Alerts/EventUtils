@@ -6,7 +6,8 @@
   "description": "${description}",
   "authors": ["aabss", "srnyx"],
   "contact": {
-    "repo": "https://github.com/Event-Alerts/EventUtils"
+    "repo": "https://github.com/Event-Alerts/EventUtils",
+    "discord": "https://discord.gg/uFPFNYzAWC"
   },
   "license": "MIT",
   "icon": "assets/icon.png",
@@ -27,5 +28,13 @@
     "fabricloader": "*",
     "fabric": "*",
     "yet_another_config_lib_v3": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/uFPFNYzAWC",
+        "modmenu.source": "https://github.com/Event-Alerts/EventUtils"
+      }
+    }
   }
 }
