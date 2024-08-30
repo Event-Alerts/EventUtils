@@ -25,7 +25,7 @@ dependencies {
     modImplementation("dev.isxander", "yet-another-config-lib", property("deps.yacl").toString())
 
     modApi("com.terraformersmc", "modmenu", "11.0.0-beta.1")
-    include(implementation("com.github.NepNep21", "DiscordRPC4j16", "1.2.2"))
+    include(implementation("cc.aabss", "discord4j16", "1.2.2"))
 }
 
 // Replacements for fabric.mod.json and config.json
