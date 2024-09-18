@@ -10,7 +10,7 @@
     "discord": "https://discord.gg/uFPFNYzAWC"
   },
   "license": "MIT",
-  "icon": "assets/icon.png",
+  "icon": "textures/icon.png",
   "environment": "*",
   "mixins": [
     "eventutils.mixin.json"
