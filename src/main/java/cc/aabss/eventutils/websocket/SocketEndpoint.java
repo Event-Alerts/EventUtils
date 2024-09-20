@@ -30,15 +30,18 @@ public enum SocketEndpoint {
             mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
         }
     }),
-    FAMOUS_EVENT((mod, message) -> {
-        if (!mod.config.eventTypes.contains(EventType.FAMOUS)) return;
-        EventType.FAMOUS.sendToast(null);
-        mod.lastIps.put(EventType.FAMOUS, mod.getIpAndConnect(EventType.FAMOUS, message));
-    }),
-    POTENTIAL_FAMOUS_EVENT((mod, message) -> {
-        if (!mod.config.eventTypes.contains(EventType.POTENTIAL_FAMOUS)) return;
-        EventType.POTENTIAL_FAMOUS.sendToast(null);
-        mod.lastIps.put(EventType.POTENTIAL_FAMOUS, mod.getIpAndConnect(EventType.POTENTIAL_FAMOUS, message));
+    FAMOUS_EVENT_POSTED((mod, message) -> {
+        final JsonObject json;
+        try {
+            json = JsonParser.parseString(message).getAsJsonObject();
+        } catch (Exception e) {
+            EventUtils.LOGGER.error("Failed to parse JSON: {}", message);
+            return;
+        }
+        EventType eventType = EventType.valueOf(json.get("type").getAsString());
+        if (!mod.config.eventTypes.contains(eventType)) return;
+        eventType.sendToast(null);
+        mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
     });
 
     @NotNull public final BiConsumer<EventUtils, String> handler;

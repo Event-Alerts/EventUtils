@@ -5,6 +5,7 @@
 
   "eventutils.famous.display": "Famous Events",
   "eventutils.potential_famous.display": "Potential Famous Events",
+  "eventutils.sighting.display": "Sightings",
   "eventutils.partner.display": "Partner Events",
   "eventutils.community.display": "Community Events",
   "eventutils.money.display": "Money Events",
@@ -14,6 +15,7 @@
 
   "eventutils.famous.new": "New Famous Event!",
   "eventutils.potential_famous.new": "New Potential Famous Event!",
+  "eventutils.sighting.new": "New Sighting!",
   "eventutils.partner.new": "New Partner Event!",
   "eventutils.community.new": "New Community Event!",
   "eventutils.money.new": "New Money Event!",

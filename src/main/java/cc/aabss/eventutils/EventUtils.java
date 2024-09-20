@@ -67,8 +67,7 @@ public class EventUtils implements ClientModInitializer {
         // Websockets
         final Set<WebSocketClient> webSockets = new HashSet<>();
         webSockets.add(new WebSocketClient(this, SocketEndpoint.EVENT_POSTED));
-        webSockets.add(new WebSocketClient(this, SocketEndpoint.FAMOUS_EVENT));
-        webSockets.add(new WebSocketClient(this, SocketEndpoint.POTENTIAL_FAMOUS_EVENT));
+        webSockets.add(new WebSocketClient(this, SocketEndpoint.FAMOUS_EVENT_POSTED));
 
         // Command registration
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> CommandRegister.register(dispatcher));
@@ -100,45 +99,47 @@ public class EventUtils implements ClientModInitializer {
         // Simple queue message
         ClientReceiveMessageEvents.ALLOW_GAME.register(((text, overlay) -> true));
         ClientReceiveMessageEvents.MODIFY_GAME.register(((text, overlay) -> {
-            if (!config.simpleQueueMessage) return text;
-            final String original = text.getString();
-            if (!original.contains(QUEUE_TEXT)) return text;
-            final MutableText resultText = Text.literal("");
-            for (final String line : original.replace(QUEUE_TEXT, "").replaceFirst("\n", "").split("\n")) {
-                final String[] parts = line.split(": ");
-                if (parts.length <= 1) {
-                    resultText.append(Text.literal(line).formatted(Formatting.GOLD));
-                    continue;
+            if (config.simpleQueueMessage && text.getString().contains(QUEUE_TEXT)) {
+                final String original = text.getString();
+                final MutableText resultText = Text.literal("");
+                for (final String line : original.replace(QUEUE_TEXT, "").replaceFirst("\n", "").split("\n")) {
+                    final String[] parts = line.split(": ");
+                    if (parts.length <= 1) {
+                        resultText.append(Text.literal(line).formatted(Formatting.GOLD));
+                        continue;
+                    }
+                    if (!resultText.getSiblings().isEmpty()) resultText.append("\n");
+                    final String[] valueParts = parts[1].split("/");
+                    resultText.append(Text.literal(parts[0]).formatted(Formatting.GOLD).append(": ")
+                            .append(Text.literal(valueParts[0]).formatted(Formatting.YELLOW))
+                            .append(Text.literal("/").formatted(Formatting.GOLD))
+                            .append(Text.literal(valueParts[1]).formatted(Formatting.YELLOW)));
                 }
-                if (!resultText.getSiblings().isEmpty()) resultText.append("\n");
-                final String[] valueParts = parts[1].split("/");
-                resultText.append(Text.literal(parts[0]).formatted(Formatting.GOLD).append(": ")
-                        .append(Text.literal(valueParts[0]).formatted(Formatting.YELLOW))
-                        .append(Text.literal("/").formatted(Formatting.GOLD))
-                        .append(Text.literal(valueParts[1]).formatted(Formatting.YELLOW)));
+                return resultText;
+            } else {
+                // may need to manipulate later
+                return text;
             }
-            return resultText;
         }));
     }
 
     @Nullable
-    public String getIpAndConnect(@NotNull EventType eventType, @NotNull Object message) {
-        // Check if Famous/Potential Famous
-        if (message instanceof String messageString) {
-            final String ip = ConnectUtility.getIp(messageString);
+    public String getIpAndConnect(@NotNull EventType eventType, @NotNull JsonObject message) {
+        // Check if Famous/Potential Famous/Sighting
+        if (eventType == EventType.FAMOUS || eventType == EventType.POTENTIAL_FAMOUS || eventType == EventType.SIGHTING) {
+            final String ip = ConnectUtility.getIp(message.get("message").getAsString());
             if (config.autoTp) ConnectUtility.connect(ip == null ? config.defaultFamousIp : ip);
             return ip;
         }
-        if (!(message instanceof JsonObject messageJson)) return null;
 
         // Get IP
         String ip = "hypixel.net";
         if (eventType != EventType.HOUSING) {
-            final JsonElement messageIp = messageJson.get("ip");
+            final JsonElement messageIp = message.get("ip");
             if (messageIp != null) { // Specifically provided
                 ip = messageIp.getAsString();
             } else { // Extract from description
-                final JsonElement messageDescription = messageJson.get("description");
+                final JsonElement messageDescription = message.get("description");
                 if (messageDescription != null) ip = ConnectUtility.getIp(messageDescription.getAsString());
             }
         }

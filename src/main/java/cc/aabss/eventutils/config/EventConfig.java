@@ -34,7 +34,7 @@ public class EventConfig extends FileLoader {
     @NotNull public String defaultFamousIp;
     @NotNull public List<EntityType<?>> hiddenEntityTypes;
     @NotNull public List<String> whitelistedPlayers;
-    @NotNull public final Set<EventType> eventTypes;
+    @NotNull public final List<EventType> eventTypes;
 
     public EventConfig() {
         super(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
@@ -60,7 +60,7 @@ public class EventConfig extends FileLoader {
         defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
         hiddenEntityTypes = get("hidden_entity_types", Defaults.HIDDEN_ENTITY_TYPES, new TypeToken<List<EntityType<?>>>(){}.getType());
         whitelistedPlayers = get("whitelisted_players", Defaults.WHITELISTED_PLAYERS, new TypeToken<List<String>>(){}.getType());
-        eventTypes = get("notifications", Defaults.EVENT_TYPES, new TypeToken<Set<EventType>>(){}.getType());
+        eventTypes = get("notifications", Defaults.EVENT_TYPES, new TypeToken<List<EventType>>(){}.getType());
 
         // Save if created (default values)
         if (created) save();
@@ -124,6 +124,6 @@ public class EventConfig extends FileLoader {
         @NotNull public static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = new ArrayList<>(List.of(EntityType.GLOW_ITEM_FRAME));
         @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = new ArrayList<>(List.of("minecraft:glow_item_frame"));
         @NotNull public static final List<String> WHITELISTED_PLAYERS = new ArrayList<>(List.of("skeppy", "badboyhalo"));
-        @NotNull public static final Set<EventType> EVENT_TYPES = new HashSet<>(Set.of(EventType.values()));
+        @NotNull public static final List<EventType> EVENT_TYPES = new ArrayList<>(List.of(EventType.values()));
     }
 }

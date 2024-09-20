@@ -125,6 +125,7 @@ public class ConfigScreen {
             .category(ConfigCategory.createBuilder().name(translatable("eventutils.config.alerts"))
                     .option(EventType.FAMOUS.getOption(config))
                     .option(EventType.POTENTIAL_FAMOUS.getOption(config))
+                    .option(EventType.SIGHTING.getOption(config))
                     .option(EventType.PARTNER.getOption(config))
                     .option(EventType.COMMUNITY.getOption(config))
                     .option(EventType.MONEY.getOption(config))
