@@ -17,8 +17,9 @@ public class PlayerEntityRendererMixin {
     public void renderLabelIfPresent(AbstractClientPlayerEntity player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, float f, CallbackInfo ci) {
         if (player.isMainPlayer()) return;
         String name = player.getName().getString().toLowerCase();
-        if (!EventUtils.MOD.config.whitelistedPlayers.contains(name)
-                && !name.contains("[") && !name.contains("]") && !name.contains(" ") && !name.contains("-")) {
+        if (EventUtils.MOD.config.whitelistedPlayers.contains(name) &&
+                EventUtils.MOD.hidePlayers &&
+                (!name.contains("[") && !name.contains("]") && !name.contains(" ") && !name.contains("-"))) {
             ci.cancel();
         }
     }
