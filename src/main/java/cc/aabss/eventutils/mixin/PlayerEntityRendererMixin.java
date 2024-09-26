@@ -21,7 +21,7 @@ public class PlayerEntityRendererMixin {
     //?}
         if (player.isMainPlayer()) return;
         String name = player.getName().getString().toLowerCase();
-        if (EventUtils.MOD.config.whitelistedPlayers.contains(name) &&
+        if (!EventUtils.MOD.config.whitelistedPlayers.contains(name) &&
                 EventUtils.MOD.hidePlayers &&
                 (!name.contains("[") && !name.contains("]") && !name.contains(" ") && !name.contains("-"))) {
             ci.cancel();
