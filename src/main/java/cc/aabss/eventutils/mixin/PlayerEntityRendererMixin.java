@@ -14,7 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(PlayerEntityRenderer.class)
 public class PlayerEntityRendererMixin {
     @Inject(at = {@At("HEAD")}, method = "renderLabelIfPresent*", cancellable = true)
+    //? if <=1.20.4 {
+    /*public void renderLabelIfPresent(AbstractClientPlayerEntity player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
+     *///?} else {
     public void renderLabelIfPresent(AbstractClientPlayerEntity player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, float f, CallbackInfo ci) {
+    //?}
         if (player.isMainPlayer()) return;
         String name = player.getName().getString().toLowerCase();
         if (EventUtils.MOD.config.whitelistedPlayers.contains(name) &&
