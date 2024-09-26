@@ -62,7 +62,6 @@ public class EventUtils implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         discordRPC.connect();
-        updateChecker.checkUpdate();
 
         // Websockets
         final Set<WebSocketClient> webSockets = new HashSet<>();
@@ -79,7 +78,7 @@ public class EventUtils implements ClientModInitializer {
         });
 
         // Update check notifier
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> updateChecker.notifyUpdate());
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> updateChecker.checkUpdate());
 
         // Hide players keybind
         final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
