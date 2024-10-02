@@ -35,7 +35,7 @@ public enum EventType {
     SIGHTING("eventutils.sighting.display", translatable("eventutils.sighting.new").formatted(Formatting.DARK_RED)),
     PARTNER("eventutils.partner.display", translatable("eventutils.partner.new").formatted(Formatting.LIGHT_PURPLE)),
     COMMUNITY("eventutils.community.display", translatable("eventutils.community.new").formatted(Formatting.GRAY)),
-    MONEY("eventutils.money.display", prize -> translatable("eventutils.money.new").formatted(Formatting.GREEN).append(" ($" + prize + ")").formatted(Formatting.GRAY)),
+    MONEY("eventutils.money.display", prize -> translatable("eventutils.money.new").formatted(Formatting.GREEN).append(Text.literal(" ($" + prize + ")").formatted(Formatting.GRAY))),
     FUN("eventutils.fun.display", translatable("eventutils.fun.new").formatted(Formatting.RED)),
     HOUSING("eventutils.housing.display", translatable("eventutils.housing.new").formatted(Formatting.GOLD)),
     CIVILIZATION("eventutils.civilization.display", translatable("eventutils.civilization.new").formatted(Formatting.BLUE));
