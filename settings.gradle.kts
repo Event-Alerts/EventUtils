@@ -13,6 +13,7 @@ extensions.configure<StonecutterSettings> {
     centralScript = "build.gradle.kts"
     shared {
         versions( // Make sure to update .github/workflows/publish.yml when changing versions!
+            "1.21.2",
             "1.21.1",
             "1.21",
             "1.20.6",
