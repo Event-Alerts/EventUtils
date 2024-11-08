@@ -26,6 +26,7 @@
   "eventutils.event.teleport": "Type {command} to teleport!",
 
   "key.eventutils.hideplayers": "Hide Players",
+  "key.eventutils.eventinfo": "Event Info",
   "eventutils.hideplayers.enabled": "Enabled hide players!",
   "eventutils.hideplayers.disabled": "Disabled hide players!",
 

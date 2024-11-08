@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -20,6 +21,8 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.util.List;
 
+import static cc.aabss.eventutils.EventUtils.eventInfoKey;
+
 public class NotificationToast implements Toast {
     @NotNull private static final Identifier TEXTURE = Identifier.of("eventutils", "toast/notification");
 
@@ -31,7 +34,12 @@ public class NotificationToast implements Toast {
 
     public NotificationToast(@NotNull Text title, @NotNull Text description) {
         this.title = title;
-        this.lines = ImmutableList.of(description.asOrderedText());
+        this.lines = ImmutableList.of(description.asOrderedText(),
+                Text.literal(
+                        "Click <key> to view info."
+                                .replaceAll("<key>", eventInfoKey.getBoundKeyTranslationKey())
+                ).asOrderedText()
+        );
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         this.width = Math.max(160, 30 + Math.max(textRenderer.getWidth(title), textRenderer.getWidth(description)));
         this.height = 20 + Math.max(lines.size(), 1) * 12;

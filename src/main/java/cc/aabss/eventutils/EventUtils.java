@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import static cc.aabss.eventutils.websocket.SocketEndpoint.lastEvent;
 import static net.minecraft.text.Text.translatable;
 
 
@@ -54,6 +55,7 @@ public class EventUtils implements ClientModInitializer {
     @NotNull public final DiscordRPC discordRPC = new DiscordRPC(this);
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     public boolean hidePlayers = false;
+    public static KeyBinding eventInfoKey;
 
     public EventUtils() {
         MOD = this;
@@ -86,12 +88,29 @@ public class EventUtils implements ClientModInitializer {
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_F10,
                 "key.category.eventutils"));
+        eventInfoKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.eventutils.eventinfo",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                "key.category.eventutils"));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (hidePlayersKey.wasPressed()) {
                 hidePlayers = !hidePlayers;
                 if (client.player != null) client.player.sendMessage(
                         translatable(hidePlayers ? "eventutils.hideplayers.enabled" : "eventutils.hideplayers.disabled")
                                 .formatted(hidePlayers ? Formatting.GREEN : Formatting.RED), true);
+            }
+            while (eventInfoKey.wasPressed()) {
+                if (lastEvent != null) {
+                    client.setScreen(new EventInfoScreen(lastEvent));
+                } else {
+                    if (client.player != null) {
+                        client.player.sendMessage(
+                                Text.literal("No event has happened recently.").formatted(Formatting.RED),
+                                true
+                        );
+                    }
+                }
             }
         });
 

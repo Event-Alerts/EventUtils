@@ -42,8 +42,10 @@ public enum SocketEndpoint {
         if (!mod.config.eventTypes.contains(eventType)) return;
         eventType.sendToast(null);
         mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
+        lastEvent = json;
     });
 
+    public static JsonObject lastEvent;
     @NotNull public final BiConsumer<EventUtils, String> handler;
 
     SocketEndpoint(@NotNull BiConsumer<EventUtils, String> handler) {
