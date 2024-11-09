@@ -110,7 +110,7 @@ public class CommandRegister {
             assert client.world != null;
             int i = 1;
             for (AbstractClientPlayerEntity player : client.world.getPlayers()) {
-                if (Objects.equals(name, player.getName().getString())) {
+                if (name.equalsIgnoreCase(player.getName().getString())) {
                     context.getSource().sendFeedback(Text.literal(name+" has pickup priority #" + i + " (based on people around you)"));
                     return;
                 }
@@ -142,11 +142,11 @@ public class CommandRegister {
             for (int i = start; i < end; i++) {
                 String name = namesSorted.get(i);
                 assert client.player != null;
-                if (name.equals(client.player.getName().getString())) {
+                if (name.equalsIgnoreCase(client.player.getName().getString())) {
                     builder.append("§e");
                 }
                 builder.append(i + 1).append(". ").append(namesSorted.get(i)).append("\n");
-                if (name.equals(client.player.getName().getString())) {
+                if (name.equalsIgnoreCase(client.player.getName().getString())) {
                     builder.append("§r");
                 }
             }
