@@ -68,7 +68,7 @@
   "eventutils.config.players.title": "Whitelisted Players",
   "eventutils.config.players.description": "The names of the players you can see when players are hidden",
   "eventutils.config.radius.title": "Hide Players in Radius",
-  "eventutils.config.radius.description": "Hides all the players in the specified radius, set to -1 to reset.",
+  "eventutils.config.radius.description": "Hides all the players in the specified radius, set to 1 to reset.",
 
   "eventutils.screen.settings": "Settings"
 }
