@@ -3,6 +3,7 @@ package cc.aabss.eventutils;
 import cc.aabss.eventutils.config.ConfigScreen;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -14,6 +15,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.text.Text;
 
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,8 +76,14 @@ public class CommandRegister {
 
         final LiteralCommandNode<FabricClientCommandSource> priorityTop = ClientCommandManager
                 .literal("prioritytop")
+                .then(ClientCommandManager.argument("page", IntegerArgumentType.integer())
+                        .executes((context) -> {
+                            priority(context, IntegerArgumentType.getInteger(context, "page"));
+                            return 0;
+                        })
+                )
                 .executes(context -> {
-                    priority(context, null);
+                    priority(context, 1);
                     return 0;
                 }).build();
 
@@ -100,27 +108,47 @@ public class CommandRegister {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             assert client.world != null;
-            HashMap<String, Integer> map = new HashMap<>();
-            for (AbstractClientPlayerEntity player : client.world.getPlayers()) {
-                map.put(player.getName().getString(), player.getId());
-            }
-            List<Map.Entry<String, Integer>> entryList = new ArrayList<>(map.entrySet());
-            entryList.sort(Map.Entry.comparingByValue());
-            Map<String, Integer> sortedMap = new LinkedHashMap<>();
-            for (Map.Entry<String, Integer> entry : entryList) {
-                sortedMap.put(entry.getKey(), entry.getValue());
-            }
-            List<String> namesSorted = new ArrayList<>();
-            sortedMap.forEach((key, value) -> namesSorted.add(key));
-            StringBuilder builder = new StringBuilder();
             int i = 1;
-            for (String player : namesSorted) {
-                builder.append(i).append(". ").append(player).append("\n");
-                if (Objects.equals(name, player) && name != null) {
+            for (AbstractClientPlayerEntity player : client.world.getPlayers()) {
+                if (Objects.equals(name, player.getName().getString())) {
                     context.getSource().sendFeedback(Text.literal(name+" has pickup priority #" + i + " (based on people around you)"));
                     return;
                 }
                 i++;
+            }
+            context.getSource().sendFeedback(Text.literal("No player found.").formatted(Formatting.RED));
+        });
+    }
+
+    private static void priority(@NotNull CommandContext<FabricClientCommandSource> context, int page) {
+        final MinecraftClient client = context.getSource().getClient();
+        client.send(() -> {
+            assert client.world != null;
+            List<String> namesSorted = client.world.getPlayers().stream()
+                    .sorted(Comparator.comparingInt(AbstractClientPlayerEntity::getId))
+                    .map(player -> player.getName().getString())
+                    .toList();
+            int playersPerPage = 17; // maybe can change later
+            int totalPlayers = namesSorted.size();
+            int totalPages = (int) Math.ceil((double) totalPlayers / playersPerPage);
+            int pageIndex = Math.max(0, page - 1);
+            int start = pageIndex * playersPerPage;
+            int end = Math.min(start + playersPerPage, totalPlayers);
+            if (page > totalPages || page < 1) {
+                context.getSource().sendFeedback(Text.literal("No page exists. (" + totalPages+")").formatted(Formatting.RED));
+                return;
+            }
+            StringBuilder builder = new StringBuilder("\nPage " + page + " of " + totalPages + ":\n");
+            for (int i = start; i < end; i++) {
+                String name = namesSorted.get(i);
+                assert client.player != null;
+                if (name.equals(client.player.getName().getString())) {
+                    builder.append("§e");
+                }
+                builder.append(i + 1).append(". ").append(namesSorted.get(i)).append("\n");
+                if (name.equals(client.player.getName().getString())) {
+                    builder.append("§r");
+                }
             }
             context.getSource().sendFeedback(Text.literal(builder.toString()));
         });

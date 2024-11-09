@@ -122,7 +122,7 @@ public class EventConfig extends FileLoader {
         public static final boolean UPDATE_CHECKER = true;
         public static final boolean CONFIRM_WINDOW_CLOSE = true;
         public static final boolean CONFIRM_DISCONNECT = true;
-        public static final int HIDE_PLAYERS_RADIUS = -1;
+        public static final int HIDE_PLAYERS_RADIUS = 1;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
         @NotNull public static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = new ArrayList<>(List.of(EntityType.GLOW_ITEM_FRAME));
         @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = new ArrayList<>(List.of("minecraft:glow_item_frame"));
