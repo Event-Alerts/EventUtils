@@ -31,6 +31,7 @@ public class EventConfig extends FileLoader {
     public boolean updateChecker;
     public boolean confirmWindowClose;
     public boolean confirmDisconnect;
+    public int hidePlayersRadius;
     @NotNull public String defaultFamousIp;
     @NotNull public List<EntityType<?>> hiddenEntityTypes;
     @NotNull public List<String> whitelistedPlayers;
@@ -58,6 +59,7 @@ public class EventConfig extends FileLoader {
         confirmWindowClose = get("confirm_window_close", Defaults.CONFIRM_WINDOW_CLOSE);
         confirmDisconnect = get("confirm_disconnect", Defaults.CONFIRM_DISCONNECT);
         defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
+        hidePlayersRadius = get("hide_players_radius", Defaults.HIDE_PLAYERS_RADIUS);
         hiddenEntityTypes = get("hidden_entity_types", Defaults.HIDDEN_ENTITY_TYPES, new TypeToken<List<EntityType<?>>>(){}.getType());
         whitelistedPlayers = get("whitelisted_players", Defaults.WHITELISTED_PLAYERS, new TypeToken<List<String>>(){}.getType());
         eventTypes = get("notifications", Defaults.EVENT_TYPES, new TypeToken<List<EventType>>(){}.getType());
@@ -120,6 +122,7 @@ public class EventConfig extends FileLoader {
         public static final boolean UPDATE_CHECKER = true;
         public static final boolean CONFIRM_WINDOW_CLOSE = true;
         public static final boolean CONFIRM_DISCONNECT = true;
+        public static final int HIDE_PLAYERS_RADIUS = -1;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
         @NotNull public static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = new ArrayList<>(List.of(EntityType.GLOW_ITEM_FRAME));
         @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = new ArrayList<>(List.of("minecraft:glow_item_frame"));

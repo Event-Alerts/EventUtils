@@ -9,14 +9,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.ArrayList;
-import java.util.List;
-
 
 @Mixin(EntityRenderDispatcher.class)
 public class EntityRenderDispatcherMixin {
@@ -27,7 +22,15 @@ public class EntityRenderDispatcherMixin {
 
         // Non-players (mob)
         if (!(entity instanceof PlayerEntity player)) {
-            if (EventUtils.MOD.config.hiddenEntityTypes.contains(entity.getType())) ci.cancel();
+            if (EventUtils.MOD.config.hiddenEntityTypes.contains(entity.getType())) {
+                if (EventUtils.MOD.config.hidePlayersRadius == -1) {
+                    ci.cancel();
+                } else {
+                    if (entity.getPos().distanceTo(entity.getPos()) <= EventUtils.MOD.config.hidePlayersRadius) {
+                        ci.cancel();
+                    }
+                }
+            }
             return;
         }
 
@@ -36,7 +39,13 @@ public class EntityRenderDispatcherMixin {
         final String name = player.getName().getString().toLowerCase();
         if (!EventUtils.MOD.config.whitelistedPlayers.contains(name) // Check if player whitelisted
                 && !name.contains("[") && !name.contains("]") && !name.contains(" ") && !name.contains("-")) { // Check if player is an NPC
-            ci.cancel();
+            if (EventUtils.MOD.config.hidePlayersRadius == -1) {
+                ci.cancel();
+            } else {
+                if (entity.getPos().distanceTo(player.getPos()) <= EventUtils.MOD.config.hidePlayersRadius) {
+                    ci.cancel();
+                }
+            }
         }
     }
 }

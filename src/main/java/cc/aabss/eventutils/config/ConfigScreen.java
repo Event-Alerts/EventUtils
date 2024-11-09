@@ -6,6 +6,7 @@ import cc.aabss.eventutils.EventUtils;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import dev.isxander.yacl3.api.controller.DropdownStringControllerBuilder;
+import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder;
 import dev.isxander.yacl3.api.controller.StringControllerBuilder;
 
 import net.minecraft.client.gui.screen.Screen;
@@ -96,6 +97,14 @@ public class ConfigScreen {
                                 config.setSave("default_famous_ip", config.defaultFamousIp);
                             })
                             .controller(StringControllerBuilder::create).build())
+                    .option(Option.<Integer>createBuilder()
+                            .name(translatable("eventutils.config.radius.title"))
+                            .description(OptionDescription.of(translatable("eventutils.config.radius.description")))
+                            .binding(EventConfig.Defaults.HIDE_PLAYERS_RADIUS, () -> config.hidePlayersRadius, newValue -> {
+                                config.hidePlayersRadius = newValue;
+                                config.setSave("hide_players_radius", config.hidePlayersRadius);
+                            })
+                            .controller((option) -> IntegerSliderControllerBuilder.create(option).range(-1, 255)).build())
                     .group(ListOption.<String>createBuilder()
                             .name(translatable("eventutils.config.entity.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.entity.description")))
