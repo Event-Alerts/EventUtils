@@ -54,6 +54,16 @@ tasks.named("build") {
     }
 }
 
+// Set UTF-8 encoding for compilation and resources
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}
+
+tasks.withType<ProcessResources> {
+    filteringCharset = "UTF-8"
+}
+
+
 if (stonecutter.current.isActive) {
     loom.runConfigs.all {
         ideConfigGenerated(true)
