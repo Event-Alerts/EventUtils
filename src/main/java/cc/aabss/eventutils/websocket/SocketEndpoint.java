@@ -23,6 +23,7 @@ public enum SocketEndpoint {
             EventUtils.LOGGER.error("Failed to parse JSON: {}", message);
             return;
         }
+        lastEvent = json;
         // Handle event types
         for (final EventType eventType : EventType.fromJson(json)) {
             if (!mod.config.eventTypes.contains(eventType)) return;
@@ -38,11 +39,11 @@ public enum SocketEndpoint {
             EventUtils.LOGGER.error("Failed to parse JSON: {}", message);
             return;
         }
+        lastEvent = json;
         EventType eventType = EventType.valueOf(json.get("type").getAsString());
         if (!mod.config.eventTypes.contains(eventType)) return;
         eventType.sendToast(null);
         mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
-        lastEvent = json;
     });
 
     public static JsonObject lastEvent;

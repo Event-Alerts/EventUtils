@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 
 import net.minecraft.util.Formatting;
@@ -124,6 +125,7 @@ public class CommandRegister {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             assert client.world != null;
+            assert client.player != null;
             List<String> namesSorted = client.world.getPlayers().stream()
                     .sorted(Comparator.comparingInt(AbstractClientPlayerEntity::getId))
                     .map(player -> player.getName().getString())
@@ -138,19 +140,16 @@ public class CommandRegister {
                 context.getSource().sendFeedback(Text.literal("No page exists. (" + totalPages+")").formatted(Formatting.RED));
                 return;
             }
-            StringBuilder builder = new StringBuilder("\nPage " + page + " of " + totalPages + ":\n");
+            MutableText text = Text.literal("\nPage " + page + " of " + totalPages + ":\n");
             for (int i = start; i < end; i++) {
                 String name = namesSorted.get(i);
-                assert client.player != null;
                 if (name.equalsIgnoreCase(client.player.getName().getString())) {
-                    builder.append("§e");
-                }
-                builder.append(i + 1).append(". ").append(namesSorted.get(i)).append("\n");
-                if (name.equalsIgnoreCase(client.player.getName().getString())) {
-                    builder.append("§r");
+                    text.append(i + 1+". "+namesSorted.get(i)+"\n").formatted(Formatting.YELLOW);
+                } else {
+                    text.append(i + 1+". "+namesSorted.get(i)+"\n");
                 }
             }
-            context.getSource().sendFeedback(Text.literal(builder.toString()));
+            context.getSource().sendFeedback(text);
         });
     }
 

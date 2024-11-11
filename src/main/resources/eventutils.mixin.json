@@ -3,7 +3,9 @@
   "minVersion": "0.8",
   "package": "cc.aabss.eventutils.mixin",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [],
+  "mixins": [
+    "EntityMixin"
+  ],
   "client": [
     "ButtonWidgetMixin",
     "ClientMixin",

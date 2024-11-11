@@ -2,6 +2,8 @@ package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
@@ -19,6 +21,8 @@ public class EntityRenderDispatcherMixin {
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private <E extends Entity> void render(E entity, double x, double y, double z, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
         if (!EventUtils.MOD.hidePlayers) return;
+        ClientPlayerEntity mainPlayer = MinecraftClient.getInstance().player;
+        assert mainPlayer != null;
 
         // Non-players (mob)
         if (!(entity instanceof PlayerEntity player)) {
@@ -26,7 +30,7 @@ public class EntityRenderDispatcherMixin {
                 if (EventUtils.MOD.config.hidePlayersRadius == 1) {
                     ci.cancel();
                 } else {
-                    if (entity.getPos().distanceTo(entity.getPos()) <= EventUtils.MOD.config.hidePlayersRadius) {
+                    if (mainPlayer.getPos().distanceTo(entity.getPos()) <= EventUtils.MOD.config.hidePlayersRadius) {
                         ci.cancel();
                     }
                 }
@@ -42,7 +46,7 @@ public class EntityRenderDispatcherMixin {
             if (EventUtils.MOD.config.hidePlayersRadius == 1) {
                 ci.cancel();
             } else {
-                if (entity.getPos().distanceTo(player.getPos()) <= EventUtils.MOD.config.hidePlayersRadius) {
+                if (mainPlayer.getPos().distanceTo(player.getPos()) <= EventUtils.MOD.config.hidePlayersRadius) {
                     ci.cancel();
                 }
             }

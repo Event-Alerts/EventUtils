@@ -35,10 +35,10 @@ public class NotificationToast implements Toast {
     public NotificationToast(@NotNull Text title, @NotNull Text description) {
         this.title = title;
         this.lines = ImmutableList.of(description.asOrderedText(),
-                Text.literal(
-                        "Click <key> to view info."
-                                .replaceAll("<key>", eventInfoKey.getBoundKeyTranslationKey())
-                ).asOrderedText()
+                Text.literal("Click ")
+                        .append(Text.translatable(eventInfoKey.getBoundKeyTranslationKey()))
+                        .append(Text.literal(" to view info."))
+                        .asOrderedText()
         );
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         this.width = Math.max(160, 30 + Math.max(textRenderer.getWidth(title), textRenderer.getWidth(description)));
