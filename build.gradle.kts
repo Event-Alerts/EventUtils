@@ -6,8 +6,8 @@ import xyz.srnyx.gradlegalaxy.utility.getDefaultReplacements
 
 plugins {
     java
-    id("fabric-loom") version "1.7-SNAPSHOT"
-    id("xyz.srnyx.gradle-galaxy") version "1.2.3"
+    id("fabric-loom") version "1.8-SNAPSHOT"
+    id("xyz.srnyx.gradle-galaxy") version "1.3.2"
 }
 
 version = "${stonecutter.current.version}-${property("mod.version").toString()}"
