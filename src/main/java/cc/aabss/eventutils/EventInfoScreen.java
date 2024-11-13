@@ -53,6 +53,7 @@ public class EventInfoScreen extends Screen {
     }
 
     private String formatTime(String unixTimestamp) {
+        unixTimestamp = unixTimestamp.replaceAll("\"", "");
         Instant timestamp = Instant.ofEpochSecond(Long.parseLong(unixTimestamp));
         Instant now = Instant.now();
         Duration duration = Duration.between(timestamp, now);
