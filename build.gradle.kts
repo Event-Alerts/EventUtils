@@ -2,17 +2,20 @@ import xyz.srnyx.gradlegalaxy.enums.Repository
 import xyz.srnyx.gradlegalaxy.enums.repository
 import xyz.srnyx.gradlegalaxy.utility.addReplacementsTask
 import xyz.srnyx.gradlegalaxy.utility.getDefaultReplacements
+import xyz.srnyx.gradlegalaxy.utility.setupJava
 
 
 plugins {
     java
-    id("fabric-loom") version "1.7-SNAPSHOT"
-    id("xyz.srnyx.gradle-galaxy") version "1.2.3"
+    id("fabric-loom") version "1.8-SNAPSHOT"
+    id("xyz.srnyx.gradle-galaxy") version "1.3.2"
 }
 
-version = "${stonecutter.current.version}-${property("mod.version").toString()}"
-group = "cc.aabss"
-description = "Alerting for Event Alerts Minecraft events"
+// Get Java version
+val java = if (stonecutter.eval(stonecutter.current.version, ">=1.20.5")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
+stonecutter.dependency("java", java.majorVersion)
+
+setupJava("cc.aabss", "${stonecutter.current.version}-${property("mod.version").toString()}", "Alerting for Event Alerts Minecraft events", java)
 
 repository("https://maven.shedaniel.me", "https://maven.fabricmc.net", "https://maven.terraformersmc.com/releases", "https://maven.isxander.dev/releases")
 repository(Repository.MAVEN_CENTRAL, Repository.JITPACK)
@@ -38,14 +41,6 @@ base {
     archivesName = rootProject.name
 }
 
-val java = if (stonecutter.eval(stonecutter.current.version, ">=1.20.5")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
-stonecutter.dependency("java", java.majorVersion)
-
-java {
-    sourceCompatibility = java
-    targetCompatibility = java
-}
-
 // Copy built jar to root project's build/libs
 tasks.named("build") {
     doLast {
@@ -53,16 +48,6 @@ tasks.named("build") {
         layout.projectDirectory.dir("build/libs").asFile.listFiles()?.forEach { it.copyTo(targetDir.resolve(it.name), true) }
     }
 }
-
-// Set UTF-8 encoding for compilation and resources
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
-}
-
-tasks.withType<ProcessResources> {
-    filteringCharset = "UTF-8"
-}
-
 
 if (stonecutter.current.isActive) {
     loom.runConfigs.all {

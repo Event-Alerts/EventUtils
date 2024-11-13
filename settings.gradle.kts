@@ -6,7 +6,7 @@ pluginManagement.repositories {
     gradlePluginPortal()
 }
 
-plugins { id("dev.kikugie.stonecutter") version "0.4.3" }
+plugins { id("dev.kikugie.stonecutter") version "0.4.6" }
 
 extensions.configure<StonecutterSettings> {
     kotlinController = true
