@@ -49,7 +49,6 @@ public class EventInfoScreen extends Screen {
             startY = startY+12;
         }
 
-        super.render(drawContext, i, j, f);
     }
 
     private String formatTime(String unixTimestamp) {
