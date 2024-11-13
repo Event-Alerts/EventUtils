@@ -1,7 +1,9 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -20,11 +22,19 @@ public class PlayerEntityRendererMixin {
     public void renderLabelIfPresent(AbstractClientPlayerEntity player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, float f, CallbackInfo ci) {
     //?}
         if (player.isMainPlayer()) return;
+        ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
+        assert clientPlayer != null;
         String name = player.getName().getString().toLowerCase();
         if (!EventUtils.MOD.config.whitelistedPlayers.contains(name) &&
                 EventUtils.MOD.hidePlayers &&
                 (!name.contains("[") && !name.contains("]") && !name.contains(" ") && !name.contains("-"))) {
-            ci.cancel();
+            if (EventUtils.MOD.config.hidePlayersRadius == 1) {
+                ci.cancel();
+            } else {
+                if (clientPlayer.getPos().distanceTo(player.getPos()) <= EventUtils.MOD.config.hidePlayersRadius) {
+                    ci.cancel();
+                }
+            }
         }
     }
 }

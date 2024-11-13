@@ -4,11 +4,9 @@ import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.EventUtils;
 
 import dev.isxander.yacl3.api.*;
-import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
-import dev.isxander.yacl3.api.controller.DropdownStringControllerBuilder;
-import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder;
-import dev.isxander.yacl3.api.controller.StringControllerBuilder;
+import dev.isxander.yacl3.api.controller.*;
 
+import dev.isxander.yacl3.impl.controller.IntegerFieldControllerBuilderImpl;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
@@ -104,7 +102,7 @@ public class ConfigScreen {
                                 config.hidePlayersRadius = newValue;
                                 config.setSave("hide_players_radius", config.hidePlayersRadius);
                             })
-                            .controller((option) -> IntegerSliderControllerBuilder.create(option).range(1, 255)).build())
+                            .controller(option -> IntegerFieldControllerBuilder.create(option).range(1, 50)).build())
                     .group(ListOption.<String>createBuilder()
                             .name(translatable("eventutils.config.entity.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.entity.description")))

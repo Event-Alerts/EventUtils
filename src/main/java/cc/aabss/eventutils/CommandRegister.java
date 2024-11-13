@@ -144,7 +144,7 @@ public class CommandRegister {
             for (int i = start; i < end; i++) {
                 String name = namesSorted.get(i);
                 if (name.equalsIgnoreCase(client.player.getName().getString())) {
-                    text.append(i + 1+". "+namesSorted.get(i)+"\n").formatted(Formatting.YELLOW);
+                    text.append(Text.literal(i + 1+". "+namesSorted.get(i)+"\n").formatted(Formatting.YELLOW));
                 } else {
                     text.append(i + 1+". "+namesSorted.get(i)+"\n");
                 }
