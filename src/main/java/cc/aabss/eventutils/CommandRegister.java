@@ -115,7 +115,7 @@ public class CommandRegister {
                     .toList();
             for (AbstractClientPlayerEntity player : client.world.getPlayers()) {
                 if (name.equalsIgnoreCase(player.getName().getString())) {
-                    context.getSource().sendFeedback(Text.literal(name+" has pickup priority #" + namesSorted.indexOf(name) + " (based on people around you)"));
+                    context.getSource().sendFeedback(Text.literal(name+" has pickup priority #" + namesSorted.indexOf(name)+1 + " (based on people around you)"));
                     return;
                 }
             }
