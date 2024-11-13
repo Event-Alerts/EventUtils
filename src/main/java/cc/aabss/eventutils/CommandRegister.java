@@ -109,13 +109,15 @@ public class CommandRegister {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             assert client.world != null;
-            int i = 1;
+            List<String> namesSorted = client.world.getPlayers().stream()
+                    .sorted(Comparator.comparingInt(AbstractClientPlayerEntity::getId))
+                    .map(player -> player.getName().getString())
+                    .toList();
             for (AbstractClientPlayerEntity player : client.world.getPlayers()) {
                 if (name.equalsIgnoreCase(player.getName().getString())) {
-                    context.getSource().sendFeedback(Text.literal(name+" has pickup priority #" + i + " (based on people around you)"));
+                    context.getSource().sendFeedback(Text.literal(name+" has pickup priority #" + namesSorted.indexOf(name) + " (based on people around you)"));
                     return;
                 }
-                i++;
             }
             context.getSource().sendFeedback(Text.literal("No player found.").formatted(Formatting.RED));
         });
