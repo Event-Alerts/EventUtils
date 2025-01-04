@@ -103,6 +103,12 @@ public class EventConfig extends FileLoader {
             set("notifications", types);
         }
 
+        // 2.0.7 or older
+        if (oldVersion.compareTo((Version) new SemanticVersionImpl(new int[]{2, 0, 7}, null, null)) <= 0) {
+            final Integer radius = get("hide_players_radius", TypeToken.of(Integer.class).getType());
+            if (radius != null && radius == 1) set("hide_players_radius", 0);
+        }
+
         // Update version
         set("version", Versions.EU_VERSION);
         save();
@@ -122,7 +128,7 @@ public class EventConfig extends FileLoader {
         public static final boolean UPDATE_CHECKER = true;
         public static final boolean CONFIRM_WINDOW_CLOSE = true;
         public static final boolean CONFIRM_DISCONNECT = true;
-        public static final int HIDE_PLAYERS_RADIUS = 1;
+        public static final int HIDE_PLAYERS_RADIUS = 0;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
         @NotNull public static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = new ArrayList<>(List.of(EntityType.GLOW_ITEM_FRAME));
         @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = new ArrayList<>(List.of("minecraft:glow_item_frame"));

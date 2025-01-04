@@ -15,41 +15,35 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+
 @Mixin(EntityRenderDispatcher.class)
 public class EntityRenderDispatcherMixin {
-
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    private <E extends Entity> void render(E entity, double x, double y, double z, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
+    //? if <=1.21.1 {
+    /*private <E extends Entity> void render(Entity entity, double x, double y, double z, float yaw, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
+    *///?} else {
+    private <E extends Entity> void render(E entity, double x, double y, double z, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
+    //?}
         if (!EventUtils.MOD.hidePlayers) return;
-        ClientPlayerEntity mainPlayer = MinecraftClient.getInstance().player;
-        assert mainPlayer != null;
 
-        // Non-players (mob)
-        if (!(entity instanceof PlayerEntity player)) {
-            if (EventUtils.MOD.config.hiddenEntityTypes.contains(entity.getType())) {
-                if (EventUtils.MOD.config.hidePlayersRadius == 1) {
-                    ci.cancel();
-                } else {
-                    if (mainPlayer.getPos().distanceTo(entity.getPos()) <= EventUtils.MOD.config.hidePlayersRadius) {
-                        ci.cancel();
-                    }
-                }
-            }
+        if (entity instanceof PlayerEntity player) {
+            // Players
+            if (player.isMainPlayer()) return;
+            final String name = player.getName().getString().toLowerCase();
+            if (EventUtils.MOD.config.whitelistedPlayers.contains(name) || EventUtils.isNPC(name)) return;
+        } else {
+            // Non-players (mob)
+            if (!EventUtils.MOD.config.hiddenEntityTypes.contains(entity.getType())) return;
+        }
+
+        // Any radius
+        if (EventUtils.MOD.config.hidePlayersRadius == 0) {
+            ci.cancel();
             return;
         }
 
-        // Players
-        if (player.isMainPlayer()) return; // Check if self
-        final String name = player.getName().getString().toLowerCase();
-        if (!EventUtils.MOD.config.whitelistedPlayers.contains(name) // Check if player whitelisted
-                && !name.contains("[") && !name.contains("]") && !name.contains(" ") && !name.contains("-")) { // Check if player is an NPC
-            if (EventUtils.MOD.config.hidePlayersRadius == 1) {
-                ci.cancel();
-            } else {
-                if (mainPlayer.getPos().distanceTo(player.getPos()) <= EventUtils.MOD.config.hidePlayersRadius) {
-                    ci.cancel();
-                }
-            }
-        }
+        // Specific radius
+        final ClientPlayerEntity mainPlayer = MinecraftClient.getInstance().player;
+        if (mainPlayer != null && mainPlayer.getPos().distanceTo(entity.getPos()) <= EventUtils.MOD.config.hidePlayersRadius) ci.cancel();
     }
 }

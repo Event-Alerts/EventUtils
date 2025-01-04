@@ -1,5 +1,7 @@
 package cc.aabss.eventutils;
 
+import cc.aabss.eventutils.commands.CommandRegister;
+import cc.aabss.eventutils.utility.ConnectUtility;
 import cc.aabss.eventutils.websocket.SocketEndpoint;
 import cc.aabss.eventutils.websocket.WebSocketClient;
 import cc.aabss.eventutils.config.EventConfig;
@@ -36,7 +38,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static cc.aabss.eventutils.websocket.SocketEndpoint.lastEvent;
 import static net.minecraft.text.Text.translatable;
 
 
@@ -51,8 +52,8 @@ public class EventUtils implements ClientModInitializer {
     @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
 
     @NotNull public final EventConfig config = new EventConfig();
-    @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
-    @NotNull public final DiscordRPC discordRPC = new DiscordRPC(this);
+    @NotNull public final UpdateChecker updateChecker = new UpdateChecker();
+    @NotNull public final DiscordRPC discordRPC = new DiscordRPC();
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     public boolean hidePlayers = false;
     public static KeyBinding eventInfoKey;
@@ -101,16 +102,13 @@ public class EventUtils implements ClientModInitializer {
                                 .formatted(hidePlayers ? Formatting.GREEN : Formatting.RED), true);
             }
             while (eventInfoKey.wasPressed()) {
-                if (lastEvent != null) {
-                    client.setScreen(new EventInfoScreen(lastEvent));
-                } else {
-                    if (client.player != null) {
-                        client.player.sendMessage(
-                                Text.literal("No event has happened recently.").formatted(Formatting.RED),
-                                true
-                        );
-                    }
+                if (SocketEndpoint.lastEvent != null) {
+                    client.setScreen(new EventInfoScreen(SocketEndpoint.lastEvent));
+                    continue;
                 }
+                if (client.player != null) client.player.sendMessage(
+                        Text.literal("No event has happened recently.").formatted(Formatting.RED),
+                        true);
             }
         });
 
@@ -134,17 +132,16 @@ public class EventUtils implements ClientModInitializer {
                             .append(Text.literal(valueParts[1]).formatted(Formatting.YELLOW)));
                 }
                 return resultText;
-            } else {
-                // may need to manipulate later
-                return text;
             }
+            // May need to manipulate later
+            return text;
         }));
     }
 
     @Nullable
     public String getIpAndConnect(@NotNull EventType eventType, @NotNull JsonObject message) {
         // Check if Famous/Potential Famous/Sighting
-        if (eventType == EventType.FAMOUS || eventType == EventType.POTENTIAL_FAMOUS || eventType == EventType.SIGHTING) {
+        if (eventType == EventType.SKEPPY || eventType == EventType.POTENTIAL_FAMOUS || eventType == EventType.SIGHTING || eventType == EventType.FAMOUS) {
             final String ip = ConnectUtility.getIp(message.get("message").getAsString());
             if (config.autoTp) ConnectUtility.connect(ip == null ? config.defaultFamousIp : ip);
             return ip;
@@ -165,6 +162,10 @@ public class EventUtils implements ClientModInitializer {
         // Auto TP if enabled
         if (config.autoTp && ip != null) ConnectUtility.connect(ip);
         return ip;
+    }
+
+    public static boolean isNPC(@NotNull String name) {
+        return name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-");
     }
 
     @NotNull

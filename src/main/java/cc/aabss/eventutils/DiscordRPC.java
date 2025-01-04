@@ -21,15 +21,10 @@ import java.util.function.Supplier;
 public class DiscordRPC {
     private static final long START = System.currentTimeMillis() / 1000;
 
-    @NotNull private final EventUtils mod;
     @Nullable public DiscordRPCClient client;
 
-    public DiscordRPC(@NotNull EventUtils mod) {
-        this.mod = mod;
-    }
-
     public void connect() {
-        if (!mod.config.discordRpc || client != null) return;
+        if (!EventUtils.MOD.config.discordRpc || client != null) return;
 
         final String username = MinecraftClient.getInstance().getSession().getUsername();
         client = new DiscordRPCClient(new EventListener() {

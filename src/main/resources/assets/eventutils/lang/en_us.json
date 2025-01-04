@@ -3,9 +3,10 @@
   "key.eventutils.screen": "Open Screen",
   "subtitles.eventutils.alert": "Event alert",
 
+  "eventutils.skeppy.display": "Skeppy Events",
+  "eventutils.potential_famous.display": "Potential Skeppy Events",
+  "eventutils.sighting.display": "Skeppy Sightings",
   "eventutils.famous.display": "Famous Events",
-  "eventutils.potential_famous.display": "Potential Famous Events",
-  "eventutils.sighting.display": "Sightings",
   "eventutils.partner.display": "Partner Events",
   "eventutils.community.display": "Community Events",
   "eventutils.money.display": "Money Events",
@@ -13,9 +14,10 @@
   "eventutils.housing.display": "Housing Events",
   "eventutils.civilization.display": "Civilization Events",
 
+  "eventutils.skeppy.new": "New Skeppy Event!",
+  "eventutils.potential_famous.new": "New Potential Skeppy Event!",
+  "eventutils.sighting.new": "New Skeppy Sighting!",
   "eventutils.famous.new": "New Famous Event!",
-  "eventutils.potential_famous.new": "New Potential Famous Event!",
-  "eventutils.sighting.new": "New Sighting!",
   "eventutils.partner.new": "New Partner Event!",
   "eventutils.community.new": "New Community Event!",
   "eventutils.money.new": "New Money Event!",
@@ -23,7 +25,7 @@
   "eventutils.housing.new": "New Housing Event!",
   "eventutils.civilization.new": "New Civilization Event!",
 
-  "eventutils.event.teleport": "Type {command} to teleport!",
+  "eventutils.event.teleport": "Type '{command}' to teleport!",
 
   "key.eventutils.hideplayers": "Hide Players",
   "key.eventutils.eventinfo": "Event Info",
@@ -31,11 +33,11 @@
   "eventutils.hideplayers.disabled": "Disabled hide players!",
 
   "eventutils.updatechecker.new": "There is a new update available!",
-  "eventutils.updatechecker.hover": "Click to open download.",
+  "eventutils.updatechecker.hover": "Click to open download",
   "eventutils.updatechecker.config": "You can disable this message in the config",
 
   "eventutils.command.no_event_specified": "No event type specified!",
-  "eventutils.command.no_event_found": "No event found for ",
+  "eventutils.command.no_event_found": "No event/IP found for ",
   "eventutils.command.config": "Opens EventUtils' config screen",
   "eventutils.command.teleport": "Teleports to the last posted event of that type",
 
@@ -46,9 +48,9 @@
   "eventutils.confirm_disconnect.message": "Are you sure you want to disconnect?",
 
   "eventutils.config.title": "EventUtils Mod Config",
-  "eventutils.config.alerts": "Alerts",
   "eventutils.config.general": "General",
-  "eventutils.config.event_description": "Whether you should be pinged for {event}.",
+  "eventutils.config.alerts": "Alerts",
+  "eventutils.config.event_description": "Whether you should be pinged for {event}",
   "eventutils.config.teleport.title": "Auto Teleport",
   "eventutils.config.teleport.description": "Automatically teleports you to the server when an event starts",
   "eventutils.config.queue.title": "Simple Queue Message",
@@ -62,13 +64,13 @@
   "eventutils.config.disconnect.title": "Confirm Disconnect",
   "eventutils.config.disconnect.description": "Whether a confirmation should pop up confirming you want to leave your server",
   "eventutils.config.famous.title": "Default Famous IP",
-  "eventutils.config.famous.description": "The default ip for if a [potential] famous event is pinged with no ip inputted",
+  "eventutils.config.famous.description": "The default IP for if a [potential] famous event is pinged with no IP inputted",
   "eventutils.config.entity.title": "Hidden Entity Types",
   "eventutils.config.entity.description": "The types of entities that will be hidden",
   "eventutils.config.players.title": "Whitelisted Players",
   "eventutils.config.players.description": "The names of the players you can see when players are hidden",
   "eventutils.config.radius.title": "Hide Players in Radius",
-  "eventutils.config.radius.description": "Hides all the players in the specified radius, set to 1 to reset.",
+  "eventutils.config.radius.description": "Hides all the players in the specified radius, set to 0 to ignore distance",
 
   "eventutils.screen.settings": "Settings"
 }

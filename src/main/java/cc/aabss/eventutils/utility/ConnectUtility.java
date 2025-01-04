@@ -1,5 +1,6 @@
-package cc.aabss.eventutils;
+package cc.aabss.eventutils.utility;
 
+import cc.aabss.eventutils.EventUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
 //? if <=1.20.2 {

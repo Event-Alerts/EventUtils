@@ -30,9 +30,10 @@ import static net.minecraft.text.Text.translatable;
 
 
 public enum EventType {
-    FAMOUS("eventutils.famous.display", translatable("eventutils.famous.new").formatted(Formatting.AQUA)),
+    SKEPPY("eventutils.skeppy.display", translatable("eventutils.skeppy.new").formatted(Formatting.AQUA)),
     POTENTIAL_FAMOUS("eventutils.potential_famous.display", translatable("eventutils.potential_famous.new").formatted(Formatting.DARK_AQUA)),
     SIGHTING("eventutils.sighting.display", translatable("eventutils.sighting.new").formatted(Formatting.DARK_RED)),
+    FAMOUS("eventutils.famous.display", translatable("eventutils.famous.new").formatted(Formatting.AQUA)),
     PARTNER("eventutils.partner.display", translatable("eventutils.partner.new").formatted(Formatting.LIGHT_PURPLE)),
     COMMUNITY("eventutils.community.display", translatable("eventutils.community.new").formatted(Formatting.GRAY)),
     MONEY("eventutils.money.display", prize -> translatable("eventutils.money.new").formatted(Formatting.GREEN).append(Text.literal(" ($" + prize + ")").formatted(Formatting.GRAY))),

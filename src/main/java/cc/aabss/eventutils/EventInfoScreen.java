@@ -1,25 +1,32 @@
 package cc.aabss.eventutils;
 
+import cc.aabss.eventutils.utility.StringUtility;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-public class EventInfoScreen extends Screen {
 
-    public EventInfoScreen(JsonObject json) {
+public class EventInfoScreen extends Screen {
+    private static final int BOX_WIDTH = 350;
+    private static final int BOX_HEIGHT = 280;
+
+    @NotNull private final JsonObject json;
+
+    public EventInfoScreen(@NotNull JsonObject json) {
         super(Text.translatable("key.eventutils.eventinfo"));
         this.json = json;
     }
-
-    private final JsonObject json;
 
     @Override
     protected void init() {
@@ -28,81 +35,78 @@ public class EventInfoScreen extends Screen {
 
     @Override
     public void render(DrawContext drawContext, int i, int j, float f) {
-        int boxX = (this.width-200) / 2;
-        int boxY = (this.height-300) / 2;
-        int startX = boxX+10;
-        int startY = boxY+10;
+        final int boxX = (width - BOX_WIDTH) / 2;
+        final int boxY = (height - BOX_HEIGHT) / 2;
+        final int startX = boxX + (BOX_WIDTH / 2);
+        int startY = boxY + 5;
 
-        drawContext.fill(boxX, boxY, boxX+200, boxY+300, 0x88000000);
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
-            String label = entry.getKey() + ": ";
-            JsonElement jsonValue = entry.getValue();
-            String value = jsonValue.toString();
+        drawContext.fill(boxX, boxY, boxX + BOX_WIDTH, boxY + BOX_HEIGHT, 0x88000000);
+        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+        for (final Map.Entry<String, JsonElement> entry : json.entrySet()) {
+            // Get text
+            final String key = entry.getKey();
+            final JsonElement jsonValue = entry.getValue();
+
+            // Get value as string
+            String value;
             if (jsonValue.isJsonArray()) {
                 value = formatList(jsonValue.getAsJsonArray());
+            } else if (jsonValue.isJsonPrimitive()) {
+                value = jsonValue.getAsString();
+            } else {
+                value = jsonValue.toString();
             }
-            if (Objects.equals(entry.getKey(), "time")) {
-                value = formatTime(entry.getValue().toString());
-            }
-            drawContext.drawCenteredTextWithShadow(textRenderer, label+value, startX, startY, 0xFFFFFF);
-            startY = startY+12;
-        }
 
+            // Format time
+            if (key.equals("time") || key.equals("created")) value = formatTime(value);
+
+            // Draw
+            drawContext.drawCenteredTextWithShadow(textRenderer, StringUtility.capitalize(key) + ": " + value, startX, startY, 0xFFFFFF);
+            startY += 12;
+        }
     }
 
-    private String formatTime(String unixTimestamp) {
+    @NotNull
+    private String formatTime(@NotNull String unixTimestamp) {
         unixTimestamp = unixTimestamp.replaceAll("\"", "");
-        Instant timestamp = Instant.ofEpochSecond(Long.parseLong(unixTimestamp));
-        Instant now = Instant.now();
-        Duration duration = Duration.between(timestamp, now);
+        final Instant timestamp = Instant.ofEpochMilli(Long.parseLong(unixTimestamp));
+        final Instant now = Instant.now();
+        final long timestampSeconds = timestamp.getEpochSecond();
+        final long nowSeconds = now.getEpochSecond();
+        final long seconds = Duration.between(timestamp, now).getSeconds();
 
-        long seconds = duration.getSeconds();
-
-        if (timestamp.getEpochSecond() > now.getEpochSecond()){
-            if (seconds < 60) {
-                return "in " +seconds+(seconds == 1 ? " second" : " seconds");
-            } else if (seconds < 3600) {
-                double minutes = Math.ceil((double) (seconds/60));
-                return "in " +minutes+(minutes == 1 ? " minute" : " minutes");
-            } else {
-                double hours = Math.ceil((double) (seconds / 3600));
-                return "in " +hours+(hours == 1 ? " hour" : " hours");
-            }
-        } else if (timestamp.getEpochSecond() < now.getEpochSecond()) {
-            if (seconds < 60) {
-                return seconds + (seconds == 0 ? " second ago" : "seconds ago");
-            } else if (seconds < 3600) {
-                double minutes = Math.ceil((double) (seconds/60));
-                return minutes + (minutes == 1 ? " minute ago" : " minutes ago");
-            } else {
-                double hours = Math.ceil((double) (seconds / 3600));
-                return hours + (hours == 1 ? " hour ago" : " hours ago");
-            }
-        } else {
-            return "just now";
+        // In the future
+        if (timestampSeconds > nowSeconds) {
+            if (seconds < 60) return "in " + seconds + " seconds";
+            if (seconds < 3600) return "in " + (Math.ceil((double) seconds / 60)) + " minutes";
+            if (seconds < 86400) return "in " + (Math.ceil((double) seconds / 3600)) + " hours";
+            return "in " + (Math.ceil((double) seconds / 86400)) + " days";
         }
+
+        // In the past
+        if (timestampSeconds < nowSeconds) {
+            if (seconds < 60) return seconds + " seconds ago";
+            if (seconds < 3600) return (Math.ceil((double) seconds / 60)) + " minutes ago";
+            if (seconds < 86400) return (Math.ceil((double) seconds / 3600)) + " hours ago";
+            return (Math.ceil((double) seconds / 86400)) + " days ago";
+        }
+
+        // Just now
+        return "just now";
     }
 
-    private String formatList(Iterable<?> list){
-        List<String> stringlist = new ArrayList<>();
+    @NotNull
+    private String formatList(final Iterable<?> list){
+        // Get stringList
+        final List<String> stringlist = new ArrayList<>();
         list.forEach(o -> stringlist.add(o.toString()));
         Collections.sort(stringlist);
-        StringBuilder builder = new StringBuilder();
-        int i = 0;
-        if (stringlist.size() == 1){
-            return stringlist.getFirst();
-        }
-        for (Object obj : stringlist){
-            if (i == stringlist.size() - 1) {
-                builder.append(obj);
-            } else if (i == stringlist.size() - 2) {
-                builder.append(obj).append(" and ");
-            } else {
-                builder.append(obj).append(", ");
-            }
-            i++;
-        }
-        return builder.toString();
+        final int size = stringlist.size();
+
+        // Format
+        if (size == 1) return stringlist.getFirst();
+        final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < size; i++) builder.append(stringlist.get(i)).append(", ");
+        return builder.substring(0, builder.length() - 2);
     }
 }

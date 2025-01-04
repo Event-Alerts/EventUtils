@@ -27,7 +27,7 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
     }
 
     @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
-    private void onPress(CallbackInfo ci){
+    private void onPress(CallbackInfo ci) {
         if (!EventUtils.MOD.config.confirmDisconnect || !translatable("menu.disconnect").equals(getMessage())) return;
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null || !(client.currentScreen instanceof GameMenuScreen)) return;
