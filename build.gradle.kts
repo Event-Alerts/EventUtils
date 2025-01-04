@@ -17,19 +17,24 @@ stonecutter.dependency("java", java.majorVersion)
 
 setupJava("cc.aabss", "${stonecutter.current.version}-${property("mod.version").toString()}", "Alerting for Event Alerts Minecraft events", java)
 
-repository("https://maven.shedaniel.me", "https://maven.fabricmc.net", "https://maven.terraformersmc.com/releases", "https://maven.isxander.dev/releases")
+repository("https://maven.shedaniel.me/", "https://maven.fabricmc.net/", "https://maven.terraformersmc.com/releases/", "https://maven.isxander.dev/releases/", "https://maven.nucleoid.xyz/")
 repository(Repository.MAVEN_CENTRAL, Repository.JITPACK)
 
 dependencies {
     minecraft("com.mojang", "minecraft", property("deps.minecraft").toString())
     mappings("net.fabricmc", "yarn", property("deps.yarn_mappings").toString())
-    modImplementation("net.fabricmc", "fabric-loader", property("deps.fabric_loader").toString())
-    modImplementation("net.fabricmc.fabric-api", "fabric-api", property("deps.fabric_api").toString())
-    modImplementation("dev.isxander", "yet-another-config-lib", property("deps.yacl").toString())
 
-    modApi("com.terraformersmc", "modmenu", "11.0.0-beta.1")
+    modCompileOnly("net.fabricmc", "fabric-loader", property("deps.fabric_loader").toString())
+    modCompileOnly("net.fabricmc.fabric-api", "fabric-api", property("deps.fabric_api").toString())
+
+    modCompileOnly("dev.isxander", "yet-another-config-lib", property("deps.yacl").toString())
+    modCompileOnly("com.terraformersmc", "modmenu", property("deps.modmenu").toString())
+
     include(implementation("club.bottomservices.git.nep", "DiscordRPC4j16", "1.2.2"))
 }
+
+// Add placeholder-api dependency if property exists
+if (hasProperty("deps.placeholder_api")) dependencies.modCompileOnly("eu.pb4", "placeholder-api", property("deps.placeholder_api").toString())
 
 // Replacements for fabric.mod.json and config.json
 addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
