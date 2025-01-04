@@ -48,6 +48,7 @@ jobs:
     strategy:
       matrix:
         game_version: [ # Update this when adding new game versions!
+          "1.21.4",
           "1.21.3",
           "1.21.2",
           "1.21.1",
