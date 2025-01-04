@@ -7,8 +7,8 @@ import xyz.srnyx.gradlegalaxy.utility.setupJava
 
 plugins {
     java
-    id("fabric-loom") version "1.8-SNAPSHOT"
-    id("xyz.srnyx.gradle-galaxy") version "1.3.2"
+    id("fabric-loom") version "1.9-SNAPSHOT"
+    id("xyz.srnyx.gradle-galaxy") version "1.3.3"
 }
 
 // Get Java version
