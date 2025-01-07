@@ -35,7 +35,7 @@ public class WebSocketClient implements WebSocket.Listener {
         EventUtils.LOGGER.info("Attempting to establish WebSocket connection for {}", endpoint);
         httpClient = HttpClient.newHttpClient();
         httpClient.newWebSocketBuilder()
-                .buildAsync(URI.create("ws://" + HOST + "/api/v1/socket/" + endpoint.name().toLowerCase()), this)
+                .buildAsync(URI.create("wss://" + HOST + "/api/v1/socket/" + endpoint.name().toLowerCase()), this)
                 .whenComplete((newSocket, throwable) -> {
                     isRetrying = false;
                     if (throwable != null) {
