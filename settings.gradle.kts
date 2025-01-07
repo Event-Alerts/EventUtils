@@ -12,15 +12,10 @@ stonecutter {
         versions( // Make sure to update .github/workflows/publish.yml when changing versions!
             "1.21.4",
             "1.21.3",
-            "1.21.2",
             "1.21.1",
             "1.21",
             "1.20.6",
-            "1.20.5",
-            "1.20.4",
-            "1.20.3",
-            "1.20.2",
-            "1.20.1")
+            "1.20.4")
     }
     create(rootProject)
 }
