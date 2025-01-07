@@ -71,6 +71,15 @@
   "eventutils.config.players.description": "The names of the players you can see when players are hidden",
   "eventutils.config.radius.title": "Hide Players in Radius",
   "eventutils.config.radius.description": "Hides all the players in the specified radius, set to 0 to ignore distance",
+  "eventutils.config.playergroups.title": "Player Groups",
+  "eventutils.config.playergroups.description": "Manage different groups of whitelisted players",
+  "eventutils.config.playergroups.active.title": "Active Group",
+  "eventutils.config.playergroups.active.description": "Select the active player group",
+  "eventutils.config.playergroups.new.title": "Create New Group",
+  "eventutils.config.playergroups.new.description": "Enter a name to save current whitelist as a new group",
+  "eventutils.config.playergroups.delete.title": "Delete Current Group",
+  "eventutils.config.playergroups.delete.description": "Delete the currently selected group",
+
 
   "eventutils.screen.settings": "Settings"
 }

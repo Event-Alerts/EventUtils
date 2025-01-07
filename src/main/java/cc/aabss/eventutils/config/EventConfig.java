@@ -7,6 +7,7 @@ import cc.aabss.eventutils.Versions;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonObject;
 
+import com.google.gson.annotations.SerializedName;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.Version;
@@ -19,8 +20,10 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -36,6 +39,10 @@ public class EventConfig extends FileLoader {
     @NotNull public List<EntityType<?>> hiddenEntityTypes;
     @NotNull public List<String> whitelistedPlayers;
     @NotNull public final List<EventType> eventTypes;
+    @SerializedName("player_groups")
+    public Map<String, PlayerGroup> playerGroups;
+    @SerializedName("active_group_id")
+    public String activeGroupId;
 
     public EventConfig() {
         super(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
@@ -63,10 +70,19 @@ public class EventConfig extends FileLoader {
         hiddenEntityTypes = get("hidden_entity_types", Defaults.HIDDEN_ENTITY_TYPES, new TypeToken<List<EntityType<?>>>(){}.getType());
         whitelistedPlayers = get("whitelisted_players", Defaults.WHITELISTED_PLAYERS, new TypeToken<List<String>>(){}.getType());
         eventTypes = get("notifications", Defaults.EVENT_TYPES, new TypeToken<List<EventType>>(){}.getType());
+        playerGroups = get("player_groups", Defaults.PLAYER_GROUPS, new TypeToken<Map<String, PlayerGroup>>(){}.getType());
+        activeGroupId = get("active_group_id", Defaults.ACTIVE_GROUP_ID);
 
         // Save if created (default values)
         if (created) save();
     }
+
+    public void savePlayerGroups() {
+        set("player_groups", playerGroups);
+        set("active_group_id", activeGroupId);
+        save();
+    }
+
 
     private void update() {
         // Get old version
@@ -134,5 +150,21 @@ public class EventConfig extends FileLoader {
         @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = new ArrayList<>(List.of("minecraft:glow_item_frame"));
         @NotNull public static final List<String> WHITELISTED_PLAYERS = new ArrayList<>(List.of("skeppy", "badboyhalo"));
         @NotNull public static final List<EventType> EVENT_TYPES = new ArrayList<>(List.of(EventType.values()));
+        @NotNull
+        public static final Map<String, PlayerGroup> PLAYER_GROUPS = new HashMap<>() {{
+            put("default", new PlayerGroup(
+                    "Default",
+                    new ArrayList<>(List.of("skeppy", "badboyhalo")),
+                    0
+            ));
+            put("friends", new PlayerGroup(
+                    "Friends",
+                    new ArrayList<>(),
+                    5
+            ));
+        }};
+
+        @NotNull
+        public static final String ACTIVE_GROUP_ID = "default";
     }
 }
