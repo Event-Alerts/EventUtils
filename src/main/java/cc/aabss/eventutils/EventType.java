@@ -67,7 +67,7 @@ public enum EventType {
     public Option<Boolean> getOption(@NotNull EventConfig config) {
         return Option.<Boolean>createBuilder()
                 .name(displayName)
-                .description(OptionDescription.of(Text.of(Language.getInstance().get("eventutils.config.eventdescription").replace("{event}", displayName.getString()))))
+                .description(OptionDescription.of(Text.of(EventUtils.translate("eventutils.config.event_description").replace("{event}", displayNameString.toLowerCase()))))
                 .binding(true, () -> config.eventTypes.contains(this), newValue -> {
                     if (Boolean.TRUE.equals(newValue)) {
                         config.eventTypes.add(this);
