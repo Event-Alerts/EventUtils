@@ -17,10 +17,10 @@
   ],
   "entrypoints": {
     "client": [
-      "${group}.eventutils.EventUtils"
+      "cc.aabss.eventutils.EventUtils"
     ],
     "modmenu":  [
-      "${group}.eventutils.ModMenuImpl"
+      "cc.aabss.eventutils.ModMenuImpl"
     ]
   },
   "depends": {
