@@ -3,11 +3,7 @@ package cc.aabss.eventutils.utility;
 import cc.aabss.eventutils.EventUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
-//? if <=1.20.2 {
-/*import net.minecraft.client.gui.screen.ConnectScreen;
-*///?} else {
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
-//?}
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 
@@ -37,9 +33,7 @@ public class ConnectUtility {
             try {
                 client.disconnect();
 
-                //? if <=1.20.1 {
-                /*ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, true), true);
-                *///?} else if <=1.20.4 {
+                //? if <=1.20.4 {
                 /*ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true);
                 *///?} else {
                 ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true, null);

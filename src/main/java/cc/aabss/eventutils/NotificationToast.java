@@ -73,15 +73,16 @@ public class NotificationToast implements Toast {
     }
 
     @Override
-    //? if >=1.21.2 {
-    public void draw(DrawContext drawContext, TextRenderer textRenderer, long startTime) {
-    //?} else
+    //? if <1.21.2 {
     /*public Toast.Visibility draw(DrawContext drawContext, ToastManager manager, long startTime) {*/
+    //?} else {
+    public void draw(DrawContext drawContext, TextRenderer textRenderer, long startTime) {
+    //?}
         if (width == 160 && lines.size() <= 1) {
-            //? if <=1.20.1 {
-            /*drawContext.drawTexture(TEXTURE, 0, 0, 0, 0, width, height);
-            *///?} else {
-            drawContext.drawGuiTexture(/*? if >=1.21.2 {*/RenderLayer::getGuiTextured, /*?}*/TEXTURE, 0, 0, width, height);
+            //? if <1.21.2 {
+            /*drawContext.drawGuiTexture(TEXTURE, 0, 0, width, height);*/
+            //?} else {
+            drawContext.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, 0, 0, width, height);
             //?}
         } else {
             int minHeight = Math.min(4, height - 28);
@@ -107,11 +108,7 @@ public class NotificationToast implements Toast {
         final int m = j == 0 ? 20 : 5;
         final int n = Math.min(60, width - m);
         final int widthN = width - n;
-        //? if <=1.20.1 {
-        /*context.drawTexture(TEXTURE, 160, 32, 0, 0, 0, j, 0, k, m, l);
-        for (int o = m; o < widthN; o += 64) context.drawTexture(TEXTURE, 160, 32, 0, 0, 32, j, o, k, Math.min(64, widthN - o), l);
-        context.drawTexture(TEXTURE, 160, 32, 0, 0, 160 - n, j, widthN, k, n, l);
-        *///?} else if <=1.21.1 {
+        //? if <=1.21.1 {
         /*context.drawGuiTexture(TEXTURE, 160, 32, 0, j, 0, k, m, l);
         for (int o = m; o < widthN; o += 64) context.drawGuiTexture(TEXTURE, 160, 32, 32, j, o, k, Math.min(64, widthN - o), l);
         context.drawGuiTexture(TEXTURE, 160, 32, 160 - n, j, widthN, k, n, l);
