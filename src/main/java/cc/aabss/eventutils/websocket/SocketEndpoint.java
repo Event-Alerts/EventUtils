@@ -25,8 +25,14 @@ public enum SocketEndpoint {
         for (final EventType eventType : EventType.fromJson(json)) {
             if (!mod.config.eventTypes.contains(eventType)) continue;
             setLastEvent = true;
-            eventType.sendToast(eventType == EventType.MONEY ? prize(json) : null);
-            mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
+
+            String ip = mod.getIpAndConnect(eventType, json);
+            Integer prizeAmount = eventType == EventType.MONEY ? prize(json) : null;
+            eventType.sendToast(
+                    prizeAmount != null && prizeAmount > 0 ? prizeAmount : null,
+                    ip != null && !ip.isEmpty()
+            );
+            mod.lastIps.put(eventType, ip);
         }
         if (setLastEvent) lastEvent = json;
     }),
@@ -42,7 +48,9 @@ public enum SocketEndpoint {
         // Send toast
         if (!mod.config.eventTypes.contains(eventType)) return;
         lastEvent = json;
-        eventType.sendToast(null);
+
+        String ip = mod.getIpAndConnect(eventType, json);
+        eventType.sendToast(null, ip != null && !ip.isEmpty());
         mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
     });
 
@@ -63,7 +71,7 @@ public enum SocketEndpoint {
         }
     }
 
-    private static int prize(@NotNull JsonObject event) {
+    private static Integer prize(@NotNull JsonObject event) {
         // Get prize from JSON
         final JsonElement prize = event.get("prize");
         if (prize != null) return Integer.parseInt(prize.getAsString().replaceAll("[$€£]", "").split(" ")[0]);
@@ -83,6 +91,6 @@ public enum SocketEndpoint {
                 } catch (final NumberFormatException ignored) {}
             }
         }
-        return 0;
+        return null;
     }
 }
