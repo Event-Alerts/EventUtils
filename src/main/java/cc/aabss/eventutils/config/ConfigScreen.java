@@ -101,7 +101,7 @@ public class ConfigScreen {
                                 config.hidePlayersRadius = newValue;
                                 config.setSave("hide_players_radius", config.hidePlayersRadius);
                             })
-                            .controller(option -> IntegerFieldControllerBuilder.create(option).range(1, 50)).build())
+                            .controller(option -> IntegerFieldControllerBuilder.create(option).min(0)).build())
                     .group(ListOption.<String>createBuilder()
                             .name(translatable("eventutils.config.entity.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.entity.description")))
