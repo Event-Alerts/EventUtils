@@ -128,19 +128,18 @@ public class ConfigScreen {
                             .controller(StringControllerBuilder::create)
                             .initial("skeppy").build())
                     .build())
-            .category(ConfigCategory.createBuilder()
-                .name(translatable("eventutils.config.alerts"))
-                .option(EventType.SKEPPY.getOption(config))
-                .option(EventType.POTENTIAL_FAMOUS.getOption(config))
-                .option(EventType.SIGHTING.getOption(config))
-                .option(EventType.FAMOUS.getOption(config))
-                .option(EventType.PARTNER.getOption(config))
-                .option(EventType.COMMUNITY.getOption(config))
-                .option(EventType.MONEY.getOption(config))
-                .option(EventType.FUN.getOption(config))
-                .option(EventType.HOUSING.getOption(config))
-                .option(EventType.CIVILIZATION.getOption(config)).build())
-            .build().generateScreen(parent);
+            .category(ConfigCategory.createBuilder().name(translatable("eventutils.config.alerts"))
+                    .option(EventType.SKEPPY.getOption(config))
+                    .option(EventType.POTENTIAL_FAMOUS.getOption(config))
+                    .option(EventType.SIGHTING.getOption(config))
+                    .option(EventType.FAMOUS.getOption(config))
+                    .option(EventType.PARTNER.getOption(config))
+                    .option(EventType.COMMUNITY.getOption(config))
+                    .option(EventType.MONEY.getOption(config))
+                    .option(EventType.FUN.getOption(config))
+                    .option(EventType.HOUSING.getOption(config))
+                    .option(EventType.CIVILIZATION.getOption(config)).build())
+                .build().generateScreen(parent);
     }
 
     @NotNull
