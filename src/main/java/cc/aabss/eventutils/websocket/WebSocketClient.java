@@ -72,6 +72,7 @@ public class WebSocketClient implements WebSocket.Listener {
     }
 
     private void closeTasks() {
+        //? if java: >=21
         if (httpClient != null) httpClient.close();
         if (keepAlive != null) keepAlive.cancel(true);
     }

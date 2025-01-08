@@ -16,8 +16,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import static cc.aabss.eventutils.EventUtils.eventInfoKey;
@@ -31,18 +33,18 @@ public class NotificationToast implements Toast {
     private final int height;
     public Visibility visibility;
 
-    public NotificationToast(@NotNull Text title, @NotNull Text description) {
+    public NotificationToast(@NotNull Text title, @Nullable Text description) {
         this.title = title;
-        this.lines = ImmutableList.of(description.asOrderedText(),
-                Text.literal("Click ")
-                        .append(eventInfoKey.getBoundKeyLocalizedText())
-                        .append(Text.literal(" to view info."))
-                        .asOrderedText()
-        );
+        lines = new ArrayList<>();
+        if (description != null) lines.add(description.asOrderedText());
+        lines.add(Text.literal("Click ")
+                .append(eventInfoKey.getBoundKeyLocalizedText())
+                .append(Text.literal(" to view info"))
+                .asOrderedText());
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        this.width = Math.max(160, 30 + Math.max(textRenderer.getWidth(title), textRenderer.getWidth(description)));
-        this.height = 20 + Math.max(lines.size(), 1) * 12;
-        this.visibility = Visibility.HIDE;
+        width = Math.max(160, 30 + Math.max(textRenderer.getWidth(title), textRenderer.getWidth(description)));
+        height = 20 + Math.max(lines.size(), 1) * 12;
+        visibility = Visibility.HIDE;
     }
 
     //? if >=1.21.2 {

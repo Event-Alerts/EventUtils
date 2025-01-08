@@ -1,6 +1,8 @@
 package cc.aabss.eventutils;
 
 import cc.aabss.eventutils.utility.StringUtility;
+
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -96,17 +98,15 @@ public class EventInfoScreen extends Screen {
     }
 
     @NotNull
-    private String formatList(final Iterable<?> list){
-        // Get stringList
-        final List<String> stringlist = new ArrayList<>();
-        list.forEach(o -> stringlist.add(o.toString()));
-        Collections.sort(stringlist);
-        final int size = stringlist.size();
+    private String formatList(@NotNull JsonArray list) {
+        // Check size
+        final int size = list.size();
+        if (size == 0) return "";
+        if (size == 1) return list.get(0).toString();
 
         // Format
-        if (size == 1) return stringlist.getFirst();
         final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < size; i++) builder.append(stringlist.get(i)).append(", ");
+        for (int i = 0; i < size; i++) builder.append(list.get(i)).append(", ");
         return builder.substring(0, builder.length() - 2);
     }
 }

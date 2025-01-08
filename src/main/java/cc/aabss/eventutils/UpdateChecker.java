@@ -37,13 +37,13 @@ public class UpdateChecker {
     public void checkUpdate() {
         if (!EventUtils.MOD.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
 
-        // Get client
+        // Ensure client in-game
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return;
+
+        // Get latest version from Modrinth
         try {
             final HttpClient httpClient = HttpClient.newHttpClient();
-
-            // latestVersion (Modrinth)
             httpClient
                     .sendAsync(HttpRequest.newBuilder()
                                     .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
@@ -51,7 +51,7 @@ public class UpdateChecker {
                             HttpResponse.BodyHandlers.ofString())
                     .whenCompleteAsync((response, throwable) -> {
                         if (throwable != null) {
-                            throwable.printStackTrace();
+                            EventUtils.LOGGER.warn("Failed to check for updates", throwable);
                             return;
                         }
 
@@ -59,9 +59,11 @@ public class UpdateChecker {
                                 .get(0).getAsJsonObject()
                                 .get("version_number").getAsString();
                         if (latestVersion != null && !latestVersion.equals(Versions.MC_VERSION + "-" + Versions.EU_VERSION)) notifyUpdate(latestVersion);
+                        //? if java: >=21
+                        httpClient.close();
                     });
         } catch (final URISyntaxException e) {
-            throw new RuntimeException(e);
+            EventUtils.LOGGER.warn("Failed to check for updates", e);
         }
     }
 }

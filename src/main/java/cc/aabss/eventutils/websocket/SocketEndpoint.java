@@ -21,20 +21,18 @@ public enum SocketEndpoint {
         if (json == null) return;
 
         // Handle event types
-        boolean setLastEvent = false;
         for (final EventType eventType : EventType.fromJson(json)) {
             if (!mod.config.eventTypes.contains(eventType)) continue;
-            setLastEvent = true;
+            lastEvent = json;
 
-            String ip = mod.getIpAndConnect(eventType, json);
-            Integer prizeAmount = eventType == EventType.MONEY ? prize(json) : null;
-            eventType.sendToast(
-                    prizeAmount != null && prizeAmount > 0 ? prizeAmount : null,
-                    ip != null && !ip.isEmpty()
-            );
+            // Get IP and prize amount
+            final String ip = mod.getIpAndConnect(eventType, json);
+            final int prizeAmount = eventType == EventType.MONEY ? prize(json) : 0;
+
+            // Send toast
+            eventType.sendToast(prizeAmount > 0 ? prizeAmount : null, ip != null && !ip.isEmpty());
             mod.lastIps.put(eventType, ip);
         }
-        if (setLastEvent) lastEvent = json;
     }),
     FAMOUS_EVENT_POSTED((mod, message) -> {
         // Get JSON
@@ -71,7 +69,7 @@ public enum SocketEndpoint {
         }
     }
 
-    private static Integer prize(@NotNull JsonObject event) {
+    private static int prize(@NotNull JsonObject event) {
         // Get prize from JSON
         final JsonElement prize = event.get("prize");
         if (prize != null) return Integer.parseInt(prize.getAsString().replaceAll("[$€£]", "").split(" ")[0]);
@@ -91,6 +89,6 @@ public enum SocketEndpoint {
                 } catch (final NumberFormatException ignored) {}
             }
         }
-        return null;
+        return 0;
     }
 }

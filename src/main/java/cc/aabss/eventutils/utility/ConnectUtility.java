@@ -55,11 +55,13 @@ public class ConnectUtility {
 
         // Get IP
         final int size = strings.size();
-        //? if java: <21 {
-        /*if (size == 1) return strings.get(0);
-        *///?} else {
-        if (size == 1) return strings.getFirst();
-        //?}
+        if (size == 1) {
+            //? if java: <21 {
+            /*return strings.get(0);
+            *///?} else {
+            return strings.getFirst();
+            //?}
+        }
         if (size > 1) for (final String string : strings) if (isValidIp(string)) return string;
 
         // No IP found

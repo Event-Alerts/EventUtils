@@ -16,7 +16,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Language;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,10 +36,8 @@ public enum EventType {
     PARTNER("eventutils.partner.display", translatable("eventutils.partner.new").formatted(Formatting.LIGHT_PURPLE)),
     COMMUNITY("eventutils.community.display", translatable("eventutils.community.new").formatted(Formatting.GRAY)),
     MONEY("eventutils.money.display", prize -> {
-        MutableText text = translatable("eventutils.money.new").formatted(Formatting.GREEN);
-        if (prize != null && prize > 0) {
-            text.append(Text.literal(" ($" + prize + ")").formatted(Formatting.GRAY));
-        }
+        final MutableText text = translatable("eventutils.money.new").formatted(Formatting.GREEN);
+        if (prize != null && prize > 0) text.append(Text.literal(" ($" + prize + ")").formatted(Formatting.GRAY));
         return text;
     }),
     FUN("eventutils.fun.display", translatable("eventutils.fun.new").formatted(Formatting.RED)),
@@ -90,16 +87,16 @@ public enum EventType {
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
 
-        MutableText description;
+        // Get toast description
+        MutableText description = null;
         if (hasIp) {
             final String[] split = EventUtils.translate("eventutils.event.teleport").split("\\{command}");
             description = Text.literal(split[0]).formatted(Formatting.WHITE)
                     .append("/eventutils teleport " + name().toLowerCase()).formatted(Formatting.YELLOW)
                     .append(split[1]).formatted(Formatting.WHITE);
-        } else {
-            description = Text.literal("").formatted(Formatting.WHITE);
         }
 
+        // Send toast and play sound
         client.getToastManager().add(new NotificationToast(toast.apply(prize), description));
         if (client.player != null) client.player.playSound(SoundEvent.of(Identifier.of("eventutils", "alert")), 1 ,1);
     }
