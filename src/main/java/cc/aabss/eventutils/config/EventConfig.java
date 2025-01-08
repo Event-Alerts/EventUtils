@@ -39,10 +39,6 @@ public class EventConfig extends FileLoader {
     @NotNull public List<EntityType<?>> hiddenEntityTypes;
     @NotNull public List<String> whitelistedPlayers;
     @NotNull public final List<EventType> eventTypes;
-    @SerializedName("player_groups")
-    public Map<String, PlayerGroup> playerGroups;
-    @SerializedName("active_group_id")
-    public String activeGroupId;
 
     public EventConfig() {
         super(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
