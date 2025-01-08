@@ -127,66 +127,6 @@ public class ConfigScreen {
                             })
                             .controller(StringControllerBuilder::create)
                             .initial("skeppy").build())
-                    .group(OptionGroup.createBuilder()
-                            .name(translatable("eventutils.config.playergroups.title"))
-                            .description(OptionDescription.of(translatable("eventutils.config.playergroups.description")))
-                            .collapsed(false)
-                            .option(Option.<String>createBuilder()
-                                    .name(translatable("eventutils.config.playergroups.active.title"))
-                                    .description(OptionDescription.of(translatable("eventutils.config.playergroups.active.description")))
-                                    .binding(
-                                            "",  // default: no group selected
-                                            () -> config.activeGroupId,
-                                            newValue -> {
-                                                config.activeGroupId = newValue;
-                                                PlayerGroup group = config.playerGroups.get(newValue);
-                                                if (group != null) {
-                                                    config.whitelistedPlayers = group.getPlayers();
-                                                    config.hidePlayersRadius = group.getRadius();
-                                                }
-                                                config.savePlayerGroups();
-                                            }
-                                    )
-                                    .controller(option -> DropdownStringControllerBuilder.create(option)
-                                            .values(config.playerGroups.keySet().stream().toList()))
-                                    .build())
-                            .option(Option.<String>createBuilder()
-                                    .name(translatable("eventutils.config.playergroups.new.title"))
-                                    .description(OptionDescription.of(translatable("eventutils.config.playergroups.new.description")))
-                                    .binding(
-                                            "",
-                                            () -> "",
-                                            newValue -> {
-                                                if (!newValue.isEmpty()) {
-                                                    config.playerGroups.put(newValue, new PlayerGroup(
-                                                            newValue,
-                                                            config.whitelistedPlayers,
-                                                            config.hidePlayersRadius
-                                                    ));
-                                                    config.activeGroupId = newValue;
-                                                    config.savePlayerGroups();
-                                                }
-                                            }
-                                    )
-                                    .controller(StringControllerBuilder::create)
-                                    .build())
-                            .option(Option.<Boolean>createBuilder()
-                                    .name(translatable("eventutils.config.playergroups.delete.title"))
-                                    .description(OptionDescription.of(translatable("eventutils.config.playergroups.delete.description")))
-                                    .binding(
-                                            false,
-                                            () -> false,
-                                            newValue -> {
-                                                if (newValue && !config.activeGroupId.isEmpty()) {
-                                                    config.playerGroups.remove(config.activeGroupId);
-                                                    config.activeGroupId = "";
-                                                    config.savePlayerGroups();
-                                                }
-                                            }
-                                    )
-                                    .controller(ConfigScreen::getBooleanBuilder)
-                                    .build())
-                            .build())
                     .build())
             .category(ConfigCategory.createBuilder()
                 .name(translatable("eventutils.config.alerts"))

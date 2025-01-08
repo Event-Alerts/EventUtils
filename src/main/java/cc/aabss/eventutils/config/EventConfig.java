@@ -70,19 +70,10 @@ public class EventConfig extends FileLoader {
         hiddenEntityTypes = get("hidden_entity_types", Defaults.HIDDEN_ENTITY_TYPES, new TypeToken<List<EntityType<?>>>(){}.getType());
         whitelistedPlayers = get("whitelisted_players", Defaults.WHITELISTED_PLAYERS, new TypeToken<List<String>>(){}.getType());
         eventTypes = get("notifications", Defaults.EVENT_TYPES, new TypeToken<List<EventType>>(){}.getType());
-        playerGroups = get("player_groups", Defaults.PLAYER_GROUPS, new TypeToken<Map<String, PlayerGroup>>(){}.getType());
-        activeGroupId = get("active_group_id", Defaults.ACTIVE_GROUP_ID);
 
         // Save if created (default values)
         if (created) save();
     }
-
-    public void savePlayerGroups() {
-        set("player_groups", playerGroups);
-        set("active_group_id", activeGroupId);
-        save();
-    }
-
 
     private void update() {
         // Get old version
@@ -150,21 +141,5 @@ public class EventConfig extends FileLoader {
         @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = new ArrayList<>(List.of("minecraft:glow_item_frame"));
         @NotNull public static final List<String> WHITELISTED_PLAYERS = new ArrayList<>(List.of("skeppy", "badboyhalo"));
         @NotNull public static final List<EventType> EVENT_TYPES = new ArrayList<>(List.of(EventType.values()));
-        @NotNull
-        public static final Map<String, PlayerGroup> PLAYER_GROUPS = new HashMap<>() {{
-            put("default", new PlayerGroup(
-                    "Default",
-                    new ArrayList<>(List.of("skeppy", "badboyhalo")),
-                    0
-            ));
-            put("friends", new PlayerGroup(
-                    "Friends",
-                    new ArrayList<>(),
-                    5
-            ));
-        }};
-
-        @NotNull
-        public static final String ACTIVE_GROUP_ID = "default";
     }
 }
