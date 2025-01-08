@@ -35,7 +35,7 @@ public class NotificationToast implements Toast {
         this.title = title;
         this.lines = ImmutableList.of(description.asOrderedText(),
                 Text.literal("Click ")
-                        .append(Text.translatable(eventInfoKey.getBoundKeyTranslationKey()))
+                        .append(eventInfoKey.getBoundKeyLocalizedText())
                         .append(Text.literal(" to view info."))
                         .asOrderedText()
         );

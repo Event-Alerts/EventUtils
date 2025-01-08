@@ -36,7 +36,13 @@ public enum EventType {
     FAMOUS("eventutils.famous.display", translatable("eventutils.famous.new").formatted(Formatting.AQUA)),
     PARTNER("eventutils.partner.display", translatable("eventutils.partner.new").formatted(Formatting.LIGHT_PURPLE)),
     COMMUNITY("eventutils.community.display", translatable("eventutils.community.new").formatted(Formatting.GRAY)),
-    MONEY("eventutils.money.display", prize -> translatable("eventutils.money.new").formatted(Formatting.GREEN).append(Text.literal(" ($" + prize + ")").formatted(Formatting.GRAY))),
+    MONEY("eventutils.money.display", prize -> {
+        MutableText text = translatable("eventutils.money.new").formatted(Formatting.GREEN);
+        if (prize != null && prize > 0) {
+            text.append(Text.literal(" ($" + prize + ")").formatted(Formatting.GRAY));
+        }
+        return text;
+    }),
     FUN("eventutils.fun.display", translatable("eventutils.fun.new").formatted(Formatting.RED)),
     HOUSING("eventutils.housing.display", translatable("eventutils.housing.new").formatted(Formatting.GOLD)),
     CIVILIZATION("eventutils.civilization.display", translatable("eventutils.civilization.new").formatted(Formatting.BLUE));
@@ -67,7 +73,7 @@ public enum EventType {
     public Option<Boolean> getOption(@NotNull EventConfig config) {
         return Option.<Boolean>createBuilder()
                 .name(displayName)
-                .description(OptionDescription.of(Text.of(EventUtils.translate("eventutils.config.event_description").replace("{event}", displayNameString.toLowerCase()))))
+                .description(OptionDescription.of(Text.of(EventUtils.translate("eventutils.config.event_description").replace("{event}", displayName.getString()))))
                 .binding(true, () -> config.eventTypes.contains(this), newValue -> {
                     if (Boolean.TRUE.equals(newValue)) {
                         config.eventTypes.add(this);
@@ -80,13 +86,20 @@ public enum EventType {
                 .build();
     }
 
-    public void sendToast(@Nullable Integer prize) {
+    public void sendToast(@Nullable Integer prize, boolean hasIp) {
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
-        final String[] split = EventUtils.translate("eventutils.event.teleport").split("\\{command}");
-        final MutableText description = Text.literal(split[0]).formatted(Formatting.WHITE)
-                .append("/eventutils teleport " + name().toLowerCase()).formatted(Formatting.YELLOW)
-                .append(split[1]).formatted(Formatting.WHITE);
+
+        MutableText description;
+        if (hasIp) {
+            final String[] split = EventUtils.translate("eventutils.event.teleport").split("\\{command}");
+            description = Text.literal(split[0]).formatted(Formatting.WHITE)
+                    .append("/eventutils teleport " + name().toLowerCase()).formatted(Formatting.YELLOW)
+                    .append(split[1]).formatted(Formatting.WHITE);
+        } else {
+            description = Text.literal("").formatted(Formatting.WHITE);
+        }
+
         client.getToastManager().add(new NotificationToast(toast.apply(prize), description));
         if (client.player != null) client.player.playSound(SoundEvent.of(Identifier.of("eventutils", "alert")), 1 ,1);
     }

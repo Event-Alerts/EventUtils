@@ -40,14 +40,21 @@ public class UpdateChecker {
         // Get client
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return;
+        try {
+            final HttpClient httpClient = HttpClient.newHttpClient();
 
-        try (final HttpClient httpClient = HttpClient.newHttpClient()) {
             // latestVersion (Modrinth)
             httpClient
                     .sendAsync(HttpRequest.newBuilder()
-                            .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
-                            .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")").build(), HttpResponse.BodyHandlers.ofString())
+                                    .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
+                                    .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")").build(),
+                            HttpResponse.BodyHandlers.ofString())
                     .whenCompleteAsync((response, throwable) -> {
+                        if (throwable != null) {
+                            throwable.printStackTrace();
+                            return;
+                        }
+
                         final String latestVersion = JsonParser.parseString(response.body()).getAsJsonArray()
                                 .get(0).getAsJsonObject()
                                 .get("version_number").getAsString();
