@@ -7,7 +7,6 @@ import cc.aabss.eventutils.Versions;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonObject;
 
-import com.google.gson.annotations.SerializedName;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.Version;
@@ -20,10 +19,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 
