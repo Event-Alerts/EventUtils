@@ -1,5 +1,6 @@
 package cc.aabss.eventutils;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import net.minecraft.client.MinecraftClient;
@@ -35,36 +36,52 @@ public class UpdateChecker {
     }
 
     public void checkUpdate() {
+        if (!EventUtils.MOD.config.updateChecker ||
+                Versions.MC_VERSION == null
+                || Versions.EU_VERSION == null
+                || Versions.EU_VERSION_SEMANTIC == null) return;
+
+        // Get client
+        final MinecraftClient client = MinecraftClient.getInstance();
+        if (client.player == null) return;
+
+        final HttpClient httpClient = HttpClient.newHttpClient();
+
         try {
-            if (!EventUtils.MOD.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
+                    .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")")
+                    .build();
 
-            // Ensure client in-game
-            final MinecraftClient client = MinecraftClient.getInstance();
-            if (client.player == null) return;
+            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(HttpResponse::body)
+                    .thenAccept(body -> {
+                        try {
+                            JsonObject latestVersionObj = JsonParser.parseString(body)
+                                    .getAsJsonArray()
+                                    .get(0)
+                                    .getAsJsonObject();
 
-            // Get latest version from Modrinth
-            final HttpClient httpClient = HttpClient.newHttpClient();
-            httpClient
-                    .sendAsync(HttpRequest.newBuilder()
-                                    .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
-                                    .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")").build(),
-                            HttpResponse.BodyHandlers.ofString())
-                    .whenCompleteAsync((response, throwable) -> {
-                        if (throwable != null) {
-                            EventUtils.LOGGER.warn("Failed to check for updates", throwable);
-                            return;
+                            if (latestVersionObj != null && latestVersionObj.has("version_number")) {
+                                final String latestVersion = latestVersionObj.get("version_number").getAsString();
+                                final String currentVersion = Versions.MC_VERSION + "-" + Versions.EU_VERSION;
+
+                                if (!currentVersion.equals(latestVersion)) {
+                                    notifyUpdate(latestVersion);
+                                }
+                            } else {
+                                EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth");
+                            }
+                        } catch (Exception e) {
+                            EventUtils.LOGGER.error("Failed to parse update check:", e);
                         }
-
-                        // Extract version
-                        final String latestVersion = JsonParser.parseString(response.body()).getAsJsonArray()
-                                .get(0).getAsJsonObject()
-                                .get("version_number").getAsString();
-                        if (latestVersion != null && !latestVersion.equals(Versions.MC_VERSION + "-" + Versions.EU_VERSION)) notifyUpdate(latestVersion);
-                        //? if java: >=21
-                        httpClient.close();
+                    })
+                    .exceptionally(e -> {
+                        EventUtils.LOGGER.error("Failed to check for updates", e);
+                        return null;
                     });
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to check for updates", e);
+        } catch (final URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 }
