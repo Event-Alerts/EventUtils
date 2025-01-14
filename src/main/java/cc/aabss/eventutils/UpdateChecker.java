@@ -36,10 +36,7 @@ public class UpdateChecker {
     }
 
     public void checkUpdate() {
-        if (!EventUtils.MOD.config.updateChecker
-                || Versions.MC_VERSION == null
-                || Versions.EU_VERSION == null
-                || Versions.EU_VERSION_SEMANTIC == null) return;
+        if (!EventUtils.MOD.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
 
         // Get client
         final MinecraftClient client = MinecraftClient.getInstance();
@@ -80,8 +77,8 @@ public class UpdateChecker {
                         EventUtils.LOGGER.error("Failed to check for updates", e);
                         return null;
                     });
-        } catch (final URISyntaxException e) {
-            throw new RuntimeException(e);
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to check for updates", e);
         }
     }
 }
