@@ -36,8 +36,8 @@ public class UpdateChecker {
     }
 
     public void checkUpdate() {
-        if (!EventUtils.MOD.config.updateChecker ||
-                Versions.MC_VERSION == null
+        if (!EventUtils.MOD.config.updateChecker
+                || Versions.MC_VERSION == null
                 || Versions.EU_VERSION == null
                 || Versions.EU_VERSION_SEMANTIC == null) return;
 
