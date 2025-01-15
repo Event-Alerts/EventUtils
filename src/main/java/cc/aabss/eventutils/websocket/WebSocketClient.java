@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class WebSocketClient implements WebSocket.Listener {
-    @NotNull private static final String HOST = "eventalerts.venox.network";
+    @NotNull private static final String HOST = "eventalerts.gg";
     @NotNull private static final ByteBuffer PING = ByteBuffer.wrap(new byte[]{0});
 
     @NotNull private final EventUtils mod;
