@@ -102,8 +102,8 @@ public class EventUtils implements ClientModInitializer {
                                 .formatted(hidePlayers ? Formatting.GREEN : Formatting.RED), true);
             }
             while (eventInfoKey.wasPressed()) {
-                if (SocketEndpoint.lastEvent != null) {
-                    client.setScreen(new EventInfoScreen(SocketEndpoint.lastEvent));
+                if (SocketEndpoint.LAST_EVENT != null) {
+                    client.setScreen(new EventInfoScreen(SocketEndpoint.LAST_EVENT));
                     continue;
                 }
                 if (client.player != null) client.player.sendMessage(
