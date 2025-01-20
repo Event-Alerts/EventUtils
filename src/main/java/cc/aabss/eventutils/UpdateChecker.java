@@ -36,14 +36,13 @@ public class UpdateChecker {
     }
 
     public void checkUpdate() {
-        if (!EventUtils.MOD.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
-
-        // Ensure client in-game
-        if (MinecraftClient.getInstance().player == null) return;
-
-        final HttpClient httpClient = HttpClient.newHttpClient();
-
-        try {
+		try {
+	        if (!EventUtils.MOD.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
+	
+	        // Ensure client in-game
+	        if (MinecraftClient.getInstance().player == null) return;
+	
+	        final HttpClient httpClient = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
                     .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")")
