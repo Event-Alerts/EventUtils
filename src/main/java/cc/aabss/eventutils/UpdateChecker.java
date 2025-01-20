@@ -1,5 +1,6 @@
 package cc.aabss.eventutils;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import net.minecraft.client.MinecraftClient;
@@ -42,31 +43,43 @@ public class UpdateChecker {
     public void checkUpdate() {
         try {
             if (!mod.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
-
+	
             // Ensure client in-game
-            final MinecraftClient client = MinecraftClient.getInstance();
-            if (client.player == null) return;
-
-            // Get latest version from Modrinth
+            if (MinecraftClient.getInstance().player == null) return;
+	
+            // Get client and request
             final HttpClient httpClient = HttpClient.newHttpClient();
-            httpClient
-                    .sendAsync(HttpRequest.newBuilder()
-                                    .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
-                                    .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")").build(),
-                            HttpResponse.BodyHandlers.ofString())
-                    .whenCompleteAsync((response, throwable) -> {
-                        if (throwable != null) {
-                            EventUtils.LOGGER.warn("Failed to check for updates", throwable);
-                            return;
-                        }
+            final HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
+                    .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")")
+                    .build();
 
-                        // Extract version
-                        final String latestVersion = JsonParser.parseString(response.body()).getAsJsonArray()
-                                .get(0).getAsJsonObject()
-                                .get("version_number").getAsString();
-                        if (latestVersion != null && !latestVersion.equals(Versions.MC_VERSION + "-" + Versions.EU_VERSION)) notifyUpdate(latestVersion);
-                        //? if java: >=21
-                        httpClient.close();
+            // Make request
+            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(HttpResponse::body)
+                    .thenAccept(body -> {
+                        try {
+                            JsonObject latestVersionObj = JsonParser
+				    			    			        .parseString(body).getAsJsonArray()
+                                    .get(0).getAsJsonObject();
+
+			                      // Check if verion field exists
+			                      if (latestVersionObj == null || !latestVersionObj.has("version_number")) {
+			                          EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth");
+			                          return;
+			                      }
+
+			                      // Get version and notify update
+                            final String latestVersion = latestVersionObj.get("version_number").getAsString();
+                            final String currentVersion = Versions.MC_VERSION + "-" + Versions.EU_VERSION;
+                            if (!currentVersion.equals(latestVersion)) notifyUpdate(latestVersion);
+                        } catch (final Exception e) {
+                            EventUtils.LOGGER.error("Failed to parse update check:", e);
+                        }
+                    })
+                    .exceptionally(e -> {
+                        EventUtils.LOGGER.error("Failed to check for updates", e);
+                        return null;
                     });
         } catch (final Exception e) {
             EventUtils.LOGGER.warn("Failed to check for updates", e);
