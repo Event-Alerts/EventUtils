@@ -81,7 +81,11 @@ public class WebSocketClient implements WebSocket.Listener {
     public CompletionStage<?> onText(@NotNull WebSocket webSocket, @NotNull CharSequence data, boolean last) {
         final String message = data.toString();
         webSocket.request(1); // Request more messages
-        endpoint.handler.accept(mod, message);
+        try {
+            endpoint.handler.accept(mod, message);
+        } catch (final Exception e) {
+            EventUtils.LOGGER.error("Failed to handle message: {}", message, e);
+        }
         return null;
     }
 
