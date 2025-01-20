@@ -32,6 +32,7 @@ public class EventConfig extends FileLoader {
     @NotNull public String defaultFamousIp;
     @NotNull public List<EntityType<?>> hiddenEntityTypes;
     @NotNull public List<String> whitelistedPlayers;
+    public boolean useTestingApi;
     @NotNull public final List<EventType> eventTypes;
     @NotNull public final Map<EventType, NotificationSound> notificationSounds;
 
@@ -60,6 +61,7 @@ public class EventConfig extends FileLoader {
         hidePlayersRadius = get("hide_players_radius", Defaults.HIDE_PLAYERS_RADIUS);
         hiddenEntityTypes = get("hidden_entity_types", Defaults.hiddenEntityTypes(), new TypeToken<List<EntityType<?>>>(){}.getType());
         whitelistedPlayers = get("whitelisted_players", Defaults.whitelistedPlayers(), new TypeToken<List<String>>(){}.getType());
+        useTestingApi = get("use_testing_api", Defaults.USE_TESTING_API);
         eventTypes = get("notifications", Defaults.eventTypes(), new TypeToken<List<EventType>>(){}.getType());
         notificationSounds = get("notification_sounds", Defaults.notificationSounds(), new TypeToken<Map<EventType, NotificationSound>>(){}.getType());
 
@@ -119,6 +121,11 @@ public class EventConfig extends FileLoader {
     }
 
     @NotNull
+    public String getWebsocketHost() {
+        return useTestingApi ? "ws://localhost:9090" : "wss://eventalerts.gg";
+    }
+
+    @NotNull
     public NotificationSound getNotificationSound(@NotNull EventType type) {
         return notificationSounds.getOrDefault(type, NotificationSound.ALERT);
     }
@@ -136,6 +143,7 @@ public class EventConfig extends FileLoader {
         @NotNull private static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = List.of(EntityType.GLOW_ITEM_FRAME);
         @NotNull private static final List<String> HIDDEN_ENTITY_TYPES_STRING = List.of("minecraft:glow_item_frame");
         @NotNull private static final List<String> WHITELISTED_PLAYERS = List.of("skeppy", "badboyhalo");
+        public static final boolean USE_TESTING_API = false;
         @NotNull private static final List<EventType> EVENT_TYPES = List.of(EventType.values());
         @NotNull private static final Map<EventType, NotificationSound> NOTIFICATION_SOUNDS = Arrays.stream(EventType.values())
                 .collect(HashMap::new, (map, type) -> map.put(type, NotificationSound.ALERT), HashMap::putAll);

@@ -126,6 +126,18 @@ public class ConfigScreen {
                             })
                             .controller(StringControllerBuilder::create)
                             .initial("skeppy").build())
+                    .option(Option.<Boolean>createBuilder()
+                            .name(translatable("eventutils.config.use_testing_api.title"))
+                            .description(OptionDescription.of(translatable("eventutils.config.use_testing_api.description")))
+                            .binding(EventConfig.Defaults.USE_TESTING_API, () -> config.useTestingApi, newValue -> {
+                                config.useTestingApi = newValue;
+                                EventUtils.MOD.webSockets.forEach(webSocket -> {
+                                    webSocket.close("Testing API enabled/disabled");
+                                    webSocket.connect();
+                                });
+                                config.setSave("use_testing_api", config.useTestingApi);
+                            })
+                            .controller(ConfigScreen::getBooleanBuilder).build())
                     .build());
 
         // Alerts & notification sounds

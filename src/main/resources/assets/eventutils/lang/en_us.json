@@ -74,6 +74,8 @@
   "eventutils.config.players.description": "The names of the players you can see when players are hidden",
   "eventutils.config.radius.title": "Hide Players in Radius",
   "eventutils.config.radius.description": "Hides all the players in the specified radius, set to 0 to ignore distance",
+  "eventutils.config.use_testing_api.title": "Use Testing API",
+  "eventutils.config.use_testing_api.description": "(ADVANCED) Whether to use the testing API for the mod",
 
   "eventutils.sound.alarm": "Alarm",
   "eventutils.sound.alert": "Alert",

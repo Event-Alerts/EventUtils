@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 
 
 public class WebSocketClient implements WebSocket.Listener {
-    @NotNull private static final String HOST = "eventalerts.gg";
     @NotNull private static final ByteBuffer PING = ByteBuffer.wrap(new byte[]{0});
 
     @NotNull private final EventUtils mod;
@@ -31,11 +30,11 @@ public class WebSocketClient implements WebSocket.Listener {
         connect();
     }
 
-    private void connect() {
+    public void connect() {
         EventUtils.LOGGER.info("Attempting to establish WebSocket connection for {}", endpoint);
         httpClient = HttpClient.newHttpClient();
         httpClient.newWebSocketBuilder()
-                .buildAsync(URI.create("wss://" + HOST + "/api/v1/socket/" + endpoint.name().toLowerCase()), this)
+                .buildAsync(URI.create(mod.config.getWebsocketHost()  + "/api/v1/socket/" + endpoint.name().toLowerCase()), this)
                 .whenComplete((newSocket, throwable) -> {
                     isRetrying = false;
                     if (throwable != null) {
