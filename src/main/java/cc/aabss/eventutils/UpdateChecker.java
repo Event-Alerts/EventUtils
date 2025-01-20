@@ -39,8 +39,7 @@ public class UpdateChecker {
         if (!EventUtils.MOD.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
 
         // Ensure client in-game
-        final MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null) return;
+        if (MinecraftClient.getInstance().player == null) return;
 
         final HttpClient httpClient = HttpClient.newHttpClient();
 
