@@ -1,5 +1,7 @@
 package cc.aabss.eventutils.config;
 
+import cc.aabss.eventutils.EventUtils;
+
 import dev.isxander.yacl3.api.NameableEnum;
 
 import net.minecraft.client.MinecraftClient;
@@ -41,6 +43,7 @@ public enum NotificationSound implements NameableEnum {
         try {
             return valueOf(string.toUpperCase());
         } catch (final IllegalArgumentException e) {
+            EventUtils.LOGGER.warn("Unknown notification sound: {}", string);
             return null;
         }
     }

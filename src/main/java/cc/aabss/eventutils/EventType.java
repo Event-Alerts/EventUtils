@@ -117,6 +117,7 @@ public enum EventType {
         try {
             return EventType.valueOf(eventType.toUpperCase());
         } catch (final IllegalArgumentException e) {
+            EventUtils.LOGGER.warn("Invalid event type: {}", eventType);
             return null;
         }
     }

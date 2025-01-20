@@ -2,7 +2,6 @@ package cc.aabss.eventutils.config.adapters;
 
 import cc.aabss.eventutils.EventType;
 
-import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -26,10 +25,8 @@ public class EventTypeSetAdapter extends TypeAdapter<Set<EventType>> {
         final Set<EventType> eventTypes = new HashSet<>();
         in.beginArray();
         while (in.hasNext()) {
-            final String typeString = in.nextString();
-            final EventType type = EventType.fromString(typeString);
-            if (type == null) throw new JsonParseException("Unknown event type: " + typeString);
-            eventTypes.add(type);
+            final EventType type = EventType.fromString(in.nextString());
+            if (type != null) eventTypes.add(type);
         }
         in.endArray();
         return eventTypes;

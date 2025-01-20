@@ -1,7 +1,6 @@
 package cc.aabss.eventutils.config.adapters;
 
 import cc.aabss.eventutils.EventType;
-import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.NotificationSound;
 
 import com.google.gson.TypeAdapter;
@@ -35,15 +34,11 @@ public class MapEventTypeNotificationSoundAdapter extends TypeAdapter<Map<EventT
             final String name = in.nextName();
             final EventType type = EventType.fromString(name);
             if (type == null) {
-                EventUtils.LOGGER.warn("Unknown event type: {}", name);
                 in.skipValue();
                 continue;
             }
             final NotificationSound value = NotificationSound.fromString(in.nextString());
-            if (value == null) {
-                EventUtils.LOGGER.warn("Unknown notification sound: {}", name);
-                continue;
-            }
+            if (value == null) continue;
             map.put(type, value);
         }
         in.endObject();
