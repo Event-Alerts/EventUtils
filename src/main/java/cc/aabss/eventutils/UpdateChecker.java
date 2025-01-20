@@ -61,9 +61,7 @@ public class UpdateChecker {
                                 final String latestVersion = latestVersionObj.get("version_number").getAsString();
                                 final String currentVersion = Versions.MC_VERSION + "-" + Versions.EU_VERSION;
 
-                                if (!currentVersion.equals(latestVersion)) {
-                                    notifyUpdate(latestVersion);
-                                }
+                                if (!currentVersion.equals(latestVersion)) notifyUpdate(latestVersion);
                             } else {
                                 EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth");
                             }
