@@ -124,7 +124,7 @@ public enum EventType {
     @NotNull
     public static Set<EventType> fromJson(@NotNull JsonObject json) {
         final Set<EventType> eventTypes = new HashSet<>();
-        final JsonArray roles = json.getAsJsonArray("roles");
+        final JsonArray roles = json.getAsJsonArray("rolesNamed");
         if (roles != null) for (final JsonElement role : roles) {
             final EventType eventType = EventType.fromString(role.getAsString());
             if (eventType != null) eventTypes.add(eventType);
