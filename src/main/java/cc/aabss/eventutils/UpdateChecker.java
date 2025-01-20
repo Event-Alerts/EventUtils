@@ -43,7 +43,7 @@ public class UpdateChecker {
     public void checkUpdate() {
         try {
             if (!mod.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
-	
+
             // Ensure client in-game
             if (MinecraftClient.getInstance().player == null) return;
 	
@@ -59,17 +59,17 @@ public class UpdateChecker {
                     .thenApply(HttpResponse::body)
                     .thenAccept(body -> {
                         try {
-                            JsonObject latestVersionObj = JsonParser
-				    			    			        .parseString(body).getAsJsonArray()
+                            final JsonObject latestVersionObj = JsonParser
+                                    .parseString(body).getAsJsonArray()
                                     .get(0).getAsJsonObject();
 
-			                      // Check if verion field exists
-			                      if (latestVersionObj == null || !latestVersionObj.has("version_number")) {
-			                          EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth");
-			                          return;
-			                      }
+                            // Check if version field exists
+                            if (latestVersionObj == null || !latestVersionObj.has("version_number")) {
+                                EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth");
+                                return;
+                            }
 
-			                      // Get version and notify update
+                            // Get version and notify update
                             final String latestVersion = latestVersionObj.get("version_number").getAsString();
                             final String currentVersion = Versions.MC_VERSION + "-" + Versions.EU_VERSION;
                             if (!currentVersion.equals(latestVersion)) notifyUpdate(latestVersion);
