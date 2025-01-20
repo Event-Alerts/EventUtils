@@ -52,20 +52,21 @@ public class UpdateChecker {
                     .thenApply(HttpResponse::body)
                     .thenAccept(body -> {
                         try {
-                            JsonObject latestVersionObj = JsonParser.parseString(body)
-                                    .getAsJsonArray()
-                                    .get(0)
-                                    .getAsJsonObject();
+                            JsonObject latestVersionObj = JsonParser
+				    .parseString(body).getAsJsonArray()
+                                    .get(0).getAsJsonObject();
 
-                            if (latestVersionObj != null && latestVersionObj.has("version_number")) {
-                                final String latestVersion = latestVersionObj.get("version_number").getAsString();
-                                final String currentVersion = Versions.MC_VERSION + "-" + Versions.EU_VERSION;
-
-                                if (!currentVersion.equals(latestVersion)) notifyUpdate(latestVersion);
-                            } else {
+		            // Check if verion field exists
+                            if (latestVersionObj == null || !latestVersionObj.has("version_number")) {
                                 EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth");
-                            }
-                        } catch (Exception e) {
+				return;
+			    }
+
+			    // Get version and notify update
+                            final String latestVersion = latestVersionObj.get("version_number").getAsString();
+                            final String currentVersion = Versions.MC_VERSION + "-" + Versions.EU_VERSION;
+                            if (!currentVersion.equals(latestVersion)) notifyUpdate(latestVersion);
+                        } catch (final Exception e) {
                             EventUtils.LOGGER.error("Failed to parse update check:", e);
                         }
                     })
