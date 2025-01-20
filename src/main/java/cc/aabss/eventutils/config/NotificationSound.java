@@ -2,6 +2,9 @@ package cc.aabss.eventutils.config;
 
 import dev.isxander.yacl3.api.NameableEnum;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -24,9 +27,8 @@ public enum NotificationSound implements NameableEnum {
     SHAKEY,
     TIME_OF_WAR;
 
-    @NotNull
-    public Identifier getIdentifier() {
-        return Identifier.of("eventutils", "notification." + name().toLowerCase());
+    public void play() {
+        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvent.of(Identifier.of("eventutils", "notification." + name().toLowerCase())), 1, 1));
     }
 
     @Override @NotNull @Contract(" -> new")

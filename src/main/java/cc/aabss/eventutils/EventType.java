@@ -10,11 +10,10 @@ import com.google.gson.JsonObject;
 
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
+import dev.isxander.yacl3.api.OptionEventListener;
 import dev.isxander.yacl3.api.controller.EnumDropdownControllerBuilder;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -89,6 +88,9 @@ public enum EventType {
                             config.setSave("notification_sounds", config.notificationSounds);
                         })
                 .controller(EnumDropdownControllerBuilder::create)
+                .addListener((option, event) -> {
+                    if (event == OptionEventListener.Event.STATE_CHANGE) option.pendingValue().play();
+                })
                 .build();
     }
 
@@ -107,7 +109,7 @@ public enum EventType {
 
         // Send toast and play sound
         client.getToastManager().add(new NotificationToast(toast.apply(prize), description, client.player != null));
-        client.getSoundManager().play(PositionedSoundInstance.ambient(SoundEvent.of(mod.config.getNotificationSound(this).getIdentifier()), 1, 1));
+        mod.config.getNotificationSound(this).play();
     }
 
     @Nullable
