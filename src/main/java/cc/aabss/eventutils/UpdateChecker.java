@@ -12,7 +12,6 @@ import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -21,6 +20,12 @@ import static net.minecraft.text.Text.translatable;
 
 
 public class UpdateChecker {
+    @NotNull private final EventUtils mod;
+
+    public UpdateChecker(@NotNull EventUtils mod) {
+        this.mod = mod;
+    }
+
     private void notifyUpdate(@NotNull String latestVersion) {
         final MinecraftClient client = MinecraftClient.getInstance();
         client.send(() -> {
@@ -36,33 +41,35 @@ public class UpdateChecker {
     }
 
     public void checkUpdate() {
-		try {
-	        if (!EventUtils.MOD.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
+        try {
+            if (!mod.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
 	
-	        // Ensure client in-game
-	        if (MinecraftClient.getInstance().player == null) return;
+            // Ensure client in-game
+            if (MinecraftClient.getInstance().player == null) return;
 	
-	        final HttpClient httpClient = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
+            // Get client and request
+            final HttpClient httpClient = HttpClient.newHttpClient();
+            final HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
                     .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")")
                     .build();
 
+            // Make request
             httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(HttpResponse::body)
                     .thenAccept(body -> {
                         try {
                             JsonObject latestVersionObj = JsonParser
-				    .parseString(body).getAsJsonArray()
+				    			    			        .parseString(body).getAsJsonArray()
                                     .get(0).getAsJsonObject();
 
-		            // Check if verion field exists
-                            if (latestVersionObj == null || !latestVersionObj.has("version_number")) {
-                                EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth");
-				return;
-			    }
+			                      // Check if verion field exists
+			                      if (latestVersionObj == null || !latestVersionObj.has("version_number")) {
+			                          EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth");
+			                          return;
+			                      }
 
-			    // Get version and notify update
+			                      // Get version and notify update
                             final String latestVersion = latestVersionObj.get("version_number").getAsString();
                             final String currentVersion = Versions.MC_VERSION + "-" + Versions.EU_VERSION;
                             if (!currentVersion.equals(latestVersion)) notifyUpdate(latestVersion);

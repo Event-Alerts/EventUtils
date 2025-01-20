@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 
 
 public class WebSocketClient implements WebSocket.Listener {
-    @NotNull private static final String HOST = "eventalerts.venox.network";
     @NotNull private static final ByteBuffer PING = ByteBuffer.wrap(new byte[]{0});
 
     @NotNull private final EventUtils mod;
@@ -31,11 +30,11 @@ public class WebSocketClient implements WebSocket.Listener {
         connect();
     }
 
-    private void connect() {
+    public void connect() {
         EventUtils.LOGGER.info("Attempting to establish WebSocket connection for {}", endpoint);
         httpClient = HttpClient.newHttpClient();
         httpClient.newWebSocketBuilder()
-                .buildAsync(URI.create("wss://" + HOST + "/api/v1/socket/" + endpoint.name().toLowerCase()), this)
+                .buildAsync(URI.create(mod.config.getWebsocketHost()  + "/api/v1/socket/" + endpoint.name().toLowerCase()), this)
                 .whenComplete((newSocket, throwable) -> {
                     isRetrying = false;
                     if (throwable != null) {
@@ -45,7 +44,7 @@ public class WebSocketClient implements WebSocket.Listener {
                     }
                     webSocket = newSocket;
                     webSocket.request(1);
-                    keepAlive = EventUtils.SCHEDULER.scheduleAtFixedRate(() -> {
+                    keepAlive = mod.scheduler.scheduleAtFixedRate(() -> {
                         if (newSocket.isInputClosed()) {
                             retryConnection("Keep-alive detected closed input");
                             return;
@@ -60,7 +59,7 @@ public class WebSocketClient implements WebSocket.Listener {
         if (isRetrying) return;
         isRetrying = true;
         close("Retrying connection");
-        EventUtils.SCHEDULER.schedule(() -> {
+        mod.scheduler.schedule(() -> {
             EventUtils.LOGGER.warn("Retrying websocket connection for {} with reason \"{}\"", endpoint, reason);
             connect();
         }, 10, TimeUnit.SECONDS);
@@ -81,7 +80,11 @@ public class WebSocketClient implements WebSocket.Listener {
     public CompletionStage<?> onText(@NotNull WebSocket webSocket, @NotNull CharSequence data, boolean last) {
         final String message = data.toString();
         webSocket.request(1); // Request more messages
-        endpoint.handler.accept(mod, message);
+        try {
+            endpoint.handler.accept(mod, message);
+        } catch (final Exception e) {
+            EventUtils.LOGGER.error("Failed to handle message: {}", message, e);
+        }
         return null;
     }
 

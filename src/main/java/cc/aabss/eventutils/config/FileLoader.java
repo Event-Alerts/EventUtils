@@ -1,6 +1,10 @@
 package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.EventType;
+import cc.aabss.eventutils.config.adapters.EntityTypeAdapter;
+import cc.aabss.eventutils.config.adapters.EntityTypeListAdapter;
+import cc.aabss.eventutils.config.adapters.EventTypeSetAdapter;
+import cc.aabss.eventutils.config.adapters.MapEventTypeNotificationSoundAdapter;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.*;
@@ -16,6 +20,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -28,7 +33,9 @@ public abstract class FileLoader {
             .setPrettyPrinting()
             .registerTypeAdapter(EntityType.class, new EntityTypeAdapter())
             .registerTypeAdapter(new TypeToken<List<EntityType<?>>>(){}.getType(), new EntityTypeListAdapter())
-            .registerTypeAdapter(new TypeToken<Set<EventType>>(){}.getType(), new EventTypeSetAdapter()).create();
+            .registerTypeAdapter(new TypeToken<Set<EventType>>(){}.getType(), new EventTypeSetAdapter())
+            .registerTypeAdapter(new TypeToken<Map<EventType, NotificationSound>>(){}.getType(), new MapEventTypeNotificationSoundAdapter())
+            .create();
 
     @NotNull protected final File file;
     @NotNull protected JsonObject json = new JsonObject();

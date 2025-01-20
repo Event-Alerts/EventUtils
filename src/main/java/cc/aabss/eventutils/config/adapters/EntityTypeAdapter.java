@@ -1,16 +1,19 @@
-package cc.aabss.eventutils.config;
+package cc.aabss.eventutils.config.adapters;
 
 import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+
 import net.minecraft.entity.EntityType;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Optional;
 
-class EntityTypeAdapter extends TypeAdapter<EntityType<?>> {
+
+public class EntityTypeAdapter extends TypeAdapter<EntityType<?>> {
     @Override
     public void write(@NotNull JsonWriter out, @NotNull EntityType<?> value) throws IOException {
         out.value(EntityType.getId(value).toString());

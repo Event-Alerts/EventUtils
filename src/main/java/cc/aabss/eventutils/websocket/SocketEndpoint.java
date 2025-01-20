@@ -23,14 +23,14 @@ public enum SocketEndpoint {
         // Handle event types
         for (final EventType eventType : EventType.fromJson(json)) {
             if (!mod.config.eventTypes.contains(eventType)) continue;
-            lastEvent = json;
+            LAST_EVENT = json;
 
             // Get IP and prize amount
             final String ip = mod.getIpAndConnect(eventType, json);
             final int prizeAmount = eventType == EventType.MONEY ? prize(json) : 0;
 
             // Send toast
-            eventType.sendToast(prizeAmount > 0 ? prizeAmount : null, ip != null && !ip.isEmpty());
+            eventType.sendToast(mod, prizeAmount > 0 ? prizeAmount : null, ip != null && !ip.isEmpty());
             mod.lastIps.put(eventType, ip);
         }
     }),
@@ -45,14 +45,15 @@ public enum SocketEndpoint {
 
         // Send toast
         if (!mod.config.eventTypes.contains(eventType)) return;
-        lastEvent = json;
+        LAST_EVENT = json;
 
         String ip = mod.getIpAndConnect(eventType, json);
-        eventType.sendToast(null, ip != null && !ip.isEmpty());
+        eventType.sendToast(mod, null, ip != null && !ip.isEmpty());
         mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
     });
 
-    public static JsonObject lastEvent;
+    @Nullable public static JsonObject LAST_EVENT;
+
     @NotNull public final BiConsumer<EventUtils, String> handler;
 
     SocketEndpoint(@NotNull BiConsumer<EventUtils, String> handler) {

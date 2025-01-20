@@ -18,10 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 public class EventConfig extends FileLoader {
@@ -35,7 +32,9 @@ public class EventConfig extends FileLoader {
     @NotNull public String defaultFamousIp;
     @NotNull public List<EntityType<?>> hiddenEntityTypes;
     @NotNull public List<String> whitelistedPlayers;
+    public boolean useTestingApi;
     @NotNull public final List<EventType> eventTypes;
+    @NotNull public final Map<EventType, NotificationSound> notificationSounds;
 
     public EventConfig() {
         super(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
@@ -60,9 +59,11 @@ public class EventConfig extends FileLoader {
         confirmDisconnect = get("confirm_disconnect", Defaults.CONFIRM_DISCONNECT);
         defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
         hidePlayersRadius = get("hide_players_radius", Defaults.HIDE_PLAYERS_RADIUS);
-        hiddenEntityTypes = get("hidden_entity_types", Defaults.HIDDEN_ENTITY_TYPES, new TypeToken<List<EntityType<?>>>(){}.getType());
-        whitelistedPlayers = get("whitelisted_players", Defaults.WHITELISTED_PLAYERS, new TypeToken<List<String>>(){}.getType());
-        eventTypes = get("notifications", Defaults.EVENT_TYPES, new TypeToken<List<EventType>>(){}.getType());
+        hiddenEntityTypes = get("hidden_entity_types", Defaults.hiddenEntityTypes(), new TypeToken<List<EntityType<?>>>(){}.getType());
+        whitelistedPlayers = get("whitelisted_players", Defaults.whitelistedPlayers(), new TypeToken<List<String>>(){}.getType());
+        useTestingApi = get("use_testing_api", Defaults.USE_TESTING_API);
+        eventTypes = get("notifications", Defaults.eventTypes(), new TypeToken<List<EventType>>(){}.getType());
+        notificationSounds = get("notification_sounds", Defaults.notificationSounds(), new TypeToken<Map<EventType, NotificationSound>>(){}.getType());
 
         // Save if created (default values)
         if (created) save();
@@ -119,8 +120,17 @@ public class EventConfig extends FileLoader {
         remove(oldKey);
     }
 
-    // Make sure these are all mutable!
-    // List.of() -> new ArrayList<>(List.of()), Set.of() -> new HashSet<>(Set.of()), etc...
+    @NotNull
+    public String getWebsocketHost() {
+        return useTestingApi ? "ws://localhost:9090" : "wss://eventalerts.gg";
+    }
+
+    @NotNull
+    public NotificationSound getNotificationSound(@NotNull EventType type) {
+        return notificationSounds.getOrDefault(type, NotificationSound.ALERT);
+    }
+
+    // Collections need to have methods to create new instances of the collection!
     public static class Defaults {
         public static final boolean DISCORD_RPC = true;
         public static final boolean AUTO_TP = false;
@@ -130,9 +140,33 @@ public class EventConfig extends FileLoader {
         public static final boolean CONFIRM_DISCONNECT = true;
         public static final int HIDE_PLAYERS_RADIUS = 0;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
-        @NotNull public static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = new ArrayList<>(List.of(EntityType.GLOW_ITEM_FRAME));
-        @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = new ArrayList<>(List.of("minecraft:glow_item_frame"));
-        @NotNull public static final List<String> WHITELISTED_PLAYERS = new ArrayList<>(List.of("skeppy", "badboyhalo"));
-        @NotNull public static final List<EventType> EVENT_TYPES = new ArrayList<>(List.of(EventType.values()));
+        @NotNull private static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = List.of(EntityType.GLOW_ITEM_FRAME);
+        @NotNull private static final List<String> HIDDEN_ENTITY_TYPES_STRING = List.of("minecraft:glow_item_frame");
+        @NotNull private static final List<String> WHITELISTED_PLAYERS = List.of("skeppy", "badboyhalo");
+        public static final boolean USE_TESTING_API = false;
+        @NotNull private static final List<EventType> EVENT_TYPES = List.of(EventType.values());
+        @NotNull private static final Map<EventType, NotificationSound> NOTIFICATION_SOUNDS = Arrays.stream(EventType.values())
+                .collect(HashMap::new, (map, type) -> map.put(type, NotificationSound.ALERT), HashMap::putAll);
+
+        @NotNull
+        public static List<EntityType<?>> hiddenEntityTypes() {
+            return new ArrayList<>(HIDDEN_ENTITY_TYPES);
+        }
+        @NotNull
+        public static List<String> hiddenEntityTypesString() {
+            return new ArrayList<>(HIDDEN_ENTITY_TYPES_STRING);
+        }
+        @NotNull
+        public static List<String> whitelistedPlayers() {
+            return new ArrayList<>(WHITELISTED_PLAYERS);
+        }
+        @NotNull
+        public static List<EventType> eventTypes() {
+            return new ArrayList<>(EVENT_TYPES);
+        }
+        @NotNull
+        public static Map<EventType, NotificationSound> notificationSounds() {
+            return new HashMap<>(NOTIFICATION_SOUNDS);
+        }
     }
 }

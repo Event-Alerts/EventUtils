@@ -27,9 +27,8 @@ public class ConfigScreen {
 
     @NotNull
     public static Screen getConfigScreen(@Nullable Screen parent) {
-        final EventUtils mod = EventUtils.MOD;
-        final EventConfig config = mod.config;
-        return YetAnotherConfigLib.createBuilder()
+        final EventConfig config = EventUtils.MOD.config;
+        final YetAnotherConfigLib.Builder builder = YetAnotherConfigLib.createBuilder()
             .title(translatable("eventutils.config.title"))
             .category(ConfigCategory.createBuilder().name(translatable("eventutils.config.general"))
                     .option(Option.<Boolean>createBuilder()
@@ -55,9 +54,9 @@ public class ConfigScreen {
                                 config.discordRpc = newValue;
                                 config.setSave("discord_rpc", config.discordRpc);
                                 if (Boolean.TRUE.equals(newValue)) {
-                                    mod.discordRPC.connect();
+                                    EventUtils.MOD.discordRPC.connect();
                                 } else {
-                                    mod.discordRPC.disconnect();
+                                    EventUtils.MOD.discordRPC.disconnect();
                                 }
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
@@ -67,7 +66,7 @@ public class ConfigScreen {
                             .binding(EventConfig.Defaults.UPDATE_CHECKER, () -> config.updateChecker, newValue -> {
                                 config.updateChecker = newValue;
                                 config.setSave("update_checker", config.updateChecker);
-                                if (Boolean.TRUE.equals(newValue)) mod.updateChecker.checkUpdate();
+                                if (Boolean.TRUE.equals(newValue)) EventUtils.MOD.updateChecker.checkUpdate();
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
                     .option(Option.<Boolean>createBuilder()
@@ -105,7 +104,7 @@ public class ConfigScreen {
                     .group(ListOption.<String>createBuilder()
                             .name(translatable("eventutils.config.entity.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.entity.description")))
-                            .binding(EventConfig.Defaults.HIDDEN_ENTITY_TYPES_STRING, () -> config.hiddenEntityTypes.stream()
+                            .binding(EventConfig.Defaults.hiddenEntityTypesString(), () -> config.hiddenEntityTypes.stream()
                                             .map(entityType -> EntityType.getId(entityType).toString())
                                             .toList(),
                                     newValue -> {
@@ -119,7 +118,7 @@ public class ConfigScreen {
                     .group(ListOption.<String>createBuilder()
                             .name(translatable("eventutils.config.players.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.players.description")))
-                            .binding(EventConfig.Defaults.WHITELISTED_PLAYERS, () -> new ArrayList<>(config.whitelistedPlayers), newValue -> {
+                            .binding(EventConfig.Defaults.whitelistedPlayers(), () -> new ArrayList<>(config.whitelistedPlayers), newValue -> {
                                 config.whitelistedPlayers = newValue.stream()
                                         .map(String::toLowerCase)
                                         .toList();
@@ -127,19 +126,38 @@ public class ConfigScreen {
                             })
                             .controller(StringControllerBuilder::create)
                             .initial("skeppy").build())
-                    .build())
-            .category(ConfigCategory.createBuilder().name(translatable("eventutils.config.alerts"))
-                    .option(EventType.SKEPPY.getOption(config))
-                    .option(EventType.POTENTIAL_FAMOUS.getOption(config))
-                    .option(EventType.SIGHTING.getOption(config))
-                    .option(EventType.FAMOUS.getOption(config))
-                    .option(EventType.PARTNER.getOption(config))
-                    .option(EventType.COMMUNITY.getOption(config))
-                    .option(EventType.MONEY.getOption(config))
-                    .option(EventType.FUN.getOption(config))
-                    .option(EventType.HOUSING.getOption(config))
-                    .option(EventType.CIVILIZATION.getOption(config)).build())
-                .build().generateScreen(parent);
+                    .option(Option.<Boolean>createBuilder()
+                            .name(translatable("eventutils.config.use_testing_api.title"))
+                            .description(OptionDescription.of(translatable("eventutils.config.use_testing_api.description")))
+                            .binding(EventConfig.Defaults.USE_TESTING_API, () -> config.useTestingApi, newValue -> {
+                                config.useTestingApi = newValue;
+                                EventUtils.MOD.webSockets.forEach(webSocket -> {
+                                    webSocket.close("Testing API enabled/disabled");
+                                    webSocket.connect();
+                                });
+                                config.setSave("use_testing_api", config.useTestingApi);
+                            })
+                            .controller(ConfigScreen::getBooleanBuilder).build())
+                    .build());
+
+        // Alerts & notification sounds
+        final OptionGroup.Builder alertsGroup = OptionGroup.createBuilder()
+                .name(translatable("eventutils.config.alerts.toggles"));
+        final OptionGroup.Builder soundsGroup = OptionGroup.createBuilder()
+                .name(translatable("eventutils.config.alerts.sounds"))
+                .collapsed(true);
+        for (final EventType type : EventType.values()) {
+            alertsGroup.option(type.getOption(config));
+            soundsGroup.option(type.getSoundOption(config));
+        }
+        final ConfigCategory.Builder alertsCategory = ConfigCategory.createBuilder()
+                .name(translatable("eventutils.config.alerts"));
+        alertsCategory.group(alertsGroup.build());
+        alertsCategory.group(soundsGroup.build());
+        builder.category(alertsCategory.build());
+
+        // Return
+        return builder.build().generateScreen(parent);
     }
 
     @NotNull

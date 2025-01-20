@@ -1,7 +1,5 @@
 package cc.aabss.eventutils;
 
-import com.google.common.collect.ImmutableList;
-
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -22,7 +20,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static cc.aabss.eventutils.EventUtils.eventInfoKey;
 
 public class NotificationToast implements Toast {
     @NotNull private static final Identifier TEXTURE = Identifier.of("eventutils", "toast/notification");
@@ -33,16 +30,23 @@ public class NotificationToast implements Toast {
     private final int height;
     public Visibility visibility;
 
-    public NotificationToast(@NotNull Text title, @Nullable Text description) {
+    public NotificationToast(@NotNull Text title, @Nullable Text description, boolean displayEventInfoInstructions) {
         this.title = title;
+
         lines = new ArrayList<>();
         if (description != null) lines.add(description.asOrderedText());
-        lines.add(Text.literal("Click ")
-                .append(eventInfoKey.getBoundKeyLocalizedText())
+        final OrderedText eventInfoInstructions = !displayEventInfoInstructions ? null : Text.literal("Click ")
+                .append(EventUtils.EVENT_INFO_KEY.getBoundKeyLocalizedText())
                 .append(Text.literal(" to view info"))
-                .asOrderedText());
+                .asOrderedText();
+        if (eventInfoInstructions != null) lines.add(eventInfoInstructions);
+
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        width = Math.max(160, 30 + Math.max(textRenderer.getWidth(title), textRenderer.getWidth(description)));
+        width = EventUtils.max(
+                160,
+                30 + textRenderer.getWidth(title),
+                eventInfoInstructions != null ? 30 + textRenderer.getWidth(eventInfoInstructions) : 0,
+                description != null ? 30 + textRenderer.getWidth(description) : 0);
         height = 20 + Math.max(lines.size(), 1) * 12;
         visibility = Visibility.HIDE;
     }

@@ -26,6 +26,7 @@ import net.minecraft.util.Language;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,15 +49,16 @@ public class EventUtils implements ClientModInitializer {
      */
     public static EventUtils MOD;
     @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
-    @NotNull public static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(3);
     @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
+    public static KeyBinding EVENT_INFO_KEY;
 
     @NotNull public final EventConfig config = new EventConfig();
-    @NotNull public final UpdateChecker updateChecker = new UpdateChecker();
-    @NotNull public final DiscordRPC discordRPC = new DiscordRPC();
+    @NotNull public final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
+    @NotNull public final Set<WebSocketClient> webSockets = new HashSet<>();
+    @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
+    @NotNull public final DiscordRPC discordRPC = new DiscordRPC(this);
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     public boolean hidePlayers = false;
-    public static KeyBinding eventInfoKey;
 
     public EventUtils() {
         MOD = this;
@@ -67,7 +69,6 @@ public class EventUtils implements ClientModInitializer {
         discordRPC.connect();
 
         // Websockets
-        final Set<WebSocketClient> webSockets = new HashSet<>();
         webSockets.add(new WebSocketClient(this, SocketEndpoint.EVENT_POSTED));
         webSockets.add(new WebSocketClient(this, SocketEndpoint.FAMOUS_EVENT_POSTED));
 
@@ -80,35 +81,35 @@ public class EventUtils implements ClientModInitializer {
             discordRPC.disconnect();
         });
 
-        // Update check notifier
+        // Update checker
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> updateChecker.checkUpdate());
 
-        // Hide players keybind
+        // Keybindings
         final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.eventutils.hideplayers",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_F10,
                 "key.category.eventutils"));
-        eventInfoKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        EVENT_INFO_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.eventutils.eventinfo",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
                 "key.category.eventutils"));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (hidePlayersKey.wasPressed()) {
+            // Hide players key
+            if (hidePlayersKey.wasPressed()) {
                 hidePlayers = !hidePlayers;
-                if (client.player != null) client.player.sendMessage(
-                        translatable(hidePlayers ? "eventutils.hideplayers.enabled" : "eventutils.hideplayers.disabled")
-                                .formatted(hidePlayers ? Formatting.GREEN : Formatting.RED), true);
+                if (client.player != null) client.player.sendMessage(translatable(hidePlayers ? "eventutils.hideplayers.enabled" : "eventutils.hideplayers.disabled")
+                        .formatted(hidePlayers ? Formatting.GREEN : Formatting.RED), true);
             }
-            while (eventInfoKey.wasPressed()) {
-                if (SocketEndpoint.lastEvent != null) {
-                    client.setScreen(new EventInfoScreen(SocketEndpoint.lastEvent));
-                    continue;
+
+            // Event info key
+            if (EVENT_INFO_KEY.wasPressed()) {
+                if (SocketEndpoint.LAST_EVENT != null) {
+                    client.setScreen(new EventInfoScreen(SocketEndpoint.LAST_EVENT));
+                    return;
                 }
-                if (client.player != null) client.player.sendMessage(
-                        Text.literal("No event has happened recently.").formatted(Formatting.RED),
-                        true);
+                if (client.player != null) client.player.sendMessage(Text.literal("No event has happened recently!").formatted(Formatting.RED), true);
             }
         });
 
@@ -166,6 +167,13 @@ public class EventUtils implements ClientModInitializer {
 
     public static boolean isNPC(@NotNull String name) {
         return name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-");
+    }
+
+    @Contract(pure = true)
+    public static int max(int... values) {
+        int max = Integer.MIN_VALUE;
+        for (final int value : values) if (value > max) max = value;
+        return max;
     }
 
     @NotNull

@@ -2,6 +2,7 @@ package cc.aabss.eventutils;
 
 import cc.aabss.eventutils.config.ConfigScreen;
 import cc.aabss.eventutils.config.EventConfig;
+import cc.aabss.eventutils.config.NotificationSound;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -9,19 +10,19 @@ import com.google.gson.JsonObject;
 
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
+import dev.isxander.yacl3.api.controller.EnumDropdownControllerBuilder;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -43,14 +44,6 @@ public enum EventType {
     FUN("eventutils.fun.display", translatable("eventutils.fun.new").formatted(Formatting.RED)),
     HOUSING("eventutils.housing.display", translatable("eventutils.housing.new").formatted(Formatting.GOLD)),
     CIVILIZATION("eventutils.civilization.display", translatable("eventutils.civilization.new").formatted(Formatting.BLUE));
-
-    @NotNull private static final Map<Long, EventType> FROM_ROLE_ID = Map.of(
-            970434201990070424L, PARTNER,
-            980950599946362900L, COMMUNITY,
-            970434305203511359L, MONEY,
-            970434303391576164L, FUN,
-            970434294893928498L, HOUSING,
-            1134932175821734119L, CIVILIZATION);
 
     @NotNull public final MutableText displayName;
     @NotNull public final String displayNameString;
@@ -83,7 +76,23 @@ public enum EventType {
                 .build();
     }
 
-    public void sendToast(@Nullable Integer prize, boolean hasIp) {
+    @NotNull
+    public Option<NotificationSound> getSoundOption(@NotNull EventConfig config) {
+        return Option.<NotificationSound>createBuilder()
+                .name(displayName)
+                .description(OptionDescription.of(Text.of(EventUtils.translate("eventutils.config.sound_description").replace("{event}", displayName.getString()))))
+                .binding(
+                        EventConfig.Defaults.notificationSounds().get(this),
+                        () -> config.notificationSounds.get(this),
+                        newValue -> {
+                            config.notificationSounds.put(this, newValue);
+                            config.setSave("notification_sounds", config.notificationSounds);
+                        })
+                .controller(EnumDropdownControllerBuilder::create)
+                .build();
+    }
+
+    public void sendToast(@NotNull EventUtils mod, @Nullable Integer prize, boolean hasIp) {
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
 
@@ -97,8 +106,8 @@ public enum EventType {
         }
 
         // Send toast and play sound
-        client.getToastManager().add(new NotificationToast(toast.apply(prize), description));
-        if (client.player != null) client.player.playSound(SoundEvent.of(Identifier.of("eventutils", "alert")), 1 ,1);
+        client.getToastManager().add(new NotificationToast(toast.apply(prize), description, client.player != null));
+        client.getSoundManager().play(PositionedSoundInstance.ambient(SoundEvent.of(mod.config.getNotificationSound(this).getIdentifier()), 1, 1));
     }
 
     @Nullable
@@ -110,17 +119,12 @@ public enum EventType {
         }
     }
 
-    @Nullable
-    public static EventType fromRoleId(long roleId) {
-        return FROM_ROLE_ID.get(roleId);
-    }
-
     @NotNull
     public static Set<EventType> fromJson(@NotNull JsonObject json) {
         final Set<EventType> eventTypes = new HashSet<>();
         final JsonArray roles = json.getAsJsonArray("roles");
         if (roles != null) for (final JsonElement role : roles) {
-            final EventType eventType = fromRoleId(role.getAsLong());
+            final EventType eventType = EventType.fromString(role.getAsString());
             if (eventType != null) eventTypes.add(eventType);
         }
         return eventTypes;

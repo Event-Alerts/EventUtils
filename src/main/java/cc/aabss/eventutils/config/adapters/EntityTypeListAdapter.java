@@ -1,4 +1,4 @@
-package cc.aabss.eventutils.config;
+package cc.aabss.eventutils.config.adapters;
 
 import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.*;
 
-class EntityTypeListAdapter extends TypeAdapter<List<EntityType<?>>> {
+public class EntityTypeListAdapter extends TypeAdapter<List<EntityType<?>>> {
     @Override
     public void write(@NotNull JsonWriter out, @NotNull List<EntityType<?>> value) throws IOException {
         out.beginArray();
