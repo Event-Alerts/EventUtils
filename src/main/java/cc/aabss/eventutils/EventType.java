@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -43,14 +42,6 @@ public enum EventType {
     FUN("eventutils.fun.display", translatable("eventutils.fun.new").formatted(Formatting.RED)),
     HOUSING("eventutils.housing.display", translatable("eventutils.housing.new").formatted(Formatting.GOLD)),
     CIVILIZATION("eventutils.civilization.display", translatable("eventutils.civilization.new").formatted(Formatting.BLUE));
-
-    @NotNull private static final Map<Long, EventType> FROM_ROLE_ID = Map.of(
-            970434201990070424L, PARTNER,
-            980950599946362900L, COMMUNITY,
-            970434305203511359L, MONEY,
-            970434303391576164L, FUN,
-            970434294893928498L, HOUSING,
-            1134932175821734119L, CIVILIZATION);
 
     @NotNull public final MutableText displayName;
     @NotNull public final String displayNameString;
@@ -110,17 +101,12 @@ public enum EventType {
         }
     }
 
-    @Nullable
-    public static EventType fromRoleId(long roleId) {
-        return FROM_ROLE_ID.get(roleId);
-    }
-
     @NotNull
     public static Set<EventType> fromJson(@NotNull JsonObject json) {
         final Set<EventType> eventTypes = new HashSet<>();
         final JsonArray roles = json.getAsJsonArray("roles");
         if (roles != null) for (final JsonElement role : roles) {
-            final EventType eventType = fromRoleId(role.getAsLong());
+            final EventType eventType = EventType.fromString(role.getAsString());
             if (eventType != null) eventTypes.add(eventType);
         }
         return eventTypes;
