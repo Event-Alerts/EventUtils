@@ -22,7 +22,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static cc.aabss.eventutils.EventUtils.eventInfoKey;
 
 public class NotificationToast implements Toast {
     @NotNull private static final Identifier TEXTURE = Identifier.of("eventutils", "toast/notification");
@@ -38,7 +37,7 @@ public class NotificationToast implements Toast {
         lines = new ArrayList<>();
         if (description != null) lines.add(description.asOrderedText());
         lines.add(Text.literal("Click ")
-                .append(eventInfoKey.getBoundKeyLocalizedText())
+                .append(EventUtils.EVENT_INFO_KEY.getBoundKeyLocalizedText())
                 .append(Text.literal(" to view info"))
                 .asOrderedText());
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;

@@ -45,7 +45,7 @@ public class WebSocketClient implements WebSocket.Listener {
                     }
                     webSocket = newSocket;
                     webSocket.request(1);
-                    keepAlive = EventUtils.SCHEDULER.scheduleAtFixedRate(() -> {
+                    keepAlive = mod.scheduler.scheduleAtFixedRate(() -> {
                         if (newSocket.isInputClosed()) {
                             retryConnection("Keep-alive detected closed input");
                             return;
@@ -60,7 +60,7 @@ public class WebSocketClient implements WebSocket.Listener {
         if (isRetrying) return;
         isRetrying = true;
         close("Retrying connection");
-        EventUtils.SCHEDULER.schedule(() -> {
+        mod.scheduler.schedule(() -> {
             EventUtils.LOGGER.warn("Retrying websocket connection for {} with reason \"{}\"", endpoint, reason);
             connect();
         }, 10, TimeUnit.SECONDS);

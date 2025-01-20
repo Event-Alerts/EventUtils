@@ -1,4 +1,4 @@
-package cc.aabss.eventutils.config;
+package cc.aabss.eventutils.config.adapters;
 
 import cc.aabss.eventutils.EventType;
 
@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.*;
 
 
-class EventTypeSetAdapter extends TypeAdapter<Set<EventType>> {
+public class EventTypeSetAdapter extends TypeAdapter<Set<EventType>> {
     @Override
     public void write(@NotNull JsonWriter out, @NotNull Set<EventType> value) throws IOException {
         out.beginArray();

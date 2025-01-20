@@ -60,9 +60,9 @@ public class EventConfig extends FileLoader {
         confirmDisconnect = get("confirm_disconnect", Defaults.CONFIRM_DISCONNECT);
         defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
         hidePlayersRadius = get("hide_players_radius", Defaults.HIDE_PLAYERS_RADIUS);
-        hiddenEntityTypes = get("hidden_entity_types", Defaults.HIDDEN_ENTITY_TYPES, new TypeToken<List<EntityType<?>>>(){}.getType());
-        whitelistedPlayers = get("whitelisted_players", Defaults.WHITELISTED_PLAYERS, new TypeToken<List<String>>(){}.getType());
-        eventTypes = get("notifications", Defaults.EVENT_TYPES, new TypeToken<List<EventType>>(){}.getType());
+        hiddenEntityTypes = get("hidden_entity_types", Defaults.hiddenEntityTypes(), new TypeToken<List<EntityType<?>>>(){}.getType());
+        whitelistedPlayers = get("whitelisted_players", Defaults.whitelistedPlayers(), new TypeToken<List<String>>(){}.getType());
+        eventTypes = get("notifications", Defaults.eventTypes(), new TypeToken<List<EventType>>(){}.getType());
 
         // Save if created (default values)
         if (created) save();
@@ -130,9 +130,26 @@ public class EventConfig extends FileLoader {
         public static final boolean CONFIRM_DISCONNECT = true;
         public static final int HIDE_PLAYERS_RADIUS = 0;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
-        @NotNull public static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = new ArrayList<>(List.of(EntityType.GLOW_ITEM_FRAME));
-        @NotNull public static final List<String> HIDDEN_ENTITY_TYPES_STRING = new ArrayList<>(List.of("minecraft:glow_item_frame"));
-        @NotNull public static final List<String> WHITELISTED_PLAYERS = new ArrayList<>(List.of("skeppy", "badboyhalo"));
-        @NotNull public static final List<EventType> EVENT_TYPES = new ArrayList<>(List.of(EventType.values()));
+        @NotNull private static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = List.of(EntityType.GLOW_ITEM_FRAME);
+        @NotNull private static final List<String> HIDDEN_ENTITY_TYPES_STRING = List.of("minecraft:glow_item_frame");
+        @NotNull private static final List<String> WHITELISTED_PLAYERS = List.of("skeppy", "badboyhalo");
+        @NotNull private static final List<EventType> EVENT_TYPES = List.of(EventType.values());
+
+        @NotNull
+        public static List<EntityType<?>> hiddenEntityTypes() {
+            return new ArrayList<>(HIDDEN_ENTITY_TYPES);
+        }
+        @NotNull
+        public static List<String> hiddenEntityTypesString() {
+            return new ArrayList<>(HIDDEN_ENTITY_TYPES_STRING);
+        }
+        @NotNull
+        public static List<String> whitelistedPlayers() {
+            return new ArrayList<>(WHITELISTED_PLAYERS);
+        }
+        @NotNull
+        public static List<EventType> eventTypes() {
+            return new ArrayList<>(EVENT_TYPES);
+        }
     }
 }

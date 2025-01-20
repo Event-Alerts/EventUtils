@@ -1,6 +1,10 @@
 package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.EventType;
+import cc.aabss.eventutils.config.adapters.EntityTypeAdapter;
+import cc.aabss.eventutils.config.adapters.EntityTypeListAdapter;
+import cc.aabss.eventutils.config.adapters.EventTypeSetAdapter;
+import cc.aabss.eventutils.config.adapters.MapEventTypeNotificationSoundAdapter;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.*;

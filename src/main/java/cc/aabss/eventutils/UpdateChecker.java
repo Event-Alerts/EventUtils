@@ -11,7 +11,6 @@ import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -20,6 +19,12 @@ import static net.minecraft.text.Text.translatable;
 
 
 public class UpdateChecker {
+    @NotNull private final EventUtils mod;
+
+    public UpdateChecker(@NotNull EventUtils mod) {
+        this.mod = mod;
+    }
+
     private void notifyUpdate(@NotNull String latestVersion) {
         final MinecraftClient client = MinecraftClient.getInstance();
         client.send(() -> {
@@ -36,7 +41,7 @@ public class UpdateChecker {
 
     public void checkUpdate() {
         try {
-            if (!EventUtils.MOD.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
+            if (!mod.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
 
             // Ensure client in-game
             final MinecraftClient client = MinecraftClient.getInstance();
