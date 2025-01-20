@@ -30,7 +30,7 @@ public enum SocketEndpoint {
             final int prizeAmount = eventType == EventType.MONEY ? prize(json) : 0;
 
             // Send toast
-            eventType.sendToast(prizeAmount > 0 ? prizeAmount : null, ip != null && !ip.isEmpty());
+            eventType.sendToast(mod, prizeAmount > 0 ? prizeAmount : null, ip != null && !ip.isEmpty());
             mod.lastIps.put(eventType, ip);
         }
     }),
@@ -48,7 +48,7 @@ public enum SocketEndpoint {
         LAST_EVENT = json;
 
         String ip = mod.getIpAndConnect(eventType, json);
-        eventType.sendToast(null, ip != null && !ip.isEmpty());
+        eventType.sendToast(mod, null, ip != null && !ip.isEmpty());
         mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
     });
 

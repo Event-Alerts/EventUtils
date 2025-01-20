@@ -50,7 +50,10 @@
   "eventutils.config.title": "EventUtils Mod Config",
   "eventutils.config.general": "General",
   "eventutils.config.alerts": "Alerts",
+  "eventutils.config.alerts.toggles": "Toggles",
+  "eventutils.config.alerts.sounds": "Sounds",
   "eventutils.config.event_description": "Whether you should be pinged for {event}",
+  "eventutils.config.sound_description": "The sound that should play when {event} is pinged",
   "eventutils.config.teleport.title": "Auto Teleport",
   "eventutils.config.teleport.description": "Automatically teleports you to the server when an event starts",
   "eventutils.config.queue.title": "Simple Queue Message",
@@ -71,6 +74,17 @@
   "eventutils.config.players.description": "The names of the players you can see when players are hidden",
   "eventutils.config.radius.title": "Hide Players in Radius",
   "eventutils.config.radius.description": "Hides all the players in the specified radius, set to 0 to ignore distance",
+
+  "eventutils.sound.alarm": "Alarm",
+  "eventutils.sound.alert": "Alert",
+  "eventutils.sound.calm": "Calm",
+  "eventutils.sound.cat": "Cat",
+  "eventutils.sound.chime": "Chime",
+  "eventutils.sound.goofy": "Goofy",
+  "eventutils.sound.pluck": "Pluck",
+  "eventutils.sound.reverb": "Reverb",
+  "eventutils.sound.shakey": "Shakey",
+  "eventutils.sound.time_of_war": "Time of War",
 
   "eventutils.screen.settings": "Settings"
 }

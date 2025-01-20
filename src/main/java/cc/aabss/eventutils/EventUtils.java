@@ -26,6 +26,7 @@ import net.minecraft.util.Language;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -166,6 +167,13 @@ public class EventUtils implements ClientModInitializer {
 
     public static boolean isNPC(@NotNull String name) {
         return name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-");
+    }
+
+    @Contract(pure = true)
+    public static int max(int... values) {
+        int max = Integer.MIN_VALUE;
+        for (final int value : values) if (value > max) max = value;
+        return max;
     }
 
     @NotNull

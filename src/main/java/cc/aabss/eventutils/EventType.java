@@ -2,6 +2,7 @@ package cc.aabss.eventutils;
 
 import cc.aabss.eventutils.config.ConfigScreen;
 import cc.aabss.eventutils.config.EventConfig;
+import cc.aabss.eventutils.config.NotificationSound;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -9,13 +10,14 @@ import com.google.gson.JsonObject;
 
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
+import dev.isxander.yacl3.api.controller.EnumDropdownControllerBuilder;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -74,7 +76,23 @@ public enum EventType {
                 .build();
     }
 
-    public void sendToast(@Nullable Integer prize, boolean hasIp) {
+    @NotNull
+    public Option<NotificationSound> getSoundOption(@NotNull EventConfig config) {
+        return Option.<NotificationSound>createBuilder()
+                .name(displayName)
+                .description(OptionDescription.of(Text.of(EventUtils.translate("eventutils.config.sound_description").replace("{event}", displayName.getString()))))
+                .binding(
+                        EventConfig.Defaults.notificationSounds().get(this),
+                        () -> config.notificationSounds.get(this),
+                        newValue -> {
+                            config.notificationSounds.put(this, newValue);
+                            config.setSave("notification_sounds", config.notificationSounds);
+                        })
+                .controller(EnumDropdownControllerBuilder::create)
+                .build();
+    }
+
+    public void sendToast(@NotNull EventUtils mod, @Nullable Integer prize, boolean hasIp) {
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
 
@@ -89,7 +107,7 @@ public enum EventType {
 
         // Send toast and play sound
         client.getToastManager().add(new NotificationToast(toast.apply(prize), description, client.player != null));
-        client.getSoundManager().play(PositionedSoundInstance.ambient(SoundEvent.of(Identifier.of("eventutils", "alert")), 1, 1));
+        client.getSoundManager().play(PositionedSoundInstance.ambient(SoundEvent.of(mod.config.getNotificationSound(this).getIdentifier()), 1, 1));
     }
 
     @Nullable

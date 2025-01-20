@@ -18,10 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 public class EventConfig extends FileLoader {
@@ -36,6 +33,7 @@ public class EventConfig extends FileLoader {
     @NotNull public List<EntityType<?>> hiddenEntityTypes;
     @NotNull public List<String> whitelistedPlayers;
     @NotNull public final List<EventType> eventTypes;
+    @NotNull public final Map<EventType, NotificationSound> notificationSounds;
 
     public EventConfig() {
         super(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
@@ -63,6 +61,7 @@ public class EventConfig extends FileLoader {
         hiddenEntityTypes = get("hidden_entity_types", Defaults.hiddenEntityTypes(), new TypeToken<List<EntityType<?>>>(){}.getType());
         whitelistedPlayers = get("whitelisted_players", Defaults.whitelistedPlayers(), new TypeToken<List<String>>(){}.getType());
         eventTypes = get("notifications", Defaults.eventTypes(), new TypeToken<List<EventType>>(){}.getType());
+        notificationSounds = get("notification_sounds", Defaults.notificationSounds(), new TypeToken<Map<EventType, NotificationSound>>(){}.getType());
 
         // Save if created (default values)
         if (created) save();
@@ -119,8 +118,12 @@ public class EventConfig extends FileLoader {
         remove(oldKey);
     }
 
-    // Make sure these are all mutable!
-    // List.of() -> new ArrayList<>(List.of()), Set.of() -> new HashSet<>(Set.of()), etc...
+    @NotNull
+    public NotificationSound getNotificationSound(@NotNull EventType type) {
+        return notificationSounds.getOrDefault(type, NotificationSound.ALERT);
+    }
+
+    // Collections need to have methods to create new instances of the collection!
     public static class Defaults {
         public static final boolean DISCORD_RPC = true;
         public static final boolean AUTO_TP = false;
@@ -134,6 +137,8 @@ public class EventConfig extends FileLoader {
         @NotNull private static final List<String> HIDDEN_ENTITY_TYPES_STRING = List.of("minecraft:glow_item_frame");
         @NotNull private static final List<String> WHITELISTED_PLAYERS = List.of("skeppy", "badboyhalo");
         @NotNull private static final List<EventType> EVENT_TYPES = List.of(EventType.values());
+        @NotNull private static final Map<EventType, NotificationSound> NOTIFICATION_SOUNDS = Arrays.stream(EventType.values())
+                .collect(HashMap::new, (map, type) -> map.put(type, NotificationSound.ALERT), HashMap::putAll);
 
         @NotNull
         public static List<EntityType<?>> hiddenEntityTypes() {
@@ -150,6 +155,10 @@ public class EventConfig extends FileLoader {
         @NotNull
         public static List<EventType> eventTypes() {
             return new ArrayList<>(EVENT_TYPES);
+        }
+        @NotNull
+        public static Map<EventType, NotificationSound> notificationSounds() {
+            return new HashMap<>(NOTIFICATION_SOUNDS);
         }
     }
 }

@@ -126,19 +126,26 @@ public class ConfigScreen {
                             })
                             .controller(StringControllerBuilder::create)
                             .initial("skeppy").build())
-                    .build())
-            .category(ConfigCategory.createBuilder().name(translatable("eventutils.config.alerts"))
-                    .option(EventType.SKEPPY.getOption(config))
-                    .option(EventType.POTENTIAL_FAMOUS.getOption(config))
-                    .option(EventType.SIGHTING.getOption(config))
-                    .option(EventType.FAMOUS.getOption(config))
-                    .option(EventType.PARTNER.getOption(config))
-                    .option(EventType.COMMUNITY.getOption(config))
-                    .option(EventType.MONEY.getOption(config))
-                    .option(EventType.FUN.getOption(config))
-                    .option(EventType.HOUSING.getOption(config))
-                    .option(EventType.CIVILIZATION.getOption(config)).build())
-                .build().generateScreen(parent);
+                    .build());
+
+        // Alerts & notification sounds
+        final OptionGroup.Builder alertsGroup = OptionGroup.createBuilder()
+                .name(translatable("eventutils.config.alerts.toggles"));
+        final OptionGroup.Builder soundsGroup = OptionGroup.createBuilder()
+                .name(translatable("eventutils.config.alerts.sounds"))
+                .collapsed(true);
+        for (final EventType type : EventType.values()) {
+            alertsGroup.option(type.getOption(config));
+            soundsGroup.option(type.getSoundOption(config));
+        }
+        final ConfigCategory.Builder alertsCategory = ConfigCategory.createBuilder()
+                .name(translatable("eventutils.config.alerts"));
+        alertsCategory.group(alertsGroup.build());
+        alertsCategory.group(soundsGroup.build());
+        builder.category(alertsCategory.build());
+
+        // Return
+        return builder.build().generateScreen(parent);
     }
 
     @NotNull

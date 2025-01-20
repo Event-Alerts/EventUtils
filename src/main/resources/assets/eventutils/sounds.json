@@ -1,14 +1,81 @@
 {
-  "alert": {
+  "notification.alarm": {
     "subtitle": "subtitles.eventutils.alert",
     "sounds": [
       {
-        "name": "eventutils:alert",
-        "weight": 10
-      },
+        "name": "eventutils:alarm"
+      }
+    ]
+  },
+  "notification.alert": {
+    "subtitle": "subtitles.eventutils.alert",
+    "sounds": [
       {
-        "name": "eventutils:alert_secret",
-        "weight": 1
+        "name": "eventutils:alert"
+      }
+    ]
+  },
+  "notification.calm": {
+    "subtitle": "subtitles.eventutils.alert",
+    "sounds": [
+      {
+        "name": "eventutils:calm"
+      }
+    ]
+  },
+  "notification.cat": {
+    "subtitle": "subtitles.eventutils.alert",
+    "sounds": [
+      {
+        "name": "eventutils:cat"
+      }
+    ]
+  },
+  "notification.chime": {
+    "subtitle": "subtitles.eventutils.alert",
+    "sounds": [
+      {
+        "name": "eventutils:chime"
+      }
+    ]
+  },
+  "notification.goofy": {
+    "subtitle": "subtitles.eventutils.alert",
+    "sounds": [
+      {
+        "name": "eventutils:goofy"
+      }
+    ]
+  },
+  "notification.pluck": {
+    "subtitle": "subtitles.eventutils.alert",
+    "sounds": [
+      {
+        "name": "eventutils:pluck"
+      }
+    ]
+  },
+  "notification.reverb": {
+    "subtitle": "subtitles.eventutils.alert",
+    "sounds": [
+      {
+        "name": "eventutils:reverb"
+      }
+    ]
+  },
+  "notification.shakey": {
+    "subtitle": "subtitles.eventutils.alert",
+    "sounds": [
+      {
+        "name": "eventutils:shakey"
+      }
+    ]
+  },
+  "notification.time_of_war": {
+    "subtitle": "subtitles.eventutils.alert",
+    "sounds": [
+      {
+        "name": "eventutils:time_of_war"
       }
     ]
   }
