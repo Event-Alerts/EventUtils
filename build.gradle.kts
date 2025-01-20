@@ -15,7 +15,8 @@ plugins {
 val java = if (stonecutter.eval(stonecutter.current.version, ">=1.20.5")) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
 stonecutter.dependency("java", java.majorVersion)
 
-setupJava("cc.aabss", "${stonecutter.current.version}-${property("mod.version").toString()}", "Alerting for Event Alerts Minecraft events", java)
+val fullVersion = "${stonecutter.current.version}-${property("mod.version").toString()}"
+setupJava("cc.aabss", fullVersion, "Alerting for Event Alerts Minecraft events", java)
 
 repository("https://maven.shedaniel.me/", "https://maven.fabricmc.net/", "https://maven.terraformersmc.com/releases/", "https://maven.isxander.dev/releases/", "https://maven.nucleoid.xyz/")
 repository(Repository.MAVEN_CENTRAL, Repository.JITPACK)
@@ -49,8 +50,11 @@ base {
 // Copy built jar to root project's build/libs
 tasks.named("build") {
     doLast {
-        val targetDir = layout.projectDirectory.dir("../../build/libs").asFile
-        layout.projectDirectory.dir("build/libs").asFile.listFiles()?.forEach { it.copyTo(targetDir.resolve(it.name), true) }
+        val fileName = "${rootProject.name}-${fullVersion}.jar"
+        logger.log(LogLevel.ERROR, "Copying ${fileName} to root project...")
+        layout.projectDirectory.dir("build/libs").asFile.listFiles()
+            ?.firstOrNull { it.name == fileName }
+            ?.copyTo(layout.projectDirectory.dir("../../build/libs").asFile.resolve(fileName), true)
     }
 }
 
