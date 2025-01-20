@@ -88,8 +88,8 @@ public enum EventType {
         }
 
         // Send toast and play sound
-        if (client.player != null) client.player.playSound(SoundEvent.of(Identifier.of("eventutils", "alert")), 1 ,1);
         client.getToastManager().add(new NotificationToast(toast.apply(prize), description, client.player != null));
+        client.getSoundManager().play(PositionedSoundInstance.ambient(SoundEvent.of(Identifier.of("eventutils", "alert")), 1, 1));
     }
 
     @Nullable
