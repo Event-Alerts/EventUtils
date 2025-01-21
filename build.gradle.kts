@@ -51,7 +51,6 @@ base {
 tasks.named("build") {
     doLast {
         val fileName = "${rootProject.name}-${fullVersion}.jar"
-        logger.log(LogLevel.ERROR, "Copying ${fileName} to root project...")
         layout.projectDirectory.dir("build/libs").asFile.listFiles()
             ?.firstOrNull { it.name == fileName }
             ?.copyTo(layout.projectDirectory.dir("../../build/libs").asFile.resolve(fileName), true)
