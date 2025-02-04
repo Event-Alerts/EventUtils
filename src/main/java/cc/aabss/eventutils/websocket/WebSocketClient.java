@@ -1,6 +1,7 @@
 package cc.aabss.eventutils.websocket;
 
 import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.Versions;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +35,7 @@ public class WebSocketClient implements WebSocket.Listener {
         EventUtils.LOGGER.info("Attempting to establish WebSocket connection for {}", endpoint);
         httpClient = HttpClient.newHttpClient();
         httpClient.newWebSocketBuilder()
+                .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (MC/" + Versions.MC_VERSION + ")")
                 .buildAsync(URI.create(mod.config.getWebsocketHost()  + "/api/v1/socket/" + endpoint.name().toLowerCase()), this)
                 .whenComplete((newSocket, throwable) -> {
                     isRetrying = false;
