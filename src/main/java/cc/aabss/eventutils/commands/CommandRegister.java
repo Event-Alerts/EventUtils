@@ -14,7 +14,6 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 
 import org.jetbrains.annotations.NotNull;
 
-
 public class CommandRegister {
     public static void register(@NotNull CommandDispatcher<FabricClientCommandSource> dispatcher) {
         // eventutils
@@ -52,8 +51,7 @@ public class CommandRegister {
                 .literal("priority")
                 .then(ClientCommandManager.argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            for (final AbstractClientPlayerEntity player : context.getSource().getWorld().getPlayers()) 
-                                builder.suggest(player.getName().getString());
+                            for (final AbstractClientPlayerEntity player : context.getSource().getWorld().getPlayers()) builder.suggest(player.getName().getString());
                             return builder.buildFuture();
                         })
                         .executes(context -> {
@@ -68,28 +66,34 @@ public class CommandRegister {
         final LiteralCommandNode<FabricClientCommandSource> priorityTop = ClientCommandManager
                 .literal("prioritytop")
                 .then(ClientCommandManager.argument("page", IntegerArgumentType.integer())
-                        .executes(context -> {
+                        .executes((context) -> {
                             PriorityCmd.priority(context, IntegerArgumentType.getInteger(context, "page"));
                             return 0;
-                        }))
+                        })
+                )
                 .executes(context -> {
                     PriorityCmd.priority(context, 1);
                     return 0;
                 }).build();
 
         // eventutils detectname
-        dispatcher.register(ClientCommandManager.literal("detectname")
+        final LiteralCommandNode<FabricClientCommandSource> detectname = ClientCommandManager
+                .literal("detectname")
                 .then(ClientCommandManager.argument("word", StringArgumentType.string())
                         .executes(context -> {
-                            NameDetectCommand.detectName(context, StringArgumentType.getString(context, "word"));
+                            NameDetectCmd.detectName(context, StringArgumentType.getString(context, "word"));
                             return 0;
-                        })));
-        
-        // Register commands
+                        }))
+                .build();
+
+        // Build command tree
         dispatcher.getRoot().addChild(main);
         main.addChild(config);
         main.addChild(teleport);
         main.addChild(priority);
         main.addChild(priorityTop);
+
+        // Register detectname command
+        dispatcher.getRoot().addChild(detectname);
     }
 }
