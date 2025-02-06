@@ -1,14 +1,19 @@
 package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventType;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+
 import org.jetbrains.annotations.NotNull;
+
 
 public class CommandRegister {
     public static void register(@NotNull CommandDispatcher<FabricClientCommandSource> dispatcher) {
@@ -35,13 +40,12 @@ public class CommandRegister {
                     TeleportCmd.teleport(context, null);
                     return 0;
                 }).build();
-        for (final EventType type : EventType.values()) 
-            teleport.addChild(ClientCommandManager
+        for (final EventType type : EventType.values()) teleport.addChild(ClientCommandManager
                 .literal(type.name().toLowerCase())
-                .executes(context -> {
+                .executes((context -> {
                     TeleportCmd.teleport(context, type);
                     return 0;
-                }).build());
+                })).build());
 
         // eventutils pickup priority
         final LiteralCommandNode<FabricClientCommandSource> priority = ClientCommandManager
@@ -73,10 +77,15 @@ public class CommandRegister {
                     return 0;
                 }).build();
 
-        // Register detectname command
-        NameDetectCommand.register(dispatcher);
-
-        // Build command tree
+        // eventutils detectname
+        dispatcher.register(ClientCommandManager.literal("detectname")
+                .then(ClientCommandManager.argument("word", StringArgumentType.string())
+                        .executes(context -> {
+                            NameDetectCommand.detectName(context, StringArgumentType.getString(context, "word"));
+                            return 0;
+                        })));
+        
+        // Register commands
         dispatcher.getRoot().addChild(main);
         main.addChild(config);
         main.addChild(teleport);
