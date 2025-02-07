@@ -77,14 +77,17 @@ public class CommandRegister {
                 }).build();
 
         // eventutils detectname
-        final LiteralCommandNode<FabricClientCommandSource> detectname = ClientCommandManager
-                .literal("detectname")
-                .then(ClientCommandManager.argument("word", StringArgumentType.string())
-                        .executes(context -> {
-                            NameDetectCmd.detectName(context, StringArgumentType.getString(context, "word"));
-                            return 0;
-                        }))
-                .build();
+        final LiteralCommandNode<FabricClientCommandSource> detectName = ClientCommandManager
+        .literal("detectname")
+        .then(ClientCommandManager.argument("word", StringArgumentType.string())
+                .executes(context -> {
+                    DetectNameCmd.detectName(context, StringArgumentType.getString(context, "word"));
+                    return 0;
+                }))
+        .executes(context -> {
+            context.getSource().sendFeedback(Text.literal("Usage: /detectname <word>").formatted(Formatting.RED));
+            return 0;
+        }).build();
 
         // Build command tree
         dispatcher.getRoot().addChild(main);
@@ -92,8 +95,6 @@ public class CommandRegister {
         main.addChild(teleport);
         main.addChild(priority);
         main.addChild(priorityTop);
-
-        // Register detectname command
-        dispatcher.getRoot().addChild(detectname);
+        main.addChild(detectName);
     }
 }
