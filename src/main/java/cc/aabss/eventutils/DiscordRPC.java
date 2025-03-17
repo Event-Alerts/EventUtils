@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -31,30 +30,30 @@ public class DiscordRPC {
     public void connect() {
         if (!mod.config.discordRpc || client != null) return;
 
+        // Build presence
         final String username = MinecraftClient.getInstance().getSession().getUsername();
         client = new DiscordRPCClient(new EventListener() {
             @Override
             public void onReady(@NotNull DiscordRPCClient newClient, @NotNull User user) {
                 EventUtils.LOGGER.info("DISCORD RPC: Logged in as {}", user.username);
-                mod.scheduler.scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        final Status status = Status.get();
-                        newClient.sendPresence(new RichPresence.Builder()
-                                .addButton("Minecraft Mod", "https://modrinth.com/mod/alerts")
-                                .addButton("Discord Server", "https://discord.gg/uFPFNYzAWC")
-                                .setTimestamps(START, null)
-                                .setText("Playing as " + username, "Currently in " + status.text)
-                                .setAssets(status.asset.get(), "Minecraft v" + (Versions.MC_VERSION != null ? Versions.MC_VERSION : "???"), "event_alerts", "EventUtils v" + (Versions.EU_VERSION != null ? Versions.EU_VERSION : "???"))
-                                .build());
-                    }
-                }, 0, 5, TimeUnit.SECONDS);
+                mod.scheduler.scheduleAtFixedRate(() -> {
+                    final Status status = Status.get();
+                    newClient.sendPresence(new RichPresence.Builder()
+                            .setText("Playing as " + username, "Currently in " + status.text)
+                            .setTimestamps(START, null)
+                            .setAssets(status.asset.get(), "Minecraft" + (Versions.MC_VERSION != null ? " v" + Versions.MC_VERSION : ""), "logo", "EventUtils" + (Versions.EU_VERSION != null ? " v" + Versions.EU_VERSION : ""))
+                            .addButton("Download the mod!", "https://modrinth.com/mod/alerts")
+                            .addButton("Join the Discord!", "https://discord.gg/aGDuQcduWZ")
+                            .build());
+                }, 0, 10, TimeUnit.SECONDS);
             }
-        }, "1236917260036083743");
+        }, "1351016544779374735");
 
+        // Connect
         try {
             client.connect();
-        } catch (final DiscordException ignored) {
+        } catch (final DiscordException e) {
+            EventUtils.LOGGER.error("DISCORD RPC: Failed to connect", e);
             client = null;
         }
     }
@@ -66,9 +65,9 @@ public class DiscordRPC {
     }
 
     private enum Status {
-        SINGLEPLAYER("Singleplayer", "singleplayer"),
+        SINGLEPLAYER("Singleplayer", "dirt"),
         MULTIPLAYER("Multiplayer", () -> "https://api.mcstatus.io/v2/icon/" + Objects.requireNonNull(MinecraftClient.getInstance().getCurrentServerEntry()).address),
-        MAIN_MENU("the Main Menu", "themainmenu");
+        MAIN_MENU("the Main Menu", "grass");
 
         @NotNull private final String text;
         @NotNull private final Supplier<String> asset;
