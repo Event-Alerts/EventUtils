@@ -3,7 +3,7 @@ pluginManagement.repositories {
     gradlePluginPortal()
 }
 
-plugins { id("dev.kikugie.stonecutter") version "0.5" }
+plugins { id("dev.kikugie.stonecutter") version "0.5.2" }
 
 stonecutter {
     kotlinController = true
