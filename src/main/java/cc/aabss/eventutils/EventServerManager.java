@@ -17,8 +17,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class EventServerManager {
-    private static final String EVENT_SERVER_PREFIX = "§7[Event] §r";
-    private static final String EVENTS_DIVIDER_NAME = "§8--- Events ---";
+    public static final String EVENT_SERVER_PREFIX = "§7[Event] §r";
 
     @NotNull private final EventUtils mod;
     @NotNull private final Map<String, EventServerInfo> activeEventServers = new HashMap<>();
@@ -63,9 +62,6 @@ public class EventServerManager {
             final ServerInfo serverInfo = new ServerInfo(serverName, serverIp, ServerInfo.ServerType.OTHER);
             serverInfo.setResourcePackPolicy(ServerInfo.ResourcePackPolicy.PROMPT);
 
-            // Add events divider if it doesn't exist
-            addEventsDividerIfNeeded(serverList);
-
             // Add the server to the list (avoid duplicates in the persistent list)
             for (int i = 0; i < serverList.size(); i++) {
                 final ServerInfo existing = serverList.get(i);
@@ -80,25 +76,37 @@ public class EventServerManager {
             final EventServerInfo eventServerInfo = new EventServerInfo(eventId, serverInfo, eventTime);
             activeEventServers.put(eventId, eventServerInfo);
 
-            // Schedule removal when event starts
+            // Schedule removal 5 minutes after event starts
             if (eventTime > 0) {
                 final long currentTime = System.currentTimeMillis();
-                final long timeUntilEvent = eventTime - currentTime;
+                final long graceMs = TimeUnit.MINUTES.toMillis(5);
+                final long timeUntilRemoval = (eventTime + graceMs) - currentTime;
 
-                if (timeUntilEvent > 0) {
+                if (timeUntilRemoval > 0) {
                     final ScheduledFuture<?> removalTask = mod.scheduler.schedule(
                         () -> removeEventServer(eventId),
-                        timeUntilEvent,
+                        timeUntilRemoval,
                         TimeUnit.MILLISECONDS
                     );
                     removalTasks.put(eventId, removalTask);
-                    EventUtils.LOGGER.info("Scheduled removal of event server '{}' in {} ms", title, timeUntilEvent);
+                    EventUtils.LOGGER.info("Scheduled removal of event server '{}' in {} ms (5m after start)", title, timeUntilRemoval);
                 } else {
-                    // Event has already started, don't add it
-                    serverList.remove(serverInfo);
-                    activeEventServers.remove(eventId);
-                    EventUtils.LOGGER.info("Event '{}' has already started, not adding to server list", title);
-                    return;
+                    // If within 5-minute grace after event start, keep it briefly; else do not add
+                    if (currentTime - eventTime <= graceMs) {
+                        final long remaining = graceMs - (currentTime - eventTime);
+                        final ScheduledFuture<?> removalTask = mod.scheduler.schedule(
+                                () -> removeEventServer(eventId),
+                                remaining,
+                                TimeUnit.MILLISECONDS
+                        );
+                        removalTasks.put(eventId, removalTask);
+                        EventUtils.LOGGER.info("Event '{}' already started; keeping for {} ms (grace)", title, remaining);
+                    } else {
+                        serverList.remove(serverInfo);
+                        activeEventServers.remove(eventId);
+                        EventUtils.LOGGER.info("Event '{}' started more than 5 minutes ago; not adding", title);
+                        return;
+                    }
                 }
             }
 
@@ -143,11 +151,6 @@ public class EventServerManager {
             final ScheduledFuture<?> removalTask = removalTasks.remove(eventId);
             if (removalTask != null) {
                 removalTask.cancel(false);
-            }
-
-            // Remove events divider if no more event servers
-            if (activeEventServers.isEmpty()) {
-                removeEventsDivider(serverList);
             }
 
             // Persist removal
@@ -207,28 +210,8 @@ public class EventServerManager {
         return null;
     }
 
-    private void addEventsDividerIfNeeded(@NotNull ServerList serverList) {
-        // Check if divider already exists
-        for (int i = 0; i < serverList.size(); i++) {
-            final ServerInfo server = serverList.get(i);
-            if (server.name.equals(EVENTS_DIVIDER_NAME)) {
-                return; // Divider already exists
-            }
-        }
-
-        // Add divider at the end
-        final ServerInfo divider = new ServerInfo(EVENTS_DIVIDER_NAME, "", ServerInfo.ServerType.OTHER);
-        serverList.add(divider, false);
-    }
-
-    private void removeEventsDivider(@NotNull ServerList serverList) {
-        for (int i = 0; i < serverList.size(); i++) {
-            final ServerInfo server = serverList.get(i);
-            if (server.name.equals(EVENTS_DIVIDER_NAME)) {
-                serverList.remove(server);
-                return;
-            }
-        }
+    public int getActiveEventCount() {
+        return activeEventServers.size();
     }
 
     private boolean ensureServerListLoaded() {
