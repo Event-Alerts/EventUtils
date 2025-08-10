@@ -30,8 +30,6 @@ dependencies {
 
     modCompileOnly("dev.isxander", "yet-another-config-lib", property("deps.yacl").toString())
     modCompileOnly("com.terraformersmc", "modmenu", property("deps.modmenu").toString())
-
-    include(implementation("club.bottomservices.git.nep", "DiscordRPC4j16", "1.2.2"))
 }
 
 // Add placeholder-api dependency if property exists

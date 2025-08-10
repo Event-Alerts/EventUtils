@@ -56,7 +56,6 @@ public class EventUtils implements ClientModInitializer {
     @NotNull public final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
     @NotNull public final Set<WebSocketClient> webSockets = new HashSet<>();
     @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
-    @NotNull public final DiscordRPC discordRPC = new DiscordRPC(this);
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     public boolean hidePlayers = false;
 
@@ -66,7 +65,6 @@ public class EventUtils implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        discordRPC.connect();
 
         // Websockets
         webSockets.add(new WebSocketClient(this, SocketEndpoint.EVENT_POSTED));
@@ -78,7 +76,6 @@ public class EventUtils implements ClientModInitializer {
         // Game closed
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             webSockets.forEach(socket -> socket.close("Game closed"));
-            discordRPC.disconnect();
         });
 
         // Update checker

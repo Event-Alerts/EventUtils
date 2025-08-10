@@ -48,19 +48,6 @@ public class ConfigScreen {
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
                     .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.discord.title"))
-                            .description(OptionDescription.of(translatable("eventutils.config.discord.description")))
-                            .binding(EventConfig.Defaults.DISCORD_RPC, () -> config.discordRpc, newValue -> {
-                                config.discordRpc = newValue;
-                                config.setSave("discord_rpc", config.discordRpc);
-                                if (Boolean.TRUE.equals(newValue)) {
-                                    EventUtils.MOD.discordRPC.connect();
-                                } else {
-                                    EventUtils.MOD.discordRPC.disconnect();
-                                }
-                            })
-                            .controller(ConfigScreen::getBooleanBuilder).build())
-                    .option(Option.<Boolean>createBuilder()
                             .name(translatable("eventutils.config.update.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.update.description")))
                             .binding(EventConfig.Defaults.UPDATE_CHECKER, () -> config.updateChecker, newValue -> {
