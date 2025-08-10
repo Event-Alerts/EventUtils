@@ -31,6 +31,8 @@ public class TeleportCmd {
             return;
         }
 
+        System.out.println("Connecting to " + lastIp + " for event " + type.name().toLowerCase());
+
         // Connect
         ConnectUtility.connect(lastIp);
     }

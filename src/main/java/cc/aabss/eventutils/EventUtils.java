@@ -56,6 +56,7 @@ public class EventUtils implements ClientModInitializer {
     @NotNull public final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
     @NotNull public final Set<WebSocketClient> webSockets = new HashSet<>();
     @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
+    @NotNull public final EventServerManager eventServerManager = new EventServerManager(this);
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     public boolean hidePlayers = false;
 
@@ -69,6 +70,7 @@ public class EventUtils implements ClientModInitializer {
         // Websockets
         webSockets.add(new WebSocketClient(this, SocketEndpoint.EVENT_POSTED));
         webSockets.add(new WebSocketClient(this, SocketEndpoint.FAMOUS_EVENT_POSTED));
+        webSockets.add(new WebSocketClient(this, SocketEndpoint.EVENT_CANCELLED));
 
         // Command registration
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> CommandRegister.register(dispatcher));
@@ -76,6 +78,7 @@ public class EventUtils implements ClientModInitializer {
         // Game closed
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             webSockets.forEach(socket -> socket.close("Game closed"));
+            eventServerManager.removeAllEventServers();
         });
 
         // Update checker
@@ -92,6 +95,11 @@ public class EventUtils implements ClientModInitializer {
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
                 "key.category.eventutils"));
+        final KeyBinding testEventKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.eventutils.testevent",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_SEMICOLON,
+                "key.category.eventutils"));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             // Hide players key
             if (hidePlayersKey.wasPressed()) {
@@ -107,6 +115,17 @@ public class EventUtils implements ClientModInitializer {
                     return;
                 }
                 if (client.player != null) client.player.sendMessage(Text.literal("No event has happened recently!").formatted(Formatting.RED), true);
+            }
+
+            // Test event key
+            if (testEventKey.wasPressed()) {
+                simulateTestEvent();
+                if (client.player != null) {
+                    client.player.sendMessage(Text.literal("Test event simulated! Check your server list and you should see a toast notification.").formatted(Formatting.GREEN), true);
+                } else {
+                    // In main menu, just log it
+                    LOGGER.info("Test event simulated from main menu");
+                }
             }
         });
 
@@ -176,5 +195,36 @@ public class EventUtils implements ClientModInitializer {
     @NotNull
     public static String translate(@NotNull String key) {
         return Language.getInstance().get(key);
+    }
+
+    /**
+     * Simulates an event being posted for testing purposes.
+     * Creates a test event that starts in 5 minutes.
+     */
+    public void simulateTestEvent() {
+        final long currentTime = System.currentTimeMillis();
+        final long eventTime = currentTime + (1 * 30 * 1000);
+
+        // Create a test event JSON object with the correct structure
+        final JsonObject testEvent = new JsonObject();
+        testEvent.addProperty("id", "test-event-" + currentTime);
+        testEvent.addProperty("title", "Test Event");
+        testEvent.addProperty("description", "This is a simulated test event for testing the server list feature. Server: mc.hypixel.net");
+        testEvent.addProperty("time", eventTime);
+        testEvent.addProperty("ip", "invadedlands.net");
+        testEvent.addProperty("prize", "$1000");
+
+        // Add the rolesNamed array that EventType.fromJson expects
+        final com.google.gson.JsonArray rolesArray = new com.google.gson.JsonArray();
+        rolesArray.add("MONEY");
+        testEvent.add("rolesNamed", rolesArray);
+
+        LOGGER.info("Simulating test event: {}", testEvent.toString());
+
+        // Process the event through the EVENT_POSTED handler
+        SocketEndpoint.EVENT_POSTED.handler.accept(this, testEvent.toString());
+
+        // Set as last event for event info screen
+        SocketEndpoint.LAST_EVENT = testEvent;
     }
 }
