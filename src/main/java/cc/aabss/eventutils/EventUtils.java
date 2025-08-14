@@ -95,11 +95,15 @@ public class EventUtils implements ClientModInitializer {
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
                 "key.category.eventutils"));
-        final KeyBinding testEventKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.eventutils.testevent",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_SEMICOLON,
-                "key.category.eventutils"));
+
+// DEV ICC: Enable to force test event
+
+//        final KeyBinding testEventKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+//                "key.eventutils.testevent",
+//                InputUtil.Type.KEYSYM,
+//                GLFW.GLFW_KEY_SEMICOLON,
+//                "key.category.eventutils"));
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             // Hide players key
             if (hidePlayersKey.wasPressed()) {
@@ -117,16 +121,18 @@ public class EventUtils implements ClientModInitializer {
                 if (client.player != null) client.player.sendMessage(Text.literal("No event has happened recently!").formatted(Formatting.RED), true);
             }
 
-            // Test event key
-            if (testEventKey.wasPressed()) {
-                simulateTestEvent();
-                if (client.player != null) {
-                    client.player.sendMessage(Text.literal("Test event simulated! Check your server list and you should see a toast notification.").formatted(Formatting.GREEN), true);
-                } else {
-                    // In main menu, just log it
-                    LOGGER.info("Test event simulated from main menu");
-                }
-            }
+// DEV ICC: Enable to force test event
+
+//            if (testEventKey.wasPressed()) {
+//                simulateTestEvent();
+//                if (client.player != null) {
+//                    client.player.sendMessage(Text.literal("Test event simulated! Check your server list and you should see a toast notification.").formatted(Formatting.GREEN), true);
+//                } else {
+//                    // In main menu, just log it
+//                    LOGGER.info("Test event simulated from main menu");
+//                }
+//            }
+
         });
 
         // Simple queue message

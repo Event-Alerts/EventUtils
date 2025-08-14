@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.widget.EntryListWidget;
 
 @Mixin(MultiplayerScreen.class)
 public class MultiplayerScreenMixin {
@@ -43,8 +44,10 @@ public class MultiplayerScreenMixin {
             final boolean isEvent = label.contains(EventServerManager.EVENT_SERVER_PREFIX) || normalized.contains("[Event] ");
             if (!isEvent) continue;
 
-            final int top = serverListWidget.getRowTop(i);
-            final int bottom = (i + 1 < n) ? serverListWidget.getRowTop(i + 1) - 1 : top + 36;
+            final int top = ((EntryListWidgetAccessor)(EntryListWidget<?>) serverListWidget).invokeGetRowTop(i);
+            final int bottom = (i + 1 < n)
+                    ? ((EntryListWidgetAccessor)(EntryListWidget<?>) serverListWidget).invokeGetRowTop(i + 1) - 1
+                    : top + 36;
 
             // Subtle highlight overlay so text/icon remain readable
             context.fill(left, top, right, bottom, 0x403575E0);
