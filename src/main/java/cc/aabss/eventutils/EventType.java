@@ -64,7 +64,7 @@ public enum EventType {
                 .name(displayName)
                 .description(OptionDescription.of(Text.of(EventUtils.translate("eventutils.config.event_description").replace("{event}", displayName.getString()))))
                 .binding(true, () -> config.eventTypes.contains(this), newValue -> {
-                    if (Boolean.TRUE.equals(newValue)) {
+                    if (newValue) {
                         config.eventTypes.add(this);
                     } else {
                         config.eventTypes.remove(this);

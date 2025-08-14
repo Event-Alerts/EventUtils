@@ -31,11 +31,6 @@ public class EventInfoScreen extends Screen {
     }
 
     @Override
-    protected void init() {
-        super.init();
-    }
-
-    @Override
     public void render(DrawContext drawContext, int i, int j, float f) {
         final int boxX = (width - BOX_WIDTH) / 2;
         final int boxY = (height - BOX_HEIGHT) / 2;
