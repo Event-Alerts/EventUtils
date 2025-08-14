@@ -36,13 +36,35 @@ public class EventServerManager {
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
 
-        // Extract event information
-        final String eventId = eventJson.has("id") ? eventJson.get("id").getAsString() : ("event-" + System.currentTimeMillis());
-        final String title = eventJson.has("title") ? eventJson.get("title").getAsString() : "Event";
-        final long eventTime = eventJson.has("time") ? eventJson.get("time").getAsLong() : 0;
+        // Requires precursor variable due to lambda in java 21
+        String eventIdPrec = "event-" + System.currentTimeMillis();
+        if (eventJson.has("id")) try {
+            eventIdPrec = eventJson.get("id").getAsString();
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse ID from event: {}", eventJson, e);
+        }
+        final String eventId = eventIdPrec != null && !eventIdPrec.isEmpty() ? eventIdPrec : "event-" + System.currentTimeMillis();
+
+        // Requires precursor variable due to lambda in java 21
+        String titlePrec = "Event";
+        if (eventJson.has("title")) try {
+            titlePrec = eventJson.get("title").getAsString();
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse title from event: {}", eventJson, e);
+        }
+        final String title = titlePrec != null && !titlePrec.isEmpty() ? titlePrec : "Event";
+
+        // Requires precursor variable due to lambda in java 21
+        long eventTimePrec = 0L;
+        if (eventJson.has("time")) try {
+            eventTimePrec = eventJson.get("time").getAsLong();
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse time from event: {}", eventJson, e);
+        }
+        final long eventTime = eventTimePrec > 0 ? eventTimePrec : System.currentTimeMillis();
 
         // Try to extract server IP from various possible fields
-        String serverIp = extractServerIp(eventJson);
+        String serverIp = ConnectUtility.extractIp(eventJson);
         if (serverIp == null || serverIp.isEmpty()) {
             EventUtils.LOGGER.warn("No server IP found for event: {}", title);
             return;
@@ -175,40 +197,7 @@ public class EventServerManager {
         }
     }
 
-    @Nullable
-    private String extractServerIp(@NotNull JsonObject eventJson) {
-        // Try to get IP from common fields in the event JSON
-        if (eventJson.has("ip")) {
-            return eventJson.get("ip").getAsString();
-        }
-        if (eventJson.has("server")) {
-            return eventJson.get("server").getAsString();
-        }
-        if (eventJson.has("address")) {
-            return eventJson.get("address").getAsString();
-        }
-
-        // Try to extract from description using the existing utility
-        if (eventJson.has("description")) {
-            final String description = eventJson.get("description").getAsString();
-            final String extractedIp = ConnectUtility.getIp(description);
-            if (extractedIp != null && !extractedIp.isEmpty()) {
-                return extractedIp;
-            }
-        }
-
-        // Try to extract from title as well
-        if (eventJson.has("title")) {
-            final String title = eventJson.get("title").getAsString();
-            final String extractedIp = ConnectUtility.getIp(title);
-            if (extractedIp != null && !extractedIp.isEmpty()) {
-                return extractedIp;
-            }
-        }
-
-        // No IP could be determined
-        return null;
-    }
+    
 
     public int getActiveEventCount() {
         return activeEventServers.size();

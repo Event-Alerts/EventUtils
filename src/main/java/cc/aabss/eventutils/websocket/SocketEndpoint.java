@@ -61,10 +61,12 @@ public enum SocketEndpoint {
         final JsonObject json = parseJson(message);
         if (json == null) return;
 
-        // Remove event server from server list if it exists
-        if (json.has("id")) {
+        // Remove event server from server list if it exists (safe parsing)
+        if (json.has("id")) try {
             final String eventId = json.get("id").getAsString();
             mod.eventServerManager.removeEventServer(eventId);
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse ID from cancellation event: {}", json, e);
         }
     });
 

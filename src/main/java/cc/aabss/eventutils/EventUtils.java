@@ -170,16 +170,11 @@ public class EventUtils implements ClientModInitializer {
             return ip;
         }
 
-        // Get IP
+        // Get IP (unified extraction with safe fallbacks)
         String ip = "hypixel.net";
         if (eventType != EventType.HOUSING) {
-            final JsonElement messageIp = message.get("ip");
-            if (messageIp != null) { // Specifically provided
-                ip = messageIp.getAsString();
-            } else { // Extract from description
-                final JsonElement messageDescription = message.get("description");
-                if (messageDescription != null) ip = ConnectUtility.getIp(messageDescription.getAsString());
-            }
+            final String extracted = ConnectUtility.extractIp(message);
+            if (extracted != null && !extracted.isEmpty()) ip = extracted;
         }
 
         // Auto TP if enabled

@@ -1,6 +1,7 @@
 package cc.aabss.eventutils.utility;
 
 import cc.aabss.eventutils.EventUtils;
+import com.google.gson.JsonObject;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
@@ -43,6 +44,54 @@ public class ConnectUtility {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    @Nullable
+    public static String extractIp(@NotNull JsonObject eventJson) {
+        // Direct IP field
+        if (eventJson.has("ip")) try {
+            final String ip = eventJson.get("ip").getAsString();
+            if (ip != null && !ip.isEmpty()) return ip;
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse ip from event: {}", eventJson, e);
+        }
+
+        // Extract from description
+        if (eventJson.has("description")) try {
+            final String description = eventJson.get("description").getAsString();
+            final String extracted = getIp(description);
+            if (extracted != null && !extracted.isEmpty()) return extracted;
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse description for IP from event: {}", eventJson, e);
+        }
+
+        // Extract from title
+        if (eventJson.has("title")) try {
+            final String title = eventJson.get("title").getAsString();
+            final String extracted = getIp(title);
+            if (extracted != null && !extracted.isEmpty()) return extracted;
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse title for IP from event: {}", eventJson, e);
+        }
+
+        // Extract from message
+        if (eventJson.has("message")) try {
+            final String message = eventJson.get("message").getAsString();
+            final String extracted = getIp(message);
+            if (extracted != null && !extracted.isEmpty()) return extracted;
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse message for IP from event: {}", eventJson, e);
+        }
+
+        // Last resort: address (may not exist and could mean something else)
+        if (eventJson.has("address")) try {
+            final String address = eventJson.get("address").getAsString();
+            if (address != null && !address.isEmpty()) return address;
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse address from event: {}", eventJson, e);
+        }
+
+        return null;
     }
 
     @Nullable
