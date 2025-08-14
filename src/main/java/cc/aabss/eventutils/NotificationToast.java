@@ -36,7 +36,7 @@ public class NotificationToast implements Toast {
         lines = new ArrayList<>();
         if (description != null) lines.add(description.asOrderedText());
         final OrderedText eventInfoInstructions = !displayEventInfoInstructions ? null : Text.literal("Click ")
-                .append(EventUtils.EVENT_INFO_KEY.getBoundKeyLocalizedText())
+                .append(EventUtils.MOD.keybindManager.eventInfoKey.getBoundKeyLocalizedText())
                 .append(Text.literal(" to view info"))
                 .asOrderedText();
         if (eventInfoInstructions != null) lines.add(eventInfoInstructions);

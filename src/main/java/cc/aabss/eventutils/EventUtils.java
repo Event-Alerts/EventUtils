@@ -6,19 +6,14 @@ import cc.aabss.eventutils.websocket.SocketEndpoint;
 import cc.aabss.eventutils.websocket.WebSocketClient;
 import cc.aabss.eventutils.config.EventConfig;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Language;
@@ -30,16 +25,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import org.lwjgl.glfw.GLFW;
-
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import static net.minecraft.text.Text.translatable;
 
 
 public class EventUtils implements ClientModInitializer {
@@ -50,12 +41,12 @@ public class EventUtils implements ClientModInitializer {
     public static EventUtils MOD;
     @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
     @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
-    public static KeyBinding EVENT_INFO_KEY;
 
     @NotNull public final EventConfig config = new EventConfig();
     @NotNull public final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
     @NotNull public final Set<WebSocketClient> webSockets = new HashSet<>();
     @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
+    public KeybindManager keybindManager;
     @NotNull public final EventServerManager eventServerManager = new EventServerManager(this);
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     public boolean hidePlayers = false;
@@ -84,56 +75,8 @@ public class EventUtils implements ClientModInitializer {
         // Update checker
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> updateChecker.checkUpdate());
 
-        // Keybindings
-        final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.eventutils.hideplayers",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_F10,
-                "key.category.eventutils"));
-        EVENT_INFO_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.eventutils.eventinfo",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
-                "key.category.eventutils"));
-
-// DEV ICC: Enable to force test event
-
-//        final KeyBinding testEventKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-//                "key.eventutils.testevent",
-//                InputUtil.Type.KEYSYM,
-//                GLFW.GLFW_KEY_SEMICOLON,
-//                "key.category.eventutils"));
-
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            // Hide players key
-            if (hidePlayersKey.wasPressed()) {
-                hidePlayers = !hidePlayers;
-                if (client.player != null) client.player.sendMessage(translatable(hidePlayers ? "eventutils.hideplayers.enabled" : "eventutils.hideplayers.disabled")
-                        .formatted(hidePlayers ? Formatting.GREEN : Formatting.RED), true);
-            }
-
-            // Event info key
-            if (EVENT_INFO_KEY.wasPressed()) {
-                if (SocketEndpoint.LAST_EVENT != null) {
-                    client.setScreen(new EventInfoScreen(SocketEndpoint.LAST_EVENT));
-                    return;
-                }
-                if (client.player != null) client.player.sendMessage(Text.literal("No event has happened recently!").formatted(Formatting.RED), true);
-            }
-
-// DEV ICC: Enable to force test event
-
-//            if (testEventKey.wasPressed()) {
-//                simulateTestEvent();
-//                if (client.player != null) {
-//                    client.player.sendMessage(Text.literal("Test event simulated! Check your server list and you should see a toast notification.").formatted(Formatting.GREEN), true);
-//                } else {
-//                    // In main menu, just log it
-//                    LOGGER.info("Test event simulated from main menu");
-//                }
-//            }
-
-        });
+        // Initialize keybind manager
+        keybindManager = new KeybindManager(this);
 
         // Simple queue message
         ClientReceiveMessageEvents.ALLOW_GAME.register(((text, overlay) -> true));

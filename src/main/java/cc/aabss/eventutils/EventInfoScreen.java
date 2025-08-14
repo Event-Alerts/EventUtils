@@ -26,7 +26,7 @@ public class EventInfoScreen extends Screen {
     @NotNull private final JsonObject json;
 
     public EventInfoScreen(@NotNull JsonObject json) {
-        super(Text.translatable("key.eventutils.eventinfo"));
+        super(Text.translatable(EventUtils.MOD.keybindManager.eventInfoKey.getTranslationKey()));
         this.json = json;
     }
 
