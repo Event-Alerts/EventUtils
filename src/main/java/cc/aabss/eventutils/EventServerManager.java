@@ -1,7 +1,5 @@
 package cc.aabss.eventutils;
 
-import cc.aabss.eventutils.utility.ConnectUtility;
-
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.ServerList;
@@ -15,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
 
 public class EventServerManager {
     public static final String EVENT_SERVER_PREFIX = "§7[Event] §r";
@@ -32,103 +31,96 @@ public class EventServerManager {
         this.serverList = serverList;
     }
 
-    public void addEventServer(@NotNull JsonObject eventJson) {
+    public void addEventServer(@NotNull JsonObject eventJson, @NotNull String ip) {
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
 
-        // Requires precursor variable due to lambda in java 21
-        String eventIdPrec = "event-" + System.currentTimeMillis();
+        // Get ID
+        String eventId = "event-" + System.currentTimeMillis();
         if (eventJson.has("id")) try {
-            eventIdPrec = eventJson.get("id").getAsString();
+            String idJson = eventJson.get("id").getAsString();
+            if (idJson != null && !idJson.isEmpty()) eventId = idJson;
         } catch (final Exception e) {
             EventUtils.LOGGER.warn("Failed to parse ID from event: {}", eventJson, e);
         }
-        final String eventId = eventIdPrec != null && !eventIdPrec.isEmpty() ? eventIdPrec : "event-" + System.currentTimeMillis();
-
-        // Requires precursor variable due to lambda in java 21
-        String titlePrec = "Event";
-        if (eventJson.has("title")) try {
-            titlePrec = eventJson.get("title").getAsString();
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to parse title from event: {}", eventJson, e);
-        }
-        final String title = titlePrec != null && !titlePrec.isEmpty() ? titlePrec : "Event";
-
-        // Requires precursor variable due to lambda in java 21
-        long eventTimePrec = 0L;
-        if (eventJson.has("time")) try {
-            eventTimePrec = eventJson.get("time").getAsLong();
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to parse time from event: {}", eventJson, e);
-        }
-        final long eventTime = eventTimePrec > 0 ? eventTimePrec : System.currentTimeMillis();
-
-        // Try to extract server IP from various possible fields
-        String serverIp = ConnectUtility.extractIp(eventJson);
-        if (serverIp == null || serverIp.isEmpty()) {
-            EventUtils.LOGGER.warn("No server IP found for event: {}", title);
-            return;
-        }
+        final String finalEventId = eventId; // Requires final variable due to lambda
 
         // Don't add if already exists (fast-path check)
         if (activeEventServers.containsKey(eventId)) return;
+
+        // Get title
+        String title = "Event";
+        if (eventJson.has("title")) try {
+            String titleJson = eventJson.get("title").getAsString();
+            if (titleJson != null && !titleJson.isEmpty()) title = titleJson;
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse title from event: {}", eventJson, e);
+        }
+        final String finalTitle = title; // Requires final variable due to lambda
+
+        // Get time
+        long eventTime = System.currentTimeMillis();
+        if (eventJson.has("time")) try {
+            long eventTimeJson = eventJson.get("time").getAsLong();
+            if (eventTimeJson > 0) eventTime = eventTimeJson;
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse time from event: {}", eventJson, e);
+        }
+        final long finalEventTime = eventTime; // Requires final variable due to lambda
 
         client.execute(() -> {
             if (!ensureServerListLoaded()) {
                 EventUtils.LOGGER.warn("Server list not available, cannot add event server");
                 return;
             }
+            if (serverList == null) return;
 
             // Create server info
-            final String serverName = EVENT_SERVER_PREFIX + title;
-            final ServerInfo serverInfo = new ServerInfo(serverName, serverIp, ServerInfo.ServerType.OTHER);
+            final String serverName = EVENT_SERVER_PREFIX + finalTitle;
+            final ServerInfo serverInfo = new ServerInfo(serverName, ip, ServerInfo.ServerType.OTHER);
             serverInfo.setResourcePackPolicy(ServerInfo.ResourcePackPolicy.PROMPT);
 
             // Add the server to the list (avoid duplicates in the persistent list)
             for (int i = 0; i < serverList.size(); i++) {
                 final ServerInfo existing = serverList.get(i);
-                if (existing.name.equals(serverName) && existing.address.equalsIgnoreCase(serverIp)) {
-                    EventUtils.LOGGER.info("Event server already present in server list: '{}' -> '{}'", serverName, serverIp);
+                if (existing.name.equals(serverName) && existing.address.equalsIgnoreCase(ip)) {
+                    EventUtils.LOGGER.info("Event server already present in server list: '{}' -> '{}'", serverName, ip);
                     return;
                 }
             }
             serverList.add(serverInfo, false);
 
             // Store event server info
-            final EventServerInfo eventServerInfo = new EventServerInfo(eventId, serverInfo, eventTime);
-            activeEventServers.put(eventId, eventServerInfo);
+            final EventServerInfo eventServerInfo = new EventServerInfo(finalEventId, serverInfo, finalEventTime);
+            activeEventServers.put(finalEventId, eventServerInfo);
 
             // Schedule removal 5 minutes after event starts
-            if (eventTime > 0) {
-                final long currentTime = System.currentTimeMillis();
-                final long graceMs = TimeUnit.MINUTES.toMillis(5);
-                final long timeUntilRemoval = (eventTime + graceMs) - currentTime;
+            final long currentTime = System.currentTimeMillis();
+            final long graceMs = TimeUnit.MINUTES.toMillis(5);
+            final long timeUntilRemoval = (finalEventTime + graceMs) - currentTime;
 
-                if (timeUntilRemoval > 0) {
+            if (timeUntilRemoval > 0) {
+                final ScheduledFuture<?> removalTask = mod.scheduler.schedule(
+                    () -> removeEventServer(finalEventId),
+                    timeUntilRemoval,
+                    TimeUnit.MILLISECONDS);
+                removalTasks.put(finalEventId, removalTask);
+                EventUtils.LOGGER.info("Scheduled removal of event server '{}' in {} ms (5m after start)", finalTitle, timeUntilRemoval);
+            } else {
+                // If within 5-minute grace after event start, keep it briefly; else do not add
+                if (currentTime - finalEventTime <= graceMs) {
+                    final long remaining = graceMs - (currentTime - finalEventTime);
                     final ScheduledFuture<?> removalTask = mod.scheduler.schedule(
-                        () -> removeEventServer(eventId),
-                        timeUntilRemoval,
-                        TimeUnit.MILLISECONDS
-                    );
-                    removalTasks.put(eventId, removalTask);
-                    EventUtils.LOGGER.info("Scheduled removal of event server '{}' in {} ms (5m after start)", title, timeUntilRemoval);
+                            () -> removeEventServer(finalEventId),
+                            remaining,
+                            TimeUnit.MILLISECONDS);
+                    removalTasks.put(finalEventId, removalTask);
+                    EventUtils.LOGGER.info("Event '{}' already started; keeping for {} ms (grace)", finalTitle, remaining);
                 } else {
-                    // If within 5-minute grace after event start, keep it briefly; else do not add
-                    if (currentTime - eventTime <= graceMs) {
-                        final long remaining = graceMs - (currentTime - eventTime);
-                        final ScheduledFuture<?> removalTask = mod.scheduler.schedule(
-                                () -> removeEventServer(eventId),
-                                remaining,
-                                TimeUnit.MILLISECONDS
-                        );
-                        removalTasks.put(eventId, removalTask);
-                        EventUtils.LOGGER.info("Event '{}' already started; keeping for {} ms (grace)", title, remaining);
-                    } else {
-                        serverList.remove(serverInfo);
-                        activeEventServers.remove(eventId);
-                        EventUtils.LOGGER.info("Event '{}' started more than 5 minutes ago; not adding", title);
-                        return;
-                    }
+                    serverList.remove(serverInfo);
+                    activeEventServers.remove(finalEventId);
+                    EventUtils.LOGGER.info("Event '{}' started more than 5 minutes ago; not adding", finalTitle);
+                    return;
                 }
             }
 
@@ -139,14 +131,13 @@ public class EventServerManager {
                 EventUtils.LOGGER.error("Failed to save server list after adding event server", e);
             }
 
-            EventUtils.LOGGER.info("Added event server '{}' with IP '{}' to server list", title, serverIp);
+            EventUtils.LOGGER.info("Added event server '{}' with IP '{}' to server list", finalTitle, ip);
         });
     }
 
     public void removeEventServer(@NotNull String eventId) {
         final MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null) return;
-        client.execute(() -> {
+        if (client != null) client.execute(() -> {
             final EventServerInfo eventServerInfo = activeEventServers.remove(eventId);
             if (eventServerInfo == null) return;
 
@@ -154,6 +145,7 @@ public class EventServerManager {
                 EventUtils.LOGGER.warn("Server list not available, cannot remove event server");
                 return;
             }
+            if (serverList == null) return;
 
             // Remove from server list by matching properties (instance may differ if server list was reloaded)
             int removedCount = 0;
@@ -197,8 +189,6 @@ public class EventServerManager {
         }
     }
 
-    
-
     public int getActiveEventCount() {
         return activeEventServers.size();
     }
@@ -211,7 +201,7 @@ public class EventServerManager {
         try {
             this.serverList.loadFile();
         } catch (final Exception e) {
-            EventUtils.LOGGER.error("Failed to load server list", e);
+            EventUtils.LOGGER.error("Failed to load server list from file", e);
         }
         return true;
     }

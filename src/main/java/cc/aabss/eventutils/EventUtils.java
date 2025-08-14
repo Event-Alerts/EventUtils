@@ -170,15 +170,18 @@ public class EventUtils implements ClientModInitializer {
             return ip;
         }
 
-        // Get IP (unified extraction with safe fallbacks)
-        String ip = "hypixel.net";
-        if (eventType != EventType.HOUSING) {
+        // Get IP
+        String ip = null;
+        if (eventType == EventType.HOUSING) {
+            ip = "hypixel.net";
+        } else {
             final String extracted = ConnectUtility.extractIp(message);
             if (extracted != null && !extracted.isEmpty()) ip = extracted;
         }
 
         // Auto TP if enabled
         if (config.autoTp && ip != null) ConnectUtility.connect(ip);
+
         return ip;
     }
 
@@ -199,12 +202,11 @@ public class EventUtils implements ClientModInitializer {
     }
 
     /**
-     * Simulates an event being posted for testing purposes.
-     * Creates a test event that starts in 5 minutes.
+     * Simulates an event being posted for testing purposes
      */
     public void simulateTestEvent() {
         final long currentTime = System.currentTimeMillis();
-        final long eventTime = currentTime + (1 * 30 * 1000);
+        final long eventTime = currentTime + (30 * 1000);
 
         // Create a test event JSON object with the correct structure
         final JsonObject testEvent = new JsonObject();

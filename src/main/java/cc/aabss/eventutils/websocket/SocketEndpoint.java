@@ -34,8 +34,10 @@ public enum SocketEndpoint {
             mod.lastIps.put(eventType, ip);
 
             // Add event server to server list if it has an IP
-            if (ip != null && !ip.isEmpty()) {
-                mod.eventServerManager.addEventServer(json);
+            if (ip != null && !ip.isEmpty()) try {
+                mod.eventServerManager.addEventServer(json, ip);
+            } catch (final Exception e) {
+                EventUtils.LOGGER.warn("Failed to add event server to server list: {}", json, e);
             }
         }
     }),
@@ -61,12 +63,21 @@ public enum SocketEndpoint {
         final JsonObject json = parseJson(message);
         if (json == null) return;
 
-        // Remove event server from server list if it exists (safe parsing)
-        if (json.has("id")) try {
-            final String eventId = json.get("id").getAsString();
-            mod.eventServerManager.removeEventServer(eventId);
+        // Get event ID
+        if (!json.has("id")) return;
+        String eventId;
+        try {
+            eventId = json.get("id").getAsString();
         } catch (final Exception e) {
             EventUtils.LOGGER.warn("Failed to parse ID from cancellation event: {}", json, e);
+            return;
+        }
+
+        // Remove event server from server list if it exists
+        try {
+            mod.eventServerManager.removeEventServer(eventId);
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to remove event server from server list: {}", json, e);
         }
     });
 

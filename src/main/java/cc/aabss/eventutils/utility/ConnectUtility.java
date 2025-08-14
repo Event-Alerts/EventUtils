@@ -1,7 +1,9 @@
 package cc.aabss.eventutils.utility;
 
 import cc.aabss.eventutils.EventUtils;
+
 import com.google.gson.JsonObject;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
@@ -74,16 +76,7 @@ public class ConnectUtility {
             EventUtils.LOGGER.warn("Failed to parse title for IP from event: {}", eventJson, e);
         }
 
-        // Extract from message
-        if (eventJson.has("message")) try {
-            final String message = eventJson.get("message").getAsString();
-            final String extracted = getIp(message);
-            if (extracted != null && !extracted.isEmpty()) return extracted;
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to parse message for IP from event: {}", eventJson, e);
-        }
-
-        // Last resort: address (may not exist and could mean something else)
+        // Extract from address (last resort, not a currently valid field but may be in the future)
         if (eventJson.has("address")) try {
             final String address = eventJson.get("address").getAsString();
             if (address != null && !address.isEmpty()) return address;
@@ -95,10 +88,10 @@ public class ConnectUtility {
     }
 
     @Nullable
-    public static String getIp(@NotNull String event) {
+    public static String getIp(@NotNull String message) {
         // Get strings
         final List<String> strings = new ArrayList<>();
-        for (final String string : removeMarkdown(event).split("\\s+|\\n+")) {
+        for (final String string : removeMarkdown(message).split("\\s+|\\n+")) {
             if (string.contains(".") && !string.contains("/")) strings.add(string);
         }
 
