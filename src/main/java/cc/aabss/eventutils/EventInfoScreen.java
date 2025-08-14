@@ -70,31 +70,38 @@ public class EventInfoScreen extends Screen {
 
     @NotNull
     private String formatTime(@NotNull String unixTimestamp) {
+        // Get timestamps
         unixTimestamp = unixTimestamp.replaceAll("\"", "");
-        final Instant timestamp = Instant.ofEpochMilli(Long.parseLong(unixTimestamp));
+        final Instant timestamp;
+        try {
+            timestamp = Instant.ofEpochMilli(Long.parseLong(unixTimestamp));
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse timestamp: {}", unixTimestamp, e);
+            return unixTimestamp; // Not a valid timestamp
+        }
         final Instant now = Instant.now();
+
+        // Get seconds
         final long timestampSeconds = timestamp.getEpochSecond();
         final long nowSeconds = now.getEpochSecond();
+        if (timestampSeconds == nowSeconds) return "now";
+
+        final StringBuilder builder = new StringBuilder();
+        if (timestampSeconds > nowSeconds) builder.append("in "); // Future
+
         final long seconds = Duration.between(timestamp, now).getSeconds();
-
-        // In the future
-        if (timestampSeconds > nowSeconds) {
-            if (seconds < 60) return "in " + seconds + " seconds";
-            if (seconds < 3600) return "in " + (Math.ceil((double) seconds / 60)) + " minutes";
-            if (seconds < 86400) return "in " + (Math.ceil((double) seconds / 3600)) + " hours";
-            return "in " + (Math.ceil((double) seconds / 86400)) + " days";
+        if (seconds < 60) {
+            builder.append(seconds).append(" seconds");
+        } else if (seconds < 3600) {
+            builder.append((Math.ceil((double) seconds / 60))).append(" minutes");
+        } else if (seconds < 86400) {
+            builder.append((Math.ceil((double) seconds / 3600))).append(" hours");
+        } else {
+            builder.append((Math.ceil((double) seconds / 86400))).append(" days");
         }
 
-        // In the past
-        if (timestampSeconds < nowSeconds) {
-            if (seconds < 60) return seconds + " seconds ago";
-            if (seconds < 3600) return (Math.ceil((double) seconds / 60)) + " minutes ago";
-            if (seconds < 86400) return (Math.ceil((double) seconds / 3600)) + " hours ago";
-            return (Math.ceil((double) seconds / 86400)) + " days ago";
-        }
-
-        // Just now
-        return "just now";
+        if (timestampSeconds < nowSeconds) builder.append(" ago"); // Past
+        return builder.toString();
     }
 
     @NotNull
@@ -106,7 +113,7 @@ public class EventInfoScreen extends Screen {
 
         // Format
         final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < size; i++) builder.append(list.get(i)).append(", ");
+        for (final JsonElement element : list) builder.append(element).append(", ");
         return builder.substring(0, builder.length() - 2);
     }
 }
