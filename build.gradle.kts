@@ -25,11 +25,11 @@ dependencies {
     minecraft("com.mojang", "minecraft", property("deps.minecraft").toString())
     mappings("net.fabricmc", "yarn", property("deps.yarn_mappings").toString())
 
-    modCompileOnly("net.fabricmc", "fabric-loader", property("deps.fabric_loader").toString())
-    modCompileOnly("net.fabricmc.fabric-api", "fabric-api", property("deps.fabric_api").toString())
+    modImplementation("net.fabricmc", "fabric-loader", property("deps.fabric_loader").toString())
+    modImplementation("net.fabricmc.fabric-api", "fabric-api", property("deps.fabric_api").toString())
 
-    modCompileOnly("dev.isxander", "yet-another-config-lib", property("deps.yacl").toString())
-    modCompileOnly("com.terraformersmc", "modmenu", property("deps.modmenu").toString())
+    modImplementation("dev.isxander", "yet-another-config-lib", property("deps.yacl").toString())
+    modImplementation("com.terraformersmc", "modmenu", property("deps.modmenu").toString())
 }
 
 // Add placeholder-api dependency if property exists

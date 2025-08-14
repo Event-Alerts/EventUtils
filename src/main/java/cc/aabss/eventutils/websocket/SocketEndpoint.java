@@ -32,6 +32,11 @@ public enum SocketEndpoint {
             // Send toast
             eventType.sendToast(mod, prizeAmount > 0 ? prizeAmount : null, ip != null && !ip.isEmpty());
             mod.lastIps.put(eventType, ip);
+
+            // Add event server to server list if it has an IP
+            if (ip != null && !ip.isEmpty()) {
+                mod.eventServerManager.addEventServer(json);
+            }
         }
     }),
     FAMOUS_EVENT_POSTED((mod, message) -> {
@@ -50,6 +55,19 @@ public enum SocketEndpoint {
         String ip = mod.getIpAndConnect(eventType, json);
         eventType.sendToast(mod, null, ip != null && !ip.isEmpty());
         mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
+    }),
+    EVENT_CANCELLED((mod, message) -> {
+        // Get JSON
+        final JsonObject json = parseJson(message);
+        if (json == null) return;
+
+        // Remove event server from server list if it exists (safe parsing)
+        if (json.has("id")) try {
+            final String eventId = json.get("id").getAsString();
+            mod.eventServerManager.removeEventServer(eventId);
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to parse ID from cancellation event: {}", json, e);
+        }
     });
 
     @Nullable public static JsonObject LAST_EVENT;
