@@ -32,6 +32,15 @@ public class ConfigScreen {
             .title(translatable("eventutils.config.title"))
             .category(ConfigCategory.createBuilder().name(translatable("eventutils.config.general"))
                     .option(Option.<Boolean>createBuilder()
+                            .name(translatable("eventutils.config.discord.title"))
+                            .description(OptionDescription.of(translatable("eventutils.config.discord.description")))
+                            .binding(EventConfig.Defaults.DISCORD_RPC, () -> config.discordRpc, newValue -> {
+                                config.discordRpc = newValue;
+                                config.setSave("discord_rpc", config.discordRpc);
+                                if (Boolean.TRUE.equals(newValue)) EventUtils.MOD.discordRPC.connect(); else EventUtils.MOD.discordRPC.disconnect();
+                            })
+                            .controller(ConfigScreen::getBooleanBuilder).build())
+                    .option(Option.<Boolean>createBuilder()
                             .name(translatable("eventutils.config.teleport.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.teleport.description")))
                             .binding(EventConfig.Defaults.AUTO_TP, () -> config.autoTp, newValue -> {

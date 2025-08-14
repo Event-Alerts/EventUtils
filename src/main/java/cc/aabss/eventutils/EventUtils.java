@@ -56,6 +56,7 @@ public class EventUtils implements ClientModInitializer {
     @NotNull public final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
     @NotNull public final Set<WebSocketClient> webSockets = new HashSet<>();
     @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
+    @NotNull public final DiscordRPC discordRPC = new DiscordRPC(this);
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     public boolean hidePlayers = false;
 
@@ -73,9 +74,13 @@ public class EventUtils implements ClientModInitializer {
         // Command registration
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> CommandRegister.register(dispatcher));
 
-        // Game closed
+        // Game started / closed
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            if (config.discordRpc) discordRPC.connect();
+        });
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             webSockets.forEach(socket -> socket.close("Game closed"));
+            discordRPC.disconnect();
         });
 
         // Update checker
@@ -108,6 +113,8 @@ public class EventUtils implements ClientModInitializer {
                 }
                 if (client.player != null) client.player.sendMessage(Text.literal("No event has happened recently!").formatted(Formatting.RED), true);
             }
+            // Keep Discord presence alive if it was toggled on at runtime
+            if (config.discordRpc) discordRPC.connect();
         });
 
         // Simple queue message
