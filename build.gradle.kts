@@ -30,6 +30,9 @@ dependencies {
 
     modCompileOnly("dev.isxander", "yet-another-config-lib", property("deps.yacl").toString())
     modCompileOnly("com.terraformersmc", "modmenu", property("deps.modmenu").toString())
+
+    // Discord IPC (bundle into the mod jar)
+    include(implementation("com.github.jagrosh:DiscordIPC:master-SNAPSHOT")!!)
 }
 
 // Add placeholder-api dependency if property exists
