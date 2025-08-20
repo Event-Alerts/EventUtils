@@ -1,6 +1,7 @@
 package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventType;
+import cc.aabss.eventutils.skins.SkinFinderOverlay;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -77,11 +78,27 @@ public class CommandRegister {
                     return 0;
                 }).build();
 
+        // eventutils skin <prompt>
+        final LiteralCommandNode<FabricClientCommandSource> skin = ClientCommandManager
+                .literal("skin")
+                .then(ClientCommandManager.argument("prompt", StringArgumentType.greedyString())
+                        .executes(context -> {
+                            final String prompt = StringArgumentType.getString(context, "prompt");
+                            SkinFinderOverlay.open(prompt);
+                            return 0;
+                        }))
+                .executes(context -> {
+                    // If no prompt provided, show help message
+                    HelpCmd.help(context);
+                    return 0;
+                }).build();
+
         // Build command tree
         dispatcher.getRoot().addChild(main);
         main.addChild(config);
         main.addChild(teleport);
         main.addChild(priority);
         main.addChild(priorityTop);
+        main.addChild(skin);
     }
 }

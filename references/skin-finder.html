@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EventSkins Demo</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background:#0b0d10; color:#e6e6e6; }
+    header { padding: 16px; background: #12151a; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.4) }
+    h1 { margin: 0; font-size: 18px; }
+    .search { display:flex; gap:8px; margin-top: 10px; }
+    .search input { flex:1; padding:10px 12px; border-radius:8px; border:1px solid #2a2f38; background:#0f1116; color:#e6e6e6 }
+    .search button { padding:10px 14px; border-radius:8px; border:0; background:#4f46e5; color:#fff; font-weight:600; cursor:pointer }
+    .container { padding: 16px; max-width: 1100px; margin: 0 auto; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:12px; margin-top: 16px }
+    .card { background:#11141b; border:1px solid #2a2f38; border-radius:12px; overflow:hidden; position:relative }
+    .card img { width:100%; height:auto; display:block; background: #0d0f14 }
+    .meta { display:flex; justify-content:space-between; padding:8px 10px; font-size:13px; color:#b9b9c3 }
+    .pill { position:absolute; top:6px; left:6px; background:#1e2633; color:#cdd3e0; padding:2px 6px; border-radius:999px; font-size:12px; }
+    .select { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; background:rgba(0,0,0,.35) }
+    .card:hover .select { opacity:1 }
+    .select button { padding:8px 10px; border-radius:8px; border:0; background:#10b981; color:#00140d; font-weight:700; cursor:pointer }
+    .notice { margin-top:12px; padding:10px 12px; border-radius:8px; background:#1f2937; color:#d1d5db; display:none }
+    .notice.error { background:#3b0d0d; color:#ffd7d7; border:1px solid #7a1f1f }
+    .overlay { position:fixed; inset:0; background:rgba(0,0,0,.65); display:none; align-items:center; justify-content:center; z-index: 50 }
+    .dialog { background:#0f1218; border:1px solid #2a2f38; border-radius:12px; padding:16px; max-width: 420px; width: calc(100% - 32px) }
+    .dialog h2 { margin:0 0 8px; font-size:18px }
+    .row { display:flex; gap:8px }
+    .row input { flex:1; padding:10px 12px; background:#0b0e13; border:1px solid #303644; border-radius:8px; color:#e6e6e6 }
+    .row button { padding:10px 14px; border-radius:8px; border:0; background:#4f46e5; color:#fff; font-weight:600; cursor:pointer }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>EventSkins Demo</h1>
+      <div class="search">
+        <input id="tagInput" placeholder="Enter skin tag, e.g., pineapple" />
+        <button id="searchBtn">Search</button>
+      </div>
+      <div id="notice" class="notice"></div>
+    </div>
+  </header>
+  <div class="container">
+    <div id="results" class="grid"></div>
+  </div>
+
+  <div id="overlay" class="overlay" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <h2>Player found</h2>
+      <div class="row">
+        <input id="usernameOut" readonly />
+        <button id="copyBtn">Copy</button>
+      </div>
+      <div class="row" style="margin-top:8px; justify-content: flex-end">
+        <button id="closeBtn" style="background:#374151">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const notice = document.getElementById('notice');
+    function showNotice(msg, isError=false) {
+      notice.textContent = msg;
+      notice.className = 'notice' + (isError ? ' error' : '');
+      notice.style.display = 'block';
+    }
+    function clearNotice() { notice.style.display = 'none'; }
+
+    async function fetchJson(url) {
+      const res = await fetch(url);
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({error:'Request failed'}));
+        const e = new Error(err.error || 'Request failed');
+        e.status = res.status; throw e;
+      }
+      return res.json();
+    }
+
+    async function searchTag() {
+      clearNotice();
+      const tag = document.getElementById('tagInput').value.trim();
+      if (!tag) return;
+      const grid = document.getElementById('results');
+      grid.innerHTML = '';
+      try {
+        const data = await fetchJson(`/api/list/${encodeURIComponent(tag)}`);
+        if (!data.items || data.items.length === 0) {
+          showNotice('No results for this tag.', true);
+          return;
+        }
+        const frag = document.createDocumentFragment();
+        data.items.forEach((item, idx) => {
+          const div = document.createElement('div');
+          div.className = 'card';
+          const img = document.createElement('img');
+          img.src = item.imageUrl;
+          img.alt = `Skin ${item.id}`;
+          const pill = document.createElement('div');
+          pill.className = 'pill';
+          pill.textContent = `#${item.position}`;
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          const age = item.age ? `${item.age.value}${item.age.unit}` : (item.ageYearsApprox ? `${item.ageYearsApprox.toFixed(2)}y` : '');
+          meta.innerHTML = `<span>${age}</span><span>${Math.round((item.weight||0)*100)}% weight</span>`;
+          const sel = document.createElement('div');
+          sel.className = 'select';
+          const btn = document.createElement('button');
+          btn.textContent = 'Find Player';
+          btn.addEventListener('click', () => handleSelect(item.id));
+          sel.appendChild(btn);
+          div.appendChild(img);
+          div.appendChild(pill);
+          div.appendChild(meta);
+          div.appendChild(sel);
+          frag.appendChild(div);
+        });
+        grid.appendChild(frag);
+      } catch (e) {
+        if (e.status === 404) showNotice('Tag not found.', true);
+        else showNotice(e.message || 'Failed to load results', true);
+      }
+    }
+
+    async function handleSelect(skinId) {
+      showNotice('Working to find a player wearing this skin…');
+      try {
+        const data = await fetchJson(`/api/handle/${encodeURIComponent(skinId)}`);
+        clearNotice();
+        if (data.matched && data.username) {
+          openOverlay(data.username);
+        } else {
+          showNotice('No player is currently wearing this skin.', true);
+        }
+      } catch (e) {
+        clearNotice();
+        const msg = e.status === 404 ? 'No player is currently wearing this skin.' : (e.message || 'Failed');
+        showNotice(msg, true);
+      }
+    }
+
+    function openOverlay(username) {
+      const overlay = document.getElementById('overlay');
+      const out = document.getElementById('usernameOut');
+      out.value = username;
+      overlay.style.display = 'flex';
+    }
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const out = document.getElementById('usernameOut');
+      try { await navigator.clipboard.writeText(out.value); showNotice('Copied username to clipboard.'); } catch {}
+    });
+    document.getElementById('closeBtn').addEventListener('click', () => {
+      document.getElementById('overlay').style.display = 'none';
+    });
+
+    document.getElementById('searchBtn').addEventListener('click', searchTag);
+    document.getElementById('tagInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') searchTag(); });
+    window.addEventListener('load', searchTag);
+  </script>
+</body>
+</html>
+
+
