@@ -9,6 +9,7 @@
   "client": [
     "ButtonWidgetMixin",
     "ClientMixin",
+    "InGameHudMixin",
     "EntityRenderDispatcherMixin",
     "EntryListWidgetAccessor",
     "KeyBindingMixin",

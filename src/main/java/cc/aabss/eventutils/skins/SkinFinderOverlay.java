@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
 import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
+import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -75,11 +76,15 @@ public final class SkinFinderOverlay {
     private static GLFWScrollCallbackI previousScrollCallback;
     private static boolean glfwMouseHookInstalled;
     private static GLFWMouseButtonCallbackI previousMouseButtonCallback;
+    private static boolean glfwKeyHookInstalled;
+    private static GLFWKeyCallbackI previousKeyCallback;
 
     // Image cache state
     private static final java.util.concurrent.ConcurrentHashMap<String, Identifier> IMAGE_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
     private static final java.util.concurrent.ConcurrentHashMap<String, int[]> IMAGE_SIZE = new java.util.concurrent.ConcurrentHashMap<>();
     private static final java.util.concurrent.ConcurrentHashMap<String, Boolean> IMAGE_LOADING = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static boolean isOpen() { return OPEN.get(); }
 
     private static final HudRenderCallback RENDERER = (drawContext, tickDelta) -> {
         if (!OPEN.get()) return;
@@ -108,15 +113,6 @@ public final class SkinFinderOverlay {
         final int titleY = panelY + 12;
         drawContext.drawText(tr, leftTitle, titleX, titleY, 0x7CC7FF, false);
         drawContext.drawText(tr, rightTitle, titleX + tr.getWidth(leftTitle), titleY, 0xB9B9C3, false);
-
-        // Close button (top-right)
-        final int closeSize = 14;
-        final int closeX = panelX + panelW - closeSize - 10;
-        final int closeY = panelY + 11;
-        final boolean hoverClose = within(lastMouseX, lastMouseY, closeX, closeY, closeSize, closeSize);
-        final int closeBg = hoverClose ? 0xFF2C3443 : 0xFF1E2633;
-        drawContext.fill(closeX, closeY, closeX + closeSize, closeY + closeSize, closeBg);
-        drawContext.drawText(tr, "X", closeX + 4, closeY + 3, 0xCDD3E0, false);
 
         if (loading) {
             final String msg = "Searching…";
@@ -206,9 +202,6 @@ public final class SkinFinderOverlay {
         // Click handling (edge-triggered)
         if (clickEdge) {
             clickEdge = false;
-            // Close clicked
-            if (hoverClose) { close(); return; }
-
             // Scrollbar click/drag begin
             if (contentH > viewportH && within(lastMouseX, lastMouseY, trackX, gridTop, trackW, trackH)) {
                 if (within(lastMouseX, lastMouseY, trackX, currentThumbY, trackW, currentThumbH)) {
@@ -234,8 +227,9 @@ public final class SkinFinderOverlay {
                     y += cardH + gap;
                 }
                 if (within(lastMouseX, lastMouseY, x, y, cardW, cardH)) {
-                    if (item.id != null) {
-                        client.inGameHud.setOverlayMessage(Text.literal("Finding a player wearing this skin…"), false);
+                    final MinecraftClient client2 = MinecraftClient.getInstance();
+                    if (item.id != null && client2 != null) {
+                        client2.inGameHud.setOverlayMessage(Text.literal("Finding a player wearing this skin…"), false);
                         handleAsync(item.id);
                     }
                     break;
@@ -342,8 +336,6 @@ public final class SkinFinderOverlay {
                 final long window = client.getWindow().getHandle();
                 // Keep cursor unlocked while open
                 if (client.mouse.isCursorLocked()) client.mouse.unlockCursor();
-                // Escape to close
-                if (GLFW.glfwGetKey(window, GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS) close();
 
                 // Dragging scrollbar
                 if (draggingScrollbar && currentContentH > currentViewportH) {
@@ -388,12 +380,37 @@ public final class SkinFinderOverlay {
                             if (action == GLFW.GLFW_PRESS) { clickEdge = true; mouseDown = true; }
                             if (action == GLFW.GLFW_RELEASE) { mouseDown = false; draggingScrollbar = false; }
                         }
-                        // consume while open to prevent game from re-locking/acting
-                        return;
+                        return; // consume
                     }
                     if (previousMouseButtonCallback != null) previousMouseButtonCallback.invoke(win, button, action, mods);
                 });
                 glfwMouseHookInstalled = true;
+            }
+        }
+        // Install GLFW key hook once
+        if (!glfwKeyHookInstalled) {
+            final MinecraftClient client = MinecraftClient.getInstance();
+            if (client != null && client.getWindow() != null) {
+                final long window = client.getWindow().getHandle();
+                previousKeyCallback = GLFW.glfwSetKeyCallback(window, (win, key, scancode, action, mods) -> {
+                    if (OPEN.get()) {
+                        if (action == GLFW.GLFW_PRESS) {
+                            // ESC closes overlay
+                            if (key == GLFW.GLFW_KEY_ESCAPE) { close(); return; }
+                            // Consume typical GUI/chat keys
+                            if (key == GLFW.GLFW_KEY_E || key == GLFW.GLFW_KEY_T || key == GLFW.GLFW_KEY_SLASH || key == GLFW.GLFW_KEY_L || key == GLFW.GLFW_KEY_TAB) {
+                                return;
+                            }
+                        }
+                        if (action == GLFW.GLFW_REPEAT) {
+                            if (key == GLFW.GLFW_KEY_E || key == GLFW.GLFW_KEY_T || key == GLFW.GLFW_KEY_SLASH || key == GLFW.GLFW_KEY_L || key == GLFW.GLFW_KEY_TAB) {
+                                return;
+                            }
+                        }
+                    }
+                    if (previousKeyCallback != null) previousKeyCallback.invoke(win, key, scancode, action, mods);
+                });
+                glfwKeyHookInstalled = true;
             }
         }
     }
