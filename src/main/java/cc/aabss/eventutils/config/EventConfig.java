@@ -126,6 +126,11 @@ public class EventConfig extends FileLoader {
     }
 
     @NotNull
+    public String getEventSkinsAPIHost() {
+        return "https://eventskins.piscies.pvtylabs.com";
+    }
+
+    @NotNull
     public NotificationSound getNotificationSound(@NotNull EventType type) {
         return notificationSounds.getOrDefault(type, NotificationSound.ALERT);
     }
