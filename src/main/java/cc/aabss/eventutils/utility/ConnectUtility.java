@@ -5,6 +5,7 @@ import cc.aabss.eventutils.EventUtils;
 import com.google.gson.JsonObject;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.network.ServerAddress;
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static net.minecraft.text.Text.translatable;
+
 
 public class ConnectUtility {
     public static void connect(@NotNull String ip) {
@@ -34,7 +37,11 @@ public class ConnectUtility {
         final ServerAddress address = ServerAddress.parse(ip);
         client.execute(() -> {
             try {
+                //? if >=1.21.6 {
+                /*client.disconnect(new MessageScreen(translatable("multiplayer.disconnect.generic")), false);
+                *///?} else {
                 client.disconnect();
+                //?}
 
                 //? if <=1.20.4 {
                 /*ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true);
