@@ -272,7 +272,11 @@ public final class SkinFinderOverlay {
                 final int drawH = Math.max(1, (int) Math.round(texH * scale));
                 final int drawX = imgX + (imgW - drawW) / 2;
                 final int drawY = imgY + (imgH - drawH) / 2;
+                //? if <=1.21.1 {
+                /*ctx.drawTexture(id, drawX, drawY, 0.0f, 0.0f, drawW, drawH, texW, texH);*/
+                //?} else {
                 ctx.drawTexture(RenderLayer::getGuiTextured, id, drawX, drawY, 0.0f, 0.0f, drawW, drawH, texW, texH, texW, texH);
+                //?}
             } else if (IMAGE_LOADING.putIfAbsent(item.imageUrl, Boolean.TRUE) == null) {
                 downloadImage(item.imageUrl);
             }
