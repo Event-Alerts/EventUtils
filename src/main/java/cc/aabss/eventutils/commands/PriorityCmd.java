@@ -36,7 +36,7 @@ public class PriorityCmd {
                 if (playerName.equalsIgnoreCase(client.player.getName().getString())) {
                     context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.self", "§6#" + (namesSorted.indexOf(playerName) + 1)));
                 } else {
-                    context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.player", playerName, "§6#" + (namesSorted.indexOf(playerName) + 1)));
+                    context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.player", Text.literal(playerName).formatted(Formatting.YELLOW), "§6#" + (namesSorted.indexOf(playerName) + 1)));
                 }
 
                 return;

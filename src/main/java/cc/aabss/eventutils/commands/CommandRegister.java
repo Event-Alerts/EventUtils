@@ -77,11 +77,31 @@ public class CommandRegister {
                     return 0;
                 }).build();
 
+        final LiteralCommandNode<FabricClientCommandSource> countName = ClientCommandManager
+                .literal("countname")
+                .then(ClientCommandManager.literal("count")
+                        .then(ClientCommandManager.argument("filter", StringArgumentType.string())
+                                .executes((context) -> {
+                                    CountNameCmd.count(context, StringArgumentType.getString(context, "filter"));
+                                    return 0;
+                                })))
+                .then(ClientCommandManager.literal("list")
+                        .then(ClientCommandManager.argument("filter", StringArgumentType.string())
+                                .executes((context) -> {
+                                    CountNameCmd.list(context, StringArgumentType.getString(context, "filter"));
+                                    return 0;
+                                })))
+                .executes(context -> {
+                    CountNameCmd.list(context, "");
+                    return 0;
+                }).build();
+
         // Build command tree
         dispatcher.getRoot().addChild(main);
         main.addChild(config);
         main.addChild(teleport);
         main.addChild(priority);
         main.addChild(priorityTop);
+        main.addChild(countName);
     }
 }
