@@ -80,6 +80,14 @@ public class ConfigScreen {
                                 config.setSave("default_famous_ip", config.defaultFamousIp);
                             })
                             .controller(StringControllerBuilder::create).build())
+                    .option(Option.<Boolean>createBuilder()
+                            .name(translatable("eventutils.config.npchide.title"))
+                            .description(OptionDescription.of(translatable("eventutils.config.npchide.description")))
+                            .binding(EventConfig.Defaults.HIDE_NPCS, () -> config.hideNPCs, newValue -> {
+                                config.hideNPCs = newValue;
+                                config.setSave("hide_npcs", config.hideNPCs);
+                            })
+                            .controller(ConfigScreen::getBooleanBuilder).build())
                     .option(Option.<Integer>createBuilder()
                             .name(translatable("eventutils.config.radius.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.radius.description")))

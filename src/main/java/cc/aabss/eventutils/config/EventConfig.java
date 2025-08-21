@@ -28,6 +28,7 @@ public class EventConfig extends FileLoader {
     public boolean updateChecker;
     public boolean confirmWindowClose;
     public boolean confirmDisconnect;
+    public boolean hideNPCs;
     public int hidePlayersRadius;
     @NotNull public String defaultFamousIp;
     @NotNull public List<EntityType<?>> hiddenEntityTypes;
@@ -59,6 +60,7 @@ public class EventConfig extends FileLoader {
         confirmDisconnect = get("confirm_disconnect", Defaults.CONFIRM_DISCONNECT);
         defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
         hidePlayersRadius = get("hide_players_radius", Defaults.HIDE_PLAYERS_RADIUS);
+        hideNPCs = get("hide_npcs", Defaults.HIDE_NPCS);
         hiddenEntityTypes = get("hidden_entity_types", Defaults.hiddenEntityTypes(), new TypeToken<List<EntityType<?>>>(){}.getType());
         whitelistedPlayers = get("whitelisted_players", Defaults.whitelistedPlayers(), new TypeToken<List<String>>(){}.getType());
         useTestingApi = get("use_testing_api", Defaults.USE_TESTING_API);
@@ -138,6 +140,7 @@ public class EventConfig extends FileLoader {
         public static final boolean UPDATE_CHECKER = true;
         public static final boolean CONFIRM_WINDOW_CLOSE = true;
         public static final boolean CONFIRM_DISCONNECT = true;
+        public static final boolean HIDE_NPCS = true;
         public static final int HIDE_PLAYERS_RADIUS = 0;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
         @NotNull private static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = List.of(EntityType.GLOW_ITEM_FRAME);

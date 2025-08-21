@@ -57,7 +57,7 @@ public class PriorityCmd {
             final List<String> namesSorted = client.world.getPlayers().stream()
                     .sorted(Comparator.comparingInt(AbstractClientPlayerEntity::getId))
                     .map(player -> player.getName().getString())
-                    .filter(str -> !EventUtils.isNPC(str))
+                    .filter(str -> !EventUtils.isNPC(str, true))
                     .toList();
 
             // Check page bounds
@@ -87,7 +87,7 @@ public class PriorityCmd {
                     case 3 -> Style.EMPTY.withColor(TextColor.fromRgb(0xA97142));
                     default -> {
                         if (isLocalPlayer) {
-                            yield Style.EMPTY.withColor(TextColor.fromFormatting(Formatting.YELLOW));
+                            yield Style.EMPTY.withColor(TextColor.fromRgb(0x9AED47));
                         }
                         yield Style.EMPTY.withColor(TextColor.fromFormatting(Formatting.WHITE));
                     }

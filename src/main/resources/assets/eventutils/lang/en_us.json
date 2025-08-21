@@ -72,6 +72,8 @@
   "eventutils.config.entity.description": "The types of entities that will be hidden",
   "eventutils.config.players.title": "Whitelisted Players",
   "eventutils.config.players.description": "The names of the players you can see when players are hidden",
+  "eventutils.config.npchide.title": "Hide NPCs",
+  "eventutils.config.npchide.description": "Whether the mod will hide NPCs",
   "eventutils.config.radius.title": "Hide Players in Radius",
   "eventutils.config.radius.description": "Hides all the players in the specified radius, set to 0 to ignore distance",
   "eventutils.config.use_testing_api.title": "Use Testing API",
