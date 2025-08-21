@@ -88,5 +88,16 @@
   "eventutils.sound.shakey": "Shakey",
   "eventutils.sound.time_of_war": "Time of War",
 
-  "eventutils.screen.settings": "Settings"
+  "eventutils.screen.settings": "Settings",
+
+  "eventutils.command.priority.self": "§e[EU] You have pickup priority %s §ebased on the people around you.",
+  "eventutils.command.priority.player": "§e[EU] %s§e has pickup priority %s §ebased on the people around you.",
+  "eventutils.command.priority.noplayer": "§c[EU] Player not found!",
+
+  "eventutils.command.prioritytop.emptypage": "§c[EU] No players found!",
+  "eventutils.command.prioritytop.notapage": "§c[EU] That page wasn't found! (Highest page is Page %s§c)",
+  "eventutils.command.prioritytop.nextpage": "§6[§7>%s§6 Next Page] ",
+  "eventutils.command.prioritytop.lastpage": "§6[§7%s<§6 Last Page] ",
+  "eventutils.command.prioritytop.pagebutton": "§e[EU] %s%s§7(Click)",
+  "eventutils.command.prioritytop.page": "§e[EU] Page %s §eof %s\n\n"
 }
