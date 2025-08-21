@@ -129,7 +129,7 @@ public class EventUtils implements ClientModInitializer {
     }
 
     public static boolean isNPC(@NotNull String name) {
-        return name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-");
+        return name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-") || name.equals("§z");
     }
 
     @Contract(pure = true)
