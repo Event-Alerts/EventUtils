@@ -29,6 +29,7 @@ public class PriorityCmd {
             final List<String> namesSorted = client.world.getPlayers().stream()
                     .sorted(Comparator.comparingInt(AbstractClientPlayerEntity::getId))
                     .map(player -> player.getName().getString())
+                    .filter(str -> !EventUtils.isNPC(str, true))
                     .toList();
 
             final String nameLower = name.toLowerCase();
