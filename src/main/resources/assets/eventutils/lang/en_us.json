@@ -104,9 +104,9 @@
   "eventutils.command.prioritytop.lastpage": "§6[§7%s<§6 Last Page] ",
   "eventutils.command.prioritytop.pagebutton": "§e[EU] %s%s§7(Click)",
 
-  "eventutils.command.countname.noplayers": "§c[EU] No players found!",
-  "eventutils.command.countname.count": "§e[EU] Found %s §eplayer%s §ewith that in their name.",
-  "eventutils.command.countname.list": "§e[EU] Found %s §eplayer%s§e: %s",
+  "eventutils.command.countname.noplayers": "§c[EU] No players found with '%s§c' in their name!",
+  "eventutils.command.countname.count": "§e[EU] Found %s §eplayer%s §ewith '%s§e' in their name.",
+  "eventutils.command.countname.list": "§e[EU] Found %s §eplayer%s §ewith '%s§e' in their name§e: %s",
 
   "eventutils.word.plural": "s"
 }

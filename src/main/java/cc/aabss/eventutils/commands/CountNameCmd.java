@@ -16,7 +16,7 @@ public class CountNameCmd {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             if (client.world == null || client.player == null || client.getNetworkHandler() == null) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers"));
+                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", Text.literal(filter).formatted(Formatting.DARK_RED)));
                 return;
             }
 
@@ -27,11 +27,11 @@ public class CountNameCmd {
                     .toList();
 
             if (namesFiltered.isEmpty()) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers"));
+                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", Text.literal(filter).formatted(Formatting.DARK_RED)));
                 return;
             }
 
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.count", "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Text.translatable("eventutils.word.plural").formatted(Formatting.YELLOW) : ""));
+            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.count", "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Text.translatable("eventutils.word.plural").formatted(Formatting.YELLOW) : "", Text.literal(filter).formatted(Formatting.GOLD)));
         });
     }
 
@@ -39,7 +39,7 @@ public class CountNameCmd {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             if (client.world == null || client.player == null || client.getNetworkHandler() == null) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers"));
+                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", Text.literal(filter).formatted(Formatting.DARK_RED)));
                 return;
             }
 
@@ -50,7 +50,7 @@ public class CountNameCmd {
                     .toList();
 
             if (namesFiltered.isEmpty()) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers"));
+                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", Text.literal(filter).formatted(Formatting.DARK_RED)));
                 return;
             }
 
@@ -68,7 +68,7 @@ public class CountNameCmd {
                 }
             }
 
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.list", "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Text.translatable("eventutils.word.plural").formatted(Formatting.YELLOW) : "", playerList));
+            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.list", "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Text.translatable("eventutils.word.plural").formatted(Formatting.YELLOW) : "", Text.literal(filter).formatted(Formatting.GOLD), playerList));
         });
     }
 }
