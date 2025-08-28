@@ -5,6 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,7 @@ public class CountNameCmd {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             if (client.world == null || client.player == null || client.getNetworkHandler() == null) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", Text.literal(filter).formatted(Formatting.DARK_RED)));
+                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", EventUtils.ERROR_MESSAGE_PREFIX, Text.literal(filter).formatted(Formatting.DARK_RED)));
                 return;
             }
 
@@ -27,11 +28,11 @@ public class CountNameCmd {
                     .toList();
 
             if (namesFiltered.isEmpty()) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", Text.literal(filter).formatted(Formatting.DARK_RED)));
+                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", EventUtils.ERROR_MESSAGE_PREFIX, Text.literal(filter).formatted(Formatting.DARK_RED)));
                 return;
             }
 
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.count", "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Text.translatable("eventutils.word.plural").formatted(Formatting.YELLOW) : "", Text.literal(filter).formatted(Formatting.GOLD)));
+            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.count", EventUtils.MESSAGE_PREFIX, "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Text.translatable("eventutils.word.plural").formatted(Formatting.YELLOW) : "", Text.literal(filter).formatted(Formatting.GOLD)));
         });
     }
 
@@ -39,7 +40,7 @@ public class CountNameCmd {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             if (client.world == null || client.player == null || client.getNetworkHandler() == null) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", Text.literal(filter).formatted(Formatting.DARK_RED)));
+                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", EventUtils.ERROR_MESSAGE_PREFIX, Text.literal(filter).formatted(Formatting.DARK_RED)));
                 return;
             }
 
@@ -50,7 +51,7 @@ public class CountNameCmd {
                     .toList();
 
             if (namesFiltered.isEmpty()) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", Text.literal(filter).formatted(Formatting.DARK_RED)));
+                context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", EventUtils.ERROR_MESSAGE_PREFIX, Text.literal(filter).formatted(Formatting.DARK_RED)));
                 return;
             }
 
@@ -68,7 +69,7 @@ public class CountNameCmd {
                 }
             }
 
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.list", "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Text.translatable("eventutils.word.plural").formatted(Formatting.YELLOW) : "", Text.literal(filter).formatted(Formatting.GOLD), playerList));
+            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.list", EventUtils.MESSAGE_PREFIX, "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Text.translatable("eventutils.word.plural").formatted(Formatting.YELLOW) : "", Text.literal(filter).formatted(Formatting.GOLD), playerList));
         });
     }
 }

@@ -23,7 +23,7 @@ public class PriorityCmd {
         client.send(() -> {
             // Get names
             if (client.world == null || client.player == null) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.noplayer"));
+                context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.noplayer", EventUtils.ERROR_MESSAGE_PREFIX));
                 return;
             }
             final List<String> namesSorted = client.world.getPlayers().stream()
@@ -35,9 +35,9 @@ public class PriorityCmd {
             final String nameLower = name.toLowerCase();
             for (final String playerName : namesSorted) if (nameLower.equals(playerName.toLowerCase())) {
                 if (playerName.equalsIgnoreCase(client.player.getName().getString())) {
-                    context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.self", "§6#" + (namesSorted.indexOf(playerName) + 1)));
+                    context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.self", EventUtils.MESSAGE_PREFIX, "§6#" + (namesSorted.indexOf(playerName) + 1)));
                 } else {
-                    context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.player", Text.literal(playerName).formatted(Formatting.YELLOW), "§6#" + (namesSorted.indexOf(playerName) + 1)));
+                    context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.player", EventUtils.MESSAGE_PREFIX, Text.literal(playerName).formatted(Formatting.YELLOW), "§6#" + (namesSorted.indexOf(playerName) + 1)));
                 }
 
                 return;
@@ -65,7 +65,7 @@ public class PriorityCmd {
             final int totalPlayers = namesSorted.size();
             final int totalPages = (int) Math.ceil((double) totalPlayers / PLAYERS_PER_PAGE);
             if (page > totalPages || page < 1) {
-                source.sendFeedback(Text.translatable("eventutils.command.prioritytop.notapage", "§f" + totalPages));
+                source.sendFeedback(Text.translatable("eventutils.command.prioritytop.notapage", EventUtils.ERROR_MESSAGE_PREFIX, "§f" + totalPages));
                 return;
             }
 
@@ -74,7 +74,7 @@ public class PriorityCmd {
             final int start = pageIndex * PLAYERS_PER_PAGE;
             final int end = Math.min(start + PLAYERS_PER_PAGE, totalPlayers);
             final String clientName = client.player.getName().getString().toLowerCase();
-            final MutableText text = Text.translatable("eventutils.command.prioritytop.page", "§6" + page, "§6" + totalPages);
+            final MutableText text = Text.translatable("eventutils.command.prioritytop.page", EventUtils.MESSAGE_PREFIX, "§6" + page, "§6" + totalPages);
             for (int i = start; i < end; i++) {
                 final String name = namesSorted.get(i);
                 final boolean isLocalPlayer = name.equalsIgnoreCase(clientName);
@@ -141,7 +141,7 @@ public class PriorityCmd {
             }
 
             if (!lastpage.getString().isEmpty() || !nextpage.getString().isEmpty()) {
-                source.sendFeedback(Text.translatable("eventutils.command.prioritytop.pagebutton", lastpage, nextpage));
+                source.sendFeedback(Text.translatable("eventutils.command.prioritytop.pagebutton", EventUtils.MESSAGE_PREFIX, lastpage, nextpage));
             }
         });
     }

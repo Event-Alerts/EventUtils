@@ -47,6 +47,8 @@
   "eventutils.confirm_disconnect.title": "Confirm Disconnect",
   "eventutils.confirm_disconnect.message": "Are you sure you want to disconnect?",
 
+  "eventutils.no_recent_event.message": "No event has happened recently!",
+
   "eventutils.config.title": "EventUtils Mod Config",
   "eventutils.config.general": "General",
   "eventutils.config.alerts": "Alerts",
@@ -92,21 +94,20 @@
 
   "eventutils.screen.settings": "Settings",
 
+  "eventutils.command.priority.self": "%s§e You have pickup priority %s §ebased on the people around you.",
+  "eventutils.command.priority.player": "%s§e %s§e has pickup priority %s §ebased on the people around you.",
+  "eventutils.command.priority.noplayer": "%s§c Player not found!",
 
-  "eventutils.command.priority.self": "§e[EU] You have pickup priority %s §ebased on the people around you.",
-  "eventutils.command.priority.player": "§e[EU] %s§e has pickup priority %s §ebased on the people around you.",
-  "eventutils.command.priority.noplayer": "§c[EU] Player not found!",
-
-  "eventutils.command.prioritytop.page": "§e[EU] Page %s §eof %s\n\n",
-  "eventutils.command.prioritytop.emptypage": "§c[EU] No players found!",
-  "eventutils.command.prioritytop.notapage": "§c[EU] That page wasn't found! (Highest page is Page %s§c)",
+  "eventutils.command.prioritytop.page": "%s§e Page %s §eof %s\n\n",
+  "eventutils.command.prioritytop.emptypage": "%s§c No players found!",
+  "eventutils.command.prioritytop.notapage": "%s§c That page wasn't found! (Highest page is Page %s§c)",
   "eventutils.command.prioritytop.nextpage": "§6[§7>%s§6 Next Page] ",
   "eventutils.command.prioritytop.lastpage": "§6[§7%s<§6 Last Page] ",
-  "eventutils.command.prioritytop.pagebutton": "§e[EU] %s%s§7(Click)",
+  "eventutils.command.prioritytop.pagebutton": "%s§e %s%s§7(Click)",
 
-  "eventutils.command.countname.noplayers": "§c[EU] No players found with '%s§c' in their name!",
-  "eventutils.command.countname.count": "§e[EU] Found %s §eplayer%s §ewith '%s§e' in their name.",
-  "eventutils.command.countname.list": "§e[EU] Found %s §eplayer%s §ewith '%s§e' in their name§e: %s",
+  "eventutils.command.countname.noplayers": "%s§c No players found with '%s§c' in their name!",
+  "eventutils.command.countname.count": "%s§e Found %s §eplayer%s §ewith '%s§e' in their name.",
+  "eventutils.command.countname.list": "%s§e Found %s §eplayer%s §ewith '%s§e' in their name§e: %s",
 
   "eventutils.word.plural": "s"
 }
