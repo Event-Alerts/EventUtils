@@ -10,11 +10,11 @@ stonecutter {
     centralScript = "build.gradle.kts"
     shared {
         versions( // Make sure to update .github/workflows/publish.yml when changing versions!
+            "1.21.6",
+            "1.21.5",
             "1.21.4",
-            "1.21.3",
             "1.21.1",
             "1.21",
-            "1.20.6",
             "1.20.4")
     }
     create(rootProject)

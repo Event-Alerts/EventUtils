@@ -52,14 +52,16 @@ public class KeybindManager {
             if (windowHandle == null) windowHandle = client.getWindow().getHandle();
 
             // Event info key
-            if (GLFW.glfwGetKey(windowHandle, ((KeyBindingMixin) eventInfoKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
-                if (canNotPress(eventInfoKey)) return;
-                EventUtils.LOGGER.info("Event info key pressed");
-                if (SocketEndpoint.LAST_EVENT != null) {
-                    client.setScreen(new EventInfoScreen(SocketEndpoint.LAST_EVENT));
-                    return;
+            if (!eventInfoKey.isUnbound()) {
+                if (GLFW.glfwGetKey(windowHandle, ((KeyBindingMixin) eventInfoKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
+                    if (canNotPress(eventInfoKey)) return;
+                    EventUtils.LOGGER.info("Event info key pressed");
+                    if (SocketEndpoint.LAST_EVENT != null) {
+                        client.setScreen(new EventInfoScreen(SocketEndpoint.LAST_EVENT));
+                        return;
+                    }
+                    if (client.player != null) client.player.sendMessage(Text.literal("No event has happened recently!").formatted(Formatting.RED), true);
                 }
-                if (client.player != null) client.player.sendMessage(Text.literal("No event has happened recently!").formatted(Formatting.RED), true);
             }
 
             // DEV: Uncomment to force test event

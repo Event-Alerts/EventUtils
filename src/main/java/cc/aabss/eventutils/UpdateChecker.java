@@ -30,6 +30,15 @@ public class UpdateChecker {
         final MinecraftClient client = MinecraftClient.getInstance();
         client.send(() -> {
             if (client.player == null) return;
+            //? if >=1.21.5 {
+            /*client.player.sendMessage(Text.literal("§6[EVENTUTILS]§r §e" + EventUtils.translate("eventutils.updatechecker.new")+"§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
+                            .setStyle(Style.EMPTY
+                                    .withHoverEvent(new HoverEvent.ShowText(translatable("eventutils.updatechecker.hover")))
+                                    .withClickEvent(new ClickEvent.OpenUrl(URI.create("https://modrinth.com/mod/alerts/version/" + latestVersion))))
+                            .append(Text.literal("§7§o" + EventUtils.translate("eventutils.updatechecker.config"))
+                                    .setStyle(Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/event utils")))),
+                    false);
+            *///?} else {
             client.player.sendMessage(Text.literal("§6[EVENTUTILS]§r §e" + EventUtils.translate("eventutils.updatechecker.new")+"§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
                             .setStyle(Style.EMPTY
                                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, translatable("eventutils.updatechecker.hover")))
@@ -37,6 +46,7 @@ public class UpdateChecker {
                             .append(Text.literal("§7§o" + EventUtils.translate("eventutils.updatechecker.config"))
                                     .setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/eventutils config")))),
                     false);
+            //?}
         });
     }
 
