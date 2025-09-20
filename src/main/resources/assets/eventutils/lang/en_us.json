@@ -47,6 +47,8 @@
   "eventutils.confirm_disconnect.title": "Confirm Disconnect",
   "eventutils.confirm_disconnect.message": "Are you sure you want to disconnect?",
 
+  "eventutils.no_recent_event.message": "No event has happened recently!",
+
   "eventutils.config.title": "EventUtils Mod Config",
   "eventutils.config.general": "General",
   "eventutils.config.alerts": "Alerts",
@@ -72,6 +74,8 @@
   "eventutils.config.entity.description": "The types of entities that will be hidden",
   "eventutils.config.players.title": "Whitelisted Players",
   "eventutils.config.players.description": "The names of the players you can see when players are hidden",
+  "eventutils.config.npchide.title": "Hide NPCs",
+  "eventutils.config.npchide.description": "Whether the mod will hide NPCs",
   "eventutils.config.radius.title": "Hide Players in Radius",
   "eventutils.config.radius.description": "Hides all the players in the specified radius, set to 0 to ignore distance",
   "eventutils.config.use_testing_api.title": "Use Testing API",
@@ -88,5 +92,22 @@
   "eventutils.sound.shakey": "Shakey",
   "eventutils.sound.time_of_war": "Time of War",
 
-  "eventutils.screen.settings": "Settings"
+  "eventutils.screen.settings": "Settings",
+
+  "eventutils.command.priority.self": "%s§e You have pickup priority %s §ebased on the people around you.",
+  "eventutils.command.priority.player": "%s§e %s§e has pickup priority %s §ebased on the people around you.",
+  "eventutils.command.priority.noplayer": "%s§c Player not found!",
+
+  "eventutils.command.prioritytop.page": "%s§e Page %s §eof %s\n\n",
+  "eventutils.command.prioritytop.emptypage": "%s§c No players found!",
+  "eventutils.command.prioritytop.notapage": "%s§c That page wasn't found! (Highest page is Page %s§c)",
+  "eventutils.command.prioritytop.nextpage": "§6[§7>%s§6 Next Page] ",
+  "eventutils.command.prioritytop.lastpage": "§6[§7%s<§6 Last Page] ",
+  "eventutils.command.prioritytop.pagebutton": "%s§e %s%s§7(Click)",
+
+  "eventutils.command.countname.noplayers": "%s§c No players found with '%s§c' in their name!",
+  "eventutils.command.countname.count": "%s§e Found %s §eplayer%s §ewith '%s§e' in their name.",
+  "eventutils.command.countname.list": "%s§e Found %s §eplayer%s §ewith '%s§e' in their name§e: %s",
+
+  "eventutils.word.plural": "s"
 }

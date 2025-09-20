@@ -41,6 +41,16 @@ public class EventUtils implements ClientModInitializer {
     public static EventUtils MOD;
     @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
     @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
+    @NotNull public static final MutableText MESSAGE_PREFIX = Text.literal("EventUtils")
+            .formatted(Formatting.BOLD)
+            .fillStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xF5AA42)))
+            .append(Text.literal("§r »")
+                    .fillStyle(Style.EMPTY.withBold(false).withColor(TextColor.fromRgb(0xB57C2F))));
+    @NotNull public static final MutableText ERROR_MESSAGE_PREFIX = Text.literal("EventUtils")
+            .formatted(Formatting.BOLD)
+            .formatted(Formatting.RED)
+            .append(Text.literal("§r§4 »")
+                    .fillStyle(Style.EMPTY.withBold(false)));
 
     @NotNull public final EventConfig config = new EventConfig();
     @NotNull public final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
@@ -128,8 +138,12 @@ public class EventUtils implements ClientModInitializer {
         return ip;
     }
 
+    public static boolean isNPC(@NotNull String name, boolean bypass) {
+        return (!MOD.config.hideNPCs || bypass) && (name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-") || name.equals("§z"));
+    }
+
     public static boolean isNPC(@NotNull String name) {
-        return name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-");
+        return isNPC(name, false);
     }
 
     @Contract(pure = true)

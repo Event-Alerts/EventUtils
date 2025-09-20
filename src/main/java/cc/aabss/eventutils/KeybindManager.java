@@ -60,7 +60,7 @@ public class KeybindManager {
                         client.setScreen(new EventInfoScreen(SocketEndpoint.LAST_EVENT));
                         return;
                     }
-                    if (client.player != null) client.player.sendMessage(Text.literal("No event has happened recently!").formatted(Formatting.RED), true);
+                    if (client.player != null) client.player.sendMessage(Text.translatable("eventutils.no_recent_event.message").formatted(Formatting.RED), true);
                 }
             }
 
