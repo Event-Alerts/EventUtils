@@ -4,7 +4,7 @@
   "version": "${mod_version}",
   "name": "${mod_name}",
   "description": "${description}",
-  "authors": ["Event Alerts", "aabss", "srnyx"],
+  "authors": ["Event Alerts", "aabss", "srnyx", "pvty"],
   "contact": {
     "repo": "https://github.com/Event-Alerts/EventUtils",
     "discord": "https://discord.gg/uFPFNYzAWC"
