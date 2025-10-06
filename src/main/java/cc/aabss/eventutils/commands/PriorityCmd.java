@@ -1,9 +1,11 @@
 package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventUtils;
+
 import com.mojang.brigadier.context.CommandContext;
 
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.text.*;
@@ -107,13 +109,11 @@ public class PriorityCmd {
                         "eventutils.command.prioritytop.lastpage",
                         page - 1
                 ).setStyle(
-                        Style.EMPTY.withClickEvent(
                         //? if <=1.21.4 {
-                                new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/eventutils prioritytop " + (page - 1))
+                          Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/eventutils prioritytop " + (page - 1)))
                         //?} else {
-                                new ClickEvent.RunCommand("/eventutils prioritytop " + (page - 1))
+                        /*Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/eventutils prioritytop " + (page - 1)))
                         *///?}
-                        )
                 );
             }
 
@@ -123,12 +123,10 @@ public class PriorityCmd {
                         page + 1
                 ).setStyle(
                         //? if <=1.21.4 {
-                        Style.EMPTY.withClickEvent(
-                                new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/eventutils prioritytop " + (page + 1))
+                          Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/eventutils prioritytop " + (page + 1)))
                         //?} else {
-                                new ClickEvent.RunCommand("/eventutils prioritytop " + (page + 1))
+                        /*Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/eventutils prioritytop " + (page + 1)))
                         *///?}
-                        )
                 );
             }
 

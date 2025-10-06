@@ -1,3 +1,4 @@
+import xyz.srnyx.gradlegalaxy.data.config.JavaSetupConfig
 import xyz.srnyx.gradlegalaxy.enums.Repository
 import xyz.srnyx.gradlegalaxy.enums.repository
 import xyz.srnyx.gradlegalaxy.utility.addReplacementsTask
@@ -8,7 +9,7 @@ import xyz.srnyx.gradlegalaxy.utility.setupJava
 plugins {
     java
     id("fabric-loom") version "1.11-SNAPSHOT"
-    id("xyz.srnyx.gradle-galaxy") version "1.3.3"
+    id("xyz.srnyx.gradle-galaxy") version "2.0.2"
 }
 
 // Get Java version
@@ -16,7 +17,7 @@ val java = if (stonecutter.eval(stonecutter.current.version, ">=1.20.5")) JavaVe
 stonecutter.dependency("java", java.majorVersion)
 
 val fullVersion = "${stonecutter.current.version}-${property("mod.version").toString()}"
-setupJava("cc.aabss", fullVersion, "Alerting for Event Alerts Minecraft events", java)
+setupJava(JavaSetupConfig("cc.aabss", fullVersion, "Alerting for Event Alerts Minecraft events", java))
 
 repository("https://maven.shedaniel.me/", "https://maven.fabricmc.net/", "https://maven.terraformersmc.com/releases/", "https://maven.isxander.dev/releases/", "https://maven.nucleoid.xyz/")
 repository(Repository.MAVEN_CENTRAL, Repository.JITPACK)
