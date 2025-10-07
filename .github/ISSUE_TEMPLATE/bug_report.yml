@@ -1,5 +1,6 @@
 name: 🐛 Report a bug
 description: Let us know that something clearly doesn't work as expected / described
+type: Bug
 labels: 
   - bug
 body:
