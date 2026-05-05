@@ -36,11 +36,11 @@ public class KeybindManager {
     public KeybindManager(@NotNull EventUtils mod) {
         // Keybindings
         //? if >=1.21.11 {
-        /*final KeyBinding.Category category = KeyBinding.Category.create(Identifier.of("eventutils", "key.category.eventutils"));
+        /*final KeyBinding.Category category = KeyBinding.Category.create(Identifier.of("eventutils", "eventutils"));
         eventInfoKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.eventutils.eventinfo",
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                GLFW.GLFW_KEY_F9,
                 category));
         final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.eventutils.hideplayers",
@@ -51,7 +51,7 @@ public class KeybindManager {
         eventInfoKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.eventutils.eventinfo",
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                GLFW.GLFW_KEY_F9,
                 CATEGORY));
         final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.eventutils.hideplayers",

@@ -149,16 +149,38 @@ public class ConfigScreen {
         // Alerts & notification sounds
         final OptionGroup.Builder alertsGroup = OptionGroup.createBuilder()
                 .name(translatable("eventutils.config.alerts.toggles"));
+        final OptionGroup.Builder serverListGroup = OptionGroup.createBuilder()
+                .name(translatable("eventutils.config.alerts.server_list"));
         final OptionGroup.Builder soundsGroup = OptionGroup.createBuilder()
                 .name(translatable("eventutils.config.alerts.sounds"))
                 .collapsed(true);
+
+        serverListGroup.option(Option.<Boolean>createBuilder()
+                .name(translatable("eventutils.config.server_list_enabled.title"))
+                .description(OptionDescription.of(translatable("eventutils.config.server_list_enabled.description")))
+                .binding(EventConfig.Defaults.EVENT_SERVERS_ENABLED, () -> config.eventServersEnabled, newValue -> {
+                    config.eventServersEnabled = newValue;
+                    config.setSave("event_servers_enabled", config.eventServersEnabled);
+                })
+                .controller(ConfigScreen::getBooleanBuilder).build());
+        serverListGroup.option(Option.<Integer>createBuilder()
+                .name(translatable("eventutils.config.server_list_minutes.title"))
+                .description(OptionDescription.of(translatable("eventutils.config.server_list_minutes.description")))
+                .binding(EventConfig.Defaults.EVENT_SERVER_DISPLAY_MINUTES, () -> config.eventServerDisplayMinutes, newValue -> {
+                    config.eventServerDisplayMinutes = Math.max(1, Math.min(15, newValue));
+                    config.setSave("event_server_display_minutes", config.eventServerDisplayMinutes);
+                })
+                .controller(option -> IntegerFieldControllerBuilder.create(option).min(1)).build());
+
         for (final EventType type : EventType.values()) {
             alertsGroup.option(type.getOption(config));
+            serverListGroup.option(type.getServerListOption(config));
             soundsGroup.option(type.getSoundOption(config));
         }
         final ConfigCategory.Builder alertsCategory = ConfigCategory.createBuilder()
                 .name(translatable("eventutils.config.alerts"));
         alertsCategory.group(alertsGroup.build());
+        alertsCategory.group(serverListGroup.build());
         alertsCategory.group(soundsGroup.build());
         builder.category(alertsCategory.build());
 

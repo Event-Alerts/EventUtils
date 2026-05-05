@@ -30,12 +30,15 @@ public class EventConfig extends FileLoader {
     public boolean confirmDisconnect;
     public boolean hideNPCs;
     public int hidePlayersRadius;
+    public boolean eventServersEnabled;
+    public int eventServerDisplayMinutes;
     @NotNull public String defaultFamousIp;
     @NotNull public List<EntityType<?>> hiddenEntityTypes;
     @NotNull public List<String> whitelistedPlayers;
     @NotNull public List<PlayerGroup> groups;
     public boolean useTestingApi;
     @NotNull public final List<EventType> eventTypes;
+    @NotNull public final List<EventType> eventServerTypes;
     @NotNull public final Map<EventType, NotificationSound> notificationSounds;
 
     public EventConfig() {
@@ -62,11 +65,14 @@ public class EventConfig extends FileLoader {
         defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
         hidePlayersRadius = get("hide_players_radius", Defaults.HIDE_PLAYERS_RADIUS);
         hideNPCs = get("hide_npcs", Defaults.HIDE_NPCS);
+        eventServersEnabled = get("event_servers_enabled", Defaults.EVENT_SERVERS_ENABLED);
+        eventServerDisplayMinutes = get("event_server_display_minutes", Defaults.EVENT_SERVER_DISPLAY_MINUTES);
         hiddenEntityTypes = get("hidden_entity_types", Defaults.hiddenEntityTypes(), new TypeToken<List<EntityType<?>>>(){}.getType());
         whitelistedPlayers = get("whitelisted_players", Defaults.whitelistedPlayers(), new TypeToken<List<String>>(){}.getType());
         groups = get("groups", Defaults.groups(), new TypeToken<List<PlayerGroup>>(){}.getType());
         useTestingApi = get("use_testing_api", Defaults.USE_TESTING_API);
         eventTypes = get("notifications", Defaults.eventTypes(), new TypeToken<List<EventType>>(){}.getType());
+        eventServerTypes = get("event_server_types", Defaults.eventServerTypes(), new TypeToken<List<EventType>>(){}.getType());
         notificationSounds = get("notification_sounds", Defaults.notificationSounds(), new TypeToken<Map<EventType, NotificationSound>>(){}.getType());
 
         // Save if created (default values)
@@ -134,6 +140,12 @@ public class EventConfig extends FileLoader {
         return notificationSounds.getOrDefault(type, NotificationSound.ALERT);
     }
 
+    public int getEventServerDisplayMinutes() {
+        if (eventServerDisplayMinutes < 1) eventServerDisplayMinutes = 1;
+        if (eventServerDisplayMinutes > 15) eventServerDisplayMinutes = 15;
+        return eventServerDisplayMinutes;
+    }
+
     // Collections need to have methods to create new instances of the collection!
     public static class Defaults {
         public static final boolean DISCORD_RPC = true;
@@ -144,12 +156,15 @@ public class EventConfig extends FileLoader {
         public static final boolean CONFIRM_DISCONNECT = true;
         public static final boolean HIDE_NPCS = true;
         public static final int HIDE_PLAYERS_RADIUS = 0;
+        public static final boolean EVENT_SERVERS_ENABLED = true;
+        public static final int EVENT_SERVER_DISPLAY_MINUTES = 5;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
         @NotNull private static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = List.of(EntityType.GLOW_ITEM_FRAME);
         @NotNull private static final List<String> HIDDEN_ENTITY_TYPES_STRING = List.of("minecraft:glow_item_frame");
         @NotNull private static final List<String> WHITELISTED_PLAYERS = List.of("skeppy", "badboyhalo");
         public static final boolean USE_TESTING_API = false;
         @NotNull private static final List<EventType> EVENT_TYPES = List.of(EventType.values());
+        @NotNull private static final List<EventType> EVENT_SERVER_TYPES = List.of(EventType.values());
         @NotNull private static final Map<EventType, NotificationSound> NOTIFICATION_SOUNDS = Arrays.stream(EventType.values())
                 .collect(HashMap::new, (map, type) -> map.put(type, NotificationSound.ALERT), HashMap::putAll);
 
@@ -172,6 +187,10 @@ public class EventConfig extends FileLoader {
         @NotNull
         public static List<EventType> eventTypes() {
             return new ArrayList<>(EVENT_TYPES);
+        }
+        @NotNull
+        public static List<EventType> eventServerTypes() {
+            return new ArrayList<>(EVENT_SERVER_TYPES);
         }
         @NotNull
         public static Map<EventType, NotificationSound> notificationSounds() {

@@ -26,6 +26,8 @@ public class EditGroupScreen extends Screen {
     private TextFieldWidget nameField;
     private TextFieldWidget playersField;
     private boolean showNametags = true;
+    private boolean hideListedPlayers = false;
+    private boolean hideListedNpcs = false;
 
     public EditGroupScreen(@Nullable Screen parent, int groupIndex) {
         super(translatable("eventutils.config.groups.edit_title"));
@@ -42,6 +44,8 @@ public class EditGroupScreen extends Screen {
         }
         final PlayerGroup group = config.groups.get(groupIndex);
         showNametags = group.isShowNametags();
+        hideListedPlayers = group.isHideListedPlayers();
+        hideListedNpcs = group.isHideListedNpcs();
 
         final int centerX = width / 2;
         final int fieldWidth = Math.min(320, width - PADDING * 4);
@@ -66,7 +70,19 @@ public class EditGroupScreen extends Screen {
             button.setMessage(showNametags ? translatable("eventutils.config.groups.nametags_on") : translatable("eventutils.config.groups.nametags_off"));
         }).dimensions(centerX - 100, y, 200, 20).build());
 
-        y += ROW + 24;
+        y += ROW;
+        addDrawableChild(ButtonWidget.builder(hideListedPlayers ? translatable("eventutils.config.groups.players_mode_hide") : translatable("eventutils.config.groups.players_mode_reveal"), button -> {
+            hideListedPlayers = !hideListedPlayers;
+            button.setMessage(hideListedPlayers ? translatable("eventutils.config.groups.players_mode_hide") : translatable("eventutils.config.groups.players_mode_reveal"));
+        }).dimensions(centerX - 100, y, 200, 20).build());
+
+        y += ROW;
+        addDrawableChild(ButtonWidget.builder(hideListedNpcs ? translatable("eventutils.config.groups.npcs_mode_hide") : translatable("eventutils.config.groups.npcs_mode_reveal"), button -> {
+            hideListedNpcs = !hideListedNpcs;
+            button.setMessage(hideListedNpcs ? translatable("eventutils.config.groups.npcs_mode_hide") : translatable("eventutils.config.groups.npcs_mode_reveal"));
+        }).dimensions(centerX - 100, y, 200, 20).build());
+
+        y += ROW + 8;
         addDrawableChild(ButtonWidget.builder(translatable("gui.done"), button -> saveAndClose())
                 .dimensions(centerX - 60, y, 120, 20).build());
     }
@@ -89,6 +105,8 @@ public class EditGroupScreen extends Screen {
                         .collect(Collectors.toList());
         group.setPlayers(players);
         group.setShowNametags(showNametags);
+        group.setHideListedPlayers(hideListedPlayers);
+        group.setHideListedNpcs(hideListedNpcs);
         config.setSave("groups", config.groups);
         if (client != null) client.setScreen(parent);
     }

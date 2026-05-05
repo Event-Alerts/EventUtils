@@ -38,8 +38,9 @@ public class EntityRenderDispatcherMixin {
 
         if (renderState.entityType == EntityType.PLAYER) {
             final ClientPlayerEntity mainPlayer = MinecraftClient.getInstance().player;
-            if (mainPlayer != null && renderState.displayName != null && mainPlayer.getName().getString().equalsIgnoreCase(renderState.displayName.getString())) return;
-            final String name = renderState.displayName != null ? renderState.displayName.getString().toLowerCase() : "";
+            if (renderState.displayName == null) return;
+            if (mainPlayer != null && mainPlayer.getName().getString().equalsIgnoreCase(renderState.displayName.getString())) return;
+            final String name = renderState.displayName.getString().toLowerCase();
             if (EventUtils.MOD.isPlayerVisible(name)) return;
         } else {
             if (!EventUtils.MOD.config.hiddenEntityTypes.contains(renderState.entityType)) return;

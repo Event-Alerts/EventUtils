@@ -61,8 +61,8 @@ public abstract class PlayerListHudMixin {
             return;
         }
 
-        int iconSize = 8;
-        int iconX = x - 8;
+        int iconSize = 10;
+        int iconX = x - 10;
         PlusTagRenderer.draw(context, tag, iconX, y, iconSize);
         EventUtils.LOGGER.debug("[TabList] entry={} DRAW tag={} at ({}, {}) size={}", name, tag, iconX, y, iconSize);
     }

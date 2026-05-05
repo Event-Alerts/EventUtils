@@ -2,7 +2,6 @@ package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.EventUtils;
-import cc.aabss.eventutils.config.PlayerGroup;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -100,15 +99,8 @@ public class CommandRegister {
 
         final LiteralCommandNode<FabricClientCommandSource> groupMsg = ClientCommandManager
                 .literal("groupmsg")
-                .then(ClientCommandManager.argument("group", StringArgumentType.word())
-                        .suggests((context, builder) -> {
-                            for (final PlayerGroup g : EventUtils.MOD.config.groups) builder.suggest(g.getName());
-                            return builder.buildFuture();
-                        })
-                        .then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
-                                .executes(context -> GroupMsgCmd.groupMsg(context,
-                                        StringArgumentType.getString(context, "group"),
-                                        StringArgumentType.getString(context, "message")))))
+                .then(ClientCommandManager.argument("payload", StringArgumentType.greedyString())
+                        .executes(context -> GroupMsgCmd.groupMsg(context, StringArgumentType.getString(context, "payload"))))
                 .build();
 
         // Build command tree

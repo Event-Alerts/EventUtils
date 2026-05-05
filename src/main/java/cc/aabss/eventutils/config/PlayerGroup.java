@@ -14,11 +14,15 @@ public class PlayerGroup {
     @NotNull private String name;
     @NotNull private List<String> players;
     private boolean showNametags;
+    private boolean hideListedPlayers;
+    private boolean hideListedNpcs;
 
     public PlayerGroup(@NotNull String name, @NotNull List<String> players, boolean showNametags) {
         this.name = name;
         this.players = new ArrayList<>(players);
         this.showNametags = showNametags;
+        this.hideListedPlayers = false;
+        this.hideListedNpcs = false;
     }
 
     /** For Gson deserialization */
@@ -26,6 +30,8 @@ public class PlayerGroup {
         this.name = "New Group";
         this.players = new ArrayList<>();
         this.showNametags = true;
+        this.hideListedPlayers = false;
+        this.hideListedNpcs = false;
     }
 
     @NotNull
@@ -52,6 +58,22 @@ public class PlayerGroup {
 
     public void setShowNametags(boolean showNametags) {
         this.showNametags = showNametags;
+    }
+
+    public boolean isHideListedPlayers() {
+        return hideListedPlayers;
+    }
+
+    public void setHideListedPlayers(boolean hideListedPlayers) {
+        this.hideListedPlayers = hideListedPlayers;
+    }
+
+    public boolean isHideListedNpcs() {
+        return hideListedNpcs;
+    }
+
+    public void setHideListedNpcs(boolean hideListedNpcs) {
+        this.hideListedNpcs = hideListedNpcs;
     }
 
     /** Returns true if the given (lowercased) player name is in this group. */

@@ -157,11 +157,15 @@ public class EventUtils implements ClientModInitializer {
     }
 
     public static boolean isNPC(@NotNull String name, boolean bypass) {
-        return (!MOD.config.hideNPCs || bypass) && (name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-") || name.equals("§z"));
+        return (MOD.config.hideNPCs || bypass) && looksLikeNPC(name);
     }
 
     public static boolean isNPC(@NotNull String name) {
         return isNPC(name, false);
+    }
+
+    public static boolean looksLikeNPC(@NotNull String name) {
+        return name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-") || name.equals("§z");
     }
 
     /** Whether the current view mode is "players revealed" (show everyone). */
@@ -192,10 +196,21 @@ public class EventUtils implements ClientModInitializer {
      */
     public boolean isPlayerVisible(@NotNull String nameLower) {
         if (isHidePlayersRevealed()) return true;
-        if (config.whitelistedPlayers.contains(nameLower) || isNPC(nameLower)) return true;
+        if (config.whitelistedPlayers.contains(nameLower)) return true;
         final PlayerGroup group = getCurrentViewGroup();
-        if (group == null) return false; // no groups, hide mode: only whitelist/NPC
-        return group.containsPlayer(nameLower);
+        final boolean isNpc = looksLikeNPC(nameLower);
+
+        // NPC behavior: if the global hide toggle is OFF, NPCs should always stay visible.
+        if (isNpc) {
+            if (!config.hideNPCs) return true;
+            if (group == null) return false;
+            final boolean listed = group.containsPlayer(nameLower);
+            return group.isHideListedNpcs() ? !listed : listed;
+        }
+
+        if (group == null) return false; // no groups, hide mode: only whitelisted players are visible
+        final boolean listed = group.containsPlayer(nameLower);
+        return group.isHideListedPlayers() ? !listed : listed;
     }
 
     /** True if the nametag for this visible player should be drawn (per-group setting when in group view). */
