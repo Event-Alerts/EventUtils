@@ -8,12 +8,14 @@ import cc.aabss.eventutils.config.EventConfig;
 
 import com.google.gson.JsonObject;
 
+import com.mojang.authlib.GameProfile;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Language;
@@ -94,20 +96,17 @@ public class EventUtils implements ClientModInitializer {
             if (config.simpleQueueMessage && text.getString().contains(QUEUE_TEXT)) {
                 final String original = text.getString();
                 final MutableText resultText = Text.literal("");
-                for (final String line : original.replace(QUEUE_TEXT, "").replaceFirst("\n", "").split("\n")) {
-                    final String[] parts = line.split(": ");
-                    if (parts.length <= 1) {
-                        resultText.append(Text.literal(line).formatted(Formatting.GOLD));
-                        continue;
-                    }
+                final java.util.regex.Matcher matcher = java.util.regex.Pattern
+                        .compile("([\\w -]+?Queue Position)\\s*:\\s*(\\d+)/(\\d+)")
+                        .matcher(original);
+                while (matcher.find()) {
                     if (!resultText.getSiblings().isEmpty()) resultText.append("\n");
-                    final String[] valueParts = parts[1].split("/");
-                    resultText.append(Text.literal(parts[0]).formatted(Formatting.GOLD).append(": ")
-                            .append(Text.literal(valueParts[0]).formatted(Formatting.YELLOW))
+                    resultText.append(Text.literal(matcher.group(1)).formatted(Formatting.GOLD).append(": ")
+                            .append(Text.literal(matcher.group(2)).formatted(Formatting.YELLOW))
                             .append(Text.literal("/").formatted(Formatting.GOLD))
-                            .append(Text.literal(valueParts[1]).formatted(Formatting.YELLOW)));
+                            .append(Text.literal(matcher.group(3)).formatted(Formatting.YELLOW)));
                 }
-                return resultText;
+                if (!resultText.getSiblings().isEmpty()) return resultText;
             }
             // May need to manipulate later
             return text;
@@ -138,8 +137,27 @@ public class EventUtils implements ClientModInitializer {
         return ip;
     }
 
+    public static boolean isNPC(@NotNull GameProfile profile) {
+        final String name = profile.name();
+        if (name.length() > 16 || name.length() < 3) return true;
+        if (!name.matches("^[a-zA-Z0-9_]{3,16}$")) return true;
+        final net.minecraft.client.network.ClientPlayNetworkHandler networkHandler =
+                MinecraftClient.getInstance().getNetworkHandler();
+        if (networkHandler == null) return false;
+        return networkHandler.getPlayerListEntry(profile.id()) == null;
+    }
+
     public static boolean isNPC(@NotNull String name, boolean bypass) {
-        return (!MOD.config.hideNPCs || bypass) && (name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-") || name.equals("§z"));
+        if (name.isEmpty()) return !MOD.config.hideNPCs || bypass;
+        if (!name.matches("^[a-zA-Z0-9_]{3,16}$")) return !MOD.config.hideNPCs || bypass;
+        final net.minecraft.client.network.ClientPlayNetworkHandler networkHandler =
+                MinecraftClient.getInstance().getNetworkHandler();
+        if (networkHandler != null) {
+            final boolean inTabList = networkHandler.getPlayerList().stream()
+                    .anyMatch(e -> e.getProfile().name().equalsIgnoreCase(name));
+            if (!inTabList) return !MOD.config.hideNPCs || bypass;
+        }
+        return false;
     }
 
     public static boolean isNPC(@NotNull String name) {

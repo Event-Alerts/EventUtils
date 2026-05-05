@@ -6,6 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.PressableWidget;
+import net.minecraft.client.input.AbstractInput;
 import net.minecraft.text.Text;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,14 +20,14 @@ import static net.minecraft.text.Text.translatable;
 
 @Mixin(ButtonWidget.class)
 public abstract class ButtonWidgetMixin extends PressableWidget {
-    @Shadow public abstract void onPress();
+    @Shadow public abstract void onPress(AbstractInput abstractInput);
 
     public ButtonWidgetMixin(int i, int j, int k, int l, Text text) {
         super(i, j, k, l, text);
     }
 
     @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
-    private void onPress(CallbackInfo ci) {
+    private void onPress(AbstractInput abstractInput, CallbackInfo ci) {
         if (!EventUtils.MOD.config.confirmDisconnect || !translatable("menu.disconnect").equals(getMessage())) return;
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null || !(client.currentScreen instanceof GameMenuScreen)) return;
@@ -35,7 +36,7 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
         final Screen current = client.currentScreen;
         client.setScreen(new ConfirmScreen(yes -> {
             if (yes) {
-                this.onPress();
+                this.onPress(abstractInput);
                 return;
             }
             client.setScreen(current);

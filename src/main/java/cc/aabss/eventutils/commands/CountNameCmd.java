@@ -22,9 +22,9 @@ public class CountNameCmd {
             }
 
             final List<String> namesFiltered = client.getNetworkHandler().getPlayerList().stream()
-                    .map(entry -> entry.getProfile().getName())
+                    .filter(entry -> !EventUtils.isNPC(entry.getProfile()))
+                    .map(entry -> entry.getProfile().name())
                     .filter(name -> name.toLowerCase().contains(filter.toLowerCase()))
-                    .filter(name -> !EventUtils.isNPC(name, true))
                     .toList();
 
             if (namesFiltered.isEmpty()) {
@@ -45,9 +45,9 @@ public class CountNameCmd {
             }
 
             final List<String> namesFiltered = client.getNetworkHandler().getPlayerList().stream()
-                    .map(entry -> entry.getProfile().getName())
+                    .filter(entry -> !EventUtils.isNPC(entry.getProfile()))
+                    .map(entry -> entry.getProfile().name())
                     .filter(name -> name.toLowerCase().contains(filter.toLowerCase()))
-                    .filter(name -> !EventUtils.isNPC(name, true))
                     .toList();
 
             if (namesFiltered.isEmpty()) {

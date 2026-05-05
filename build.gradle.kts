@@ -8,7 +8,7 @@ import xyz.srnyx.gradlegalaxy.utility.setupJava
 
 plugins {
     java
-    id("fabric-loom") version "1.11-SNAPSHOT"
+    id("fabric-loom") version "1.16-SNAPSHOT"
     id("xyz.srnyx.gradle-galaxy") version "2.1.0"
 }
 

@@ -12,6 +12,7 @@ import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -40,14 +41,18 @@ public class UpdateChecker {
                                     .setStyle(Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/event utils")))),
                     false);
             *///?} else {
-            client.player.sendMessage(
-                    EventUtils.MESSAGE_PREFIX.copy().append(" §e" + EventUtils.translate("eventutils.updatechecker.new")+"§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
-                            .setStyle(EventUtils.MESSAGE_PREFIX.getStyle()
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, translatable("eventutils.updatechecker.hover")))
-                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/alerts/version/" + latestVersion)))
-                            .append(Text.literal("§7§o" + EventUtils.translate("eventutils.updatechecker.config"))
-                                    .setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/eventutils config")))),
-                    false);
+            try {
+                client.player.sendMessage(
+                        EventUtils.MESSAGE_PREFIX.copy().append(" §e" + EventUtils.translate("eventutils.updatechecker.new")+"§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
+                                .setStyle(EventUtils.MESSAGE_PREFIX.getStyle()
+                                        .withHoverEvent(new HoverEvent.ShowText(translatable("eventutils.updatechecker.hover")))
+                                        .withClickEvent(new ClickEvent.OpenUrl(new URI("https://modrinth.com/mod/alerts/version/" + latestVersion))))
+                                .append(Text.literal("§7§o" + EventUtils.translate("eventutils.updatechecker.config"))
+                                        .setStyle(Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/eventutils config")))),
+                        false);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
             //?}
         });
     }

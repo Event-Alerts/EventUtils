@@ -97,19 +97,20 @@ public enum EventType {
     public void sendToast(@NotNull EventUtils mod, @Nullable Integer prize, boolean hasIp) {
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
+        client.execute(() -> {
+            // Get toast description
+            MutableText description = null;
+            if (hasIp) {
+                final String[] split = EventUtils.translate("eventutils.event.teleport").split("\\{command}");
+                description = Text.literal(split[0]).formatted(Formatting.WHITE)
+                        .append("/eventutils teleport " + name().toLowerCase()).formatted(Formatting.YELLOW)
+                        .append(split[1]).formatted(Formatting.WHITE);
+            }
 
-        // Get toast description
-        MutableText description = null;
-        if (hasIp) {
-            final String[] split = EventUtils.translate("eventutils.event.teleport").split("\\{command}");
-            description = Text.literal(split[0]).formatted(Formatting.WHITE)
-                    .append("/eventutils teleport " + name().toLowerCase()).formatted(Formatting.YELLOW)
-                    .append(split[1]).formatted(Formatting.WHITE);
-        }
-
-        // Send toast and play sound
-        client.getToastManager().add(new NotificationToast(toast.apply(prize), description, client.player != null));
-        mod.config.getNotificationSound(this).play();
+            // Send toast and play sound
+            client.getToastManager().add(new NotificationToast(toast.apply(prize), description, client.player != null));
+            mod.config.getNotificationSound(this).play();
+        });
     }
 
     @Nullable

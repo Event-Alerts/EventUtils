@@ -110,7 +110,7 @@ public class PriorityCmd {
                         page - 1
                 ).setStyle(
                         //? if <=1.21.4 {
-                          Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/eventutils prioritytop " + (page - 1)))
+                          Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/eventutils prioritytop " + (page - 1)))
                         //?} else {
                         /*Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/eventutils prioritytop " + (page - 1)))
                         *///?}
@@ -123,7 +123,7 @@ public class PriorityCmd {
                         page + 1
                 ).setStyle(
                         //? if <=1.21.4 {
-                          Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/eventutils prioritytop " + (page + 1)))
+                          Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/eventutils prioritytop " + (page + 1)))
                         //?} else {
                         /*Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/eventutils prioritytop " + (page + 1)))
                         *///?}

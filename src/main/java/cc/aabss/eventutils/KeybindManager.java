@@ -10,6 +10,7 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +24,7 @@ import static net.minecraft.text.Text.translatable;
 
 
 public class KeybindManager {
-    @NotNull private static final String CATEGORY = "key.category.eventutils";
+    @NotNull private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("eventutils", "eventutils"));
 
     @Nullable private Long windowHandle;
     @NotNull public KeyBinding eventInfoKey;
@@ -89,7 +90,7 @@ public class KeybindManager {
     }
 
     private boolean canNotPress(@NotNull KeyBinding keyBinding) {
-        final String translationKey = keyBinding.getTranslationKey();
+        final String translationKey = keyBinding.getId();
         final Long lastPressTime = lastKeyPresses.get(translationKey);
         final long now = System.currentTimeMillis();
         if (lastPressTime != null && now - lastPressTime < 500) return true;

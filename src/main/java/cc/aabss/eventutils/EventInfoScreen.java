@@ -26,12 +26,13 @@ public class EventInfoScreen extends Screen {
     @NotNull private final JsonObject json;
 
     public EventInfoScreen(@NotNull JsonObject json) {
-        super(Text.translatable(EventUtils.MOD.keybindManager.eventInfoKey.getTranslationKey()));
+        super(Text.translatable(EventUtils.MOD.keybindManager.eventInfoKey.getBoundKeyTranslationKey()));
         this.json = json;
     }
 
     @Override
     public void render(DrawContext drawContext, int i, int j, float f) {
+        super.render(drawContext, i, j, f);
         final int boxX = (width - BOX_WIDTH) / 2;
         final int boxY = (height - BOX_HEIGHT) / 2;
         final int startX = boxX + (BOX_WIDTH / 2);
@@ -58,7 +59,7 @@ public class EventInfoScreen extends Screen {
             if (key.equals("time") || key.equals("created")) value = formatTime(value);
 
             // Draw
-            drawContext.drawCenteredTextWithShadow(textRenderer, StringUtility.capitalize(key) + ": " + value, startX, startY, 0xFFFFFF);
+            drawContext.drawCenteredTextWithShadow(textRenderer, Text.literal(StringUtility.capitalize(key) + ": " + value), startX, startY, 0xFFFFFF);
             startY += 12;
         }
     }

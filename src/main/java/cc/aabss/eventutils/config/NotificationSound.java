@@ -30,7 +30,7 @@ public enum NotificationSound implements NameableEnum {
     TIME_OF_WAR;
 
     public void play() {
-        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvent.of(Identifier.of("eventutils", "notification." + name().toLowerCase())), 1, 1));
+        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.ui(SoundEvent.of(Identifier.of("eventutils", "notification." + name().toLowerCase())), 1, 1));
     }
 
     @Override @NotNull @Contract(" -> new")

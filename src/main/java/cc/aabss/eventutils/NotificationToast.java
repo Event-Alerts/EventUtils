@@ -5,6 +5,7 @@ import net.fabricmc.api.Environment;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.toast.Toast;
@@ -81,36 +82,21 @@ public class NotificationToast implements Toast {
     }
 
     @Override
-    //? if <1.21.2 {
-    /*public Toast.Visibility draw(DrawContext drawContext, ToastManager manager, long startTime) {
-    *///?} else {
     public void draw(DrawContext drawContext, TextRenderer textRenderer, long startTime) {
-    //?}
         if (width == 160 && lines.size() <= 1) {
-            //? if <1.21.2 {
-            /*drawContext.drawGuiTexture(TEXTURE, 0, 0, width, height);
-            *///?} else if >=1.21.6 {
-            /*drawContext.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
-            *///?} else {
-            drawContext.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
-            //?}
+            drawContext.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
         } else {
             int minHeight = Math.min(4, height - 28);
             drawPart(drawContext, 0, 0, 28);
             for (int i = 28; i < height - minHeight; i += 10) drawPart(drawContext, 16, i, Math.min(16, height - i - minHeight));
             drawPart(drawContext, 32 - minHeight, height - minHeight, minHeight);
         }
-
-        //? if <1.21.2
-        /*final TextRenderer textRenderer = manager.getClient().textRenderer;*/
         if (lines.isEmpty()) {
             drawContext.drawText(textRenderer, title, 24, 12, Color.YELLOW.getRGB(), false);
         } else {
             drawContext.drawText(textRenderer, title, 24, 7, Color.YELLOW.getRGB(), false);
             for (int i = 0; i < lines.size(); ++i) drawContext.drawText(textRenderer, lines.get(i), 24, 18 + i * 12, -1, false);
         }
-        //? if <1.21.2
-        /*return startTime >= Type.DEFAULT.displayDuration ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;*/
     }
 
 
@@ -118,19 +104,9 @@ public class NotificationToast implements Toast {
         final int m = j == 0 ? 20 : 5;
         final int n = Math.min(60, width - m);
         final int widthN = width - n;
-        //? if <=1.21.1 {
-        /*context.drawGuiTexture(TEXTURE, 160, 32, 0, j, 0, k, m, l);
-        for (int o = m; o < widthN; o += 64) context.drawGuiTexture(TEXTURE, 160, 32, 32, j, o, k, Math.min(64, widthN - o), l);
-        context.drawGuiTexture(TEXTURE, 160, 32, 160 - n, j, widthN, k, n, l);
-        *///?} else if >=1.21.6 {
-        /*context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 160, 32, 0, j, 0, k, m, l);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 160, 32, 0, j, 0, k, m, l);
         for (int o = m; o < widthN; o += 64) context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 160, 32, 32, j, o, k, Math.min(64, widthN - o), l);
         context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 160, 32, 160 - n, j, widthN, k, n, l);
-        *///?} else {
-        context.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, 160, 32, 0, j, 0, k, m, l);
-        for (int o = m; o < widthN; o += 64) context.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, 160, 32, 32, j, o, k, Math.min(64, widthN - o), l);
-        context.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, 160, 32, 160 - n, j, widthN, k, n, l);
-        //?}
     }
 
     @Environment(value = EnvType.CLIENT)

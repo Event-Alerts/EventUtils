@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,19 +36,11 @@ public class ConnectUtility {
 
         final TitleScreen screen = new TitleScreen();
         final ServerAddress address = ServerAddress.parse(ip);
+        final ServerInfo serverInfo = new ServerInfo("Event Server", ip, ServerInfo.ServerType.OTHER);
         client.execute(() -> {
             try {
-                //? if >=1.21.6 {
-                /*client.disconnect(new MessageScreen(translatable("multiplayer.disconnect.generic")), false);
-                *///?} else {
-                client.disconnect();
-                //?}
-
-                //? if <=1.20.4 {
-                /*ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true);
-                *///?} else {
-                ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true, null);
-                //?}
+                client.disconnect(new MessageScreen(translatable("multiplayer.disconnect.generic")), false);
+                ConnectScreen.connect(screen, client, address, serverInfo, false, null);
             } catch (final Exception e) {
                 EventUtils.LOGGER.error("Failed to connect to server: {}", e.getMessage());
                 throw new RuntimeException(e);
