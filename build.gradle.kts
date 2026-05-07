@@ -9,7 +9,7 @@ import xyz.srnyx.gradlegalaxy.utility.setupJava
 plugins {
     java
     id("fabric-loom") version "1.14-SNAPSHOT"
-    id("xyz.srnyx.gradle-galaxy") version "2.0.2"
+    id("xyz.srnyx.gradle-galaxy") version "2.1.0"
 }
 
 // Get Java version
@@ -44,9 +44,7 @@ addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "deps_minecraft" to property("deps.minecraft").toString(),
     "mixin_config" to mixinConfig))
 
-base {
-    archivesName = rootProject.name
-}
+base.archivesName = name
 
 // Copy built jar to root project's build/libs
 tasks.named("build") {
