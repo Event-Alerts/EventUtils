@@ -4,7 +4,7 @@
   "version": "${mod_version}",
   "name": "${mod_name}",
   "description": "${description}",
-  "authors": ["Event Alerts", "aabss", "srnyx", "pvty"],
+  "authors": ["Event Alerts", "aabss", "srnyx", "pvty", "QWERTZ_EXE"],
   "contact": {
     "repo": "https://github.com/Event-Alerts/EventUtils",
     "discord": "https://discord.gg/uFPFNYzAWC"
@@ -13,7 +13,7 @@
   "icon": "assets/eventutils/textures/icon.png",
   "environment": "*",
   "mixins": [
-    "eventutils.mixin.json"
+    "${mixin_config}"
   ],
   "entrypoints": {
     "client": [

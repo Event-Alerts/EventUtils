@@ -10,6 +10,9 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+//? if >=1.21.11 {
+/*import net.minecraft.util.Identifier;
+*///?}
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +22,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.minecraft.text.Text.literal;
 import static net.minecraft.text.Text.translatable;
 
 
@@ -31,22 +35,36 @@ public class KeybindManager {
 
     public KeybindManager(@NotNull EventUtils mod) {
         // Keybindings
+        //? if >=1.21.11 {
+        /*final KeyBinding.Category category = KeyBinding.Category.create(Identifier.of("eventutils", "eventutils"));
         eventInfoKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.eventutils.eventinfo",
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                GLFW.GLFW_KEY_F9,
+                category));
+        final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.eventutils.hideplayers",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_F10,
+                category));
+        *///?} else {
+        eventInfoKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.eventutils.eventinfo",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_F9,
                 CATEGORY));
+        final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.eventutils.hideplayers",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_F10,
+                CATEGORY));
+        //?}
         // DEV: Uncomment to force test event
 //        final KeyBindingMixin testEventKey = (KeyBindingMixin) KeyBindingHelper.registerKeyBinding(new KeyBinding(
 //                "key.eventutils.testevent",
 //                InputUtil.Type.KEYSYM,
 //                GLFW.GLFW_KEY_SEMICOLON,
 //                CATEGORY));
-        final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.eventutils.hideplayers",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_F10,
-                CATEGORY));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (windowHandle == null) windowHandle = client.getWindow().getHandle();
@@ -79,17 +97,31 @@ public class KeybindManager {
             // In-game keybinds
             if (client.player == null) return;
 
-            // Hide players key
+            // Hide players key: cycle Group 1 -> Group 2 -> ... -> Players Revealed -> repeat
             if (hidePlayersKey.wasPressed()) {
-                mod.hidePlayers = !mod.hidePlayers;
-                client.player.sendMessage(translatable(mod.hidePlayers ? "eventutils.hideplayers.enabled" : "eventutils.hideplayers.disabled")
-                        .formatted(mod.hidePlayers ? Formatting.GREEN : Formatting.RED), true);
+                final int groupCount = mod.config.groups.size();
+                final int totalStates = groupCount == 0 ? 2 : groupCount + 1;
+                mod.hidePlayersViewMode = (mod.hidePlayersViewMode + 1) % totalStates;
+                final boolean revealed = EventUtils.MOD.isHidePlayersRevealed();
+                final Text message;
+                if (revealed) {
+                    message = translatable("eventutils.hideplayers.view_revealed").formatted(Formatting.GREEN);
+                } else {
+                    final var group = EventUtils.MOD.getCurrentViewGroup();
+                    message = (group != null ? literal(group.getName()) : translatable("eventutils.hideplayers.view_whitelist_only"))
+                            .formatted(Formatting.GREEN);
+                }
+                client.player.sendMessage(translatable("eventutils.hideplayers.view_prefix").append(message), true);
             }
         });
     }
 
     private boolean canNotPress(@NotNull KeyBinding keyBinding) {
+        //? if >=1.21.11 {
+        /*final String translationKey = keyBinding.getId();
+        *///?} else {
         final String translationKey = keyBinding.getTranslationKey();
+        //?}
         final Long lastPressTime = lastKeyPresses.get(translationKey);
         final long now = System.currentTimeMillis();
         if (lastPressTime != null && now - lastPressTime < 500) return true;

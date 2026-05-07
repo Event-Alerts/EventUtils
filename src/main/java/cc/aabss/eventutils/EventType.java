@@ -94,6 +94,23 @@ public enum EventType {
                 .build();
     }
 
+    @NotNull
+    public Option<Boolean> getServerListOption(@NotNull EventConfig config) {
+        return Option.<Boolean>createBuilder()
+                .name(displayName)
+                .description(OptionDescription.of(Text.of(EventUtils.translate("eventutils.config.server_list_event_description").replace("{event}", displayName.getString()))))
+                .binding(true, () -> config.eventServerTypes.contains(this), newValue -> {
+                    if (newValue) {
+                        if (!config.eventServerTypes.contains(this)) config.eventServerTypes.add(this);
+                    } else {
+                        config.eventServerTypes.remove(this);
+                    }
+                    config.setSave("event_server_types", config.eventServerTypes);
+                })
+                .controller(ConfigScreen::getBooleanBuilder)
+                .build();
+    }
+
     public void sendToast(@NotNull EventUtils mod, @Nullable Integer prize, boolean hasIp) {
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
