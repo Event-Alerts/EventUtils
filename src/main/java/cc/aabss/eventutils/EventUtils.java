@@ -5,6 +5,8 @@ import cc.aabss.eventutils.utility.ConnectUtility;
 import cc.aabss.eventutils.websocket.SocketEndpoint;
 import cc.aabss.eventutils.websocket.WebSocketClient;
 import cc.aabss.eventutils.config.EventConfig;
+import cc.aabss.eventutils.config.PlayerGroup;
+import cc.aabss.eventutils.plustag.EventAlertsApi;
 
 import com.google.gson.JsonObject;
 
@@ -59,7 +61,8 @@ public class EventUtils implements ClientModInitializer {
     public KeybindManager keybindManager;
     @NotNull public final EventServerManager eventServerManager = new EventServerManager(this);
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
-    public boolean hidePlayers = false;
+    /** 0 = first group (or hide-all when no groups), 1 = second group, ... ; groups.size() = players revealed */
+    public int hidePlayersViewMode = 0;
 
     public EventUtils() {
         MOD = this;
@@ -84,6 +87,21 @@ public class EventUtils implements ClientModInitializer {
 
         // Update checker
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> updateChecker.checkUpdate());
+
+        // Fetch Event Alerts plus tags for local player
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            if (client.player != null) {
+                var uuid = client.player.getUuid();
+                LOGGER.info("[EventUtils] JOIN: scheduling Event Alerts fetch for local player uuid={}", uuid);
+                EventAlertsApi.scheduleFetchIfNeeded(uuid.toString());
+            } else {
+                LOGGER.info("[EventUtils] JOIN: client.player is null, skipping fetch (will retry when tab list is opened)");
+            }
+        });
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            LOGGER.info("[EventUtils] DISCONNECT: clearing Event Alerts cache");
+            EventAlertsApi.clearCache();
+        });
 
         // Initialize keybind manager
         keybindManager = new KeybindManager(this);
@@ -139,11 +157,69 @@ public class EventUtils implements ClientModInitializer {
     }
 
     public static boolean isNPC(@NotNull String name, boolean bypass) {
-        return (!MOD.config.hideNPCs || bypass) && (name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-") || name.equals("§z"));
+        return (MOD.config.hideNPCs || bypass) && looksLikeNPC(name);
     }
 
     public static boolean isNPC(@NotNull String name) {
         return isNPC(name, false);
+    }
+
+    public static boolean looksLikeNPC(@NotNull String name) {
+        return name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-") || name.equals("§z");
+    }
+
+    /** Whether the current view mode is "players revealed" (show everyone). */
+    public boolean isHidePlayersRevealed() {
+        final int n = config.groups.size();
+        if (n == 0) return hidePlayersViewMode == 1;
+        return hidePlayersViewMode >= n;
+    }
+
+    /** Whether we are in a "hide" mode (any group or hide-all). */
+    public boolean isInHidePlayersMode() {
+        final int n = config.groups.size();
+        if (n == 0) return hidePlayersViewMode == 0;
+        return hidePlayersViewMode < n;
+    }
+
+    /** Current group when in group view mode, or null if revealed or no groups. */
+    @Nullable
+    public PlayerGroup getCurrentViewGroup() {
+        final var groups = config.groups;
+        if (groups.isEmpty() || hidePlayersViewMode >= groups.size()) return null;
+        return groups.get(hidePlayersViewMode);
+    }
+
+    /**
+     * True if the player (by lowercased name) should be visible with current view mode.
+     * Caller must exclude main player.
+     */
+    public boolean isPlayerVisible(@NotNull String nameLower) {
+        if (isHidePlayersRevealed()) return true;
+        if (config.whitelistedPlayers.contains(nameLower)) return true;
+        final PlayerGroup group = getCurrentViewGroup();
+        final boolean isNpc = looksLikeNPC(nameLower);
+
+        // NPC behavior: if the global hide toggle is OFF, NPCs should always stay visible.
+        if (isNpc) {
+            if (!config.hideNPCs) return true;
+            if (group == null) return false;
+            final boolean listed = group.containsPlayer(nameLower);
+            return group.isHideListedNpcs() ? !listed : listed;
+        }
+
+        if (group == null) return false; // no groups, hide mode: only whitelisted players are visible
+        final boolean listed = group.containsPlayer(nameLower);
+        return group.isHideListedPlayers() ? !listed : listed;
+    }
+
+    /** True if the nametag for this visible player should be drawn (per-group setting when in group view). */
+    public boolean shouldShowNametagFor(@NotNull String nameLower) {
+        if (!isInHidePlayersMode()) return true;
+        final PlayerGroup group = getCurrentViewGroup();
+        if (group == null) return true; // hide-all with no groups: use default
+        if (!group.containsPlayer(nameLower)) return true; // whitelist/NPC visibility: show nametag
+        return group.isShowNametags();
     }
 
     @Contract(pure = true)

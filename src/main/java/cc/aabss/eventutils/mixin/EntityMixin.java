@@ -19,12 +19,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Entity.class)
 public abstract class EntityMixin {
     @Shadow public abstract EntityType<?> getType();
+    //? if >=1.21.11 {
+    /*@Shadow public abstract Vec3d getSyncedPos();
+    *///?} else {
     @Shadow public abstract Vec3d getPos();
+    //?}
     @Shadow public abstract Text getName();
 
     @Inject(method = "spawnSprintingParticles", at = @At("HEAD"), cancellable = true)
     private void spawnSprintingParticles(CallbackInfo ci) {
-        if (!EventUtils.MOD.hidePlayers) return;
+        if (!EventUtils.MOD.isInHidePlayersMode()) return;
         final ClientPlayerEntity mainPlayer = MinecraftClient.getInstance().player;
         if (mainPlayer == null) return;
         final EntityType<?> type = getType();
@@ -32,7 +36,7 @@ public abstract class EntityMixin {
         if (type == EntityType.PLAYER) {
             // Players
             final String name = getName().getString().toLowerCase();
-            if (mainPlayer.getName().getString().toLowerCase().equals(name) || EventUtils.MOD.config.whitelistedPlayers.contains(name) || EventUtils.isNPC(name)) return;
+            if (mainPlayer.getName().getString().toLowerCase().equals(name) || EventUtils.MOD.isPlayerVisible(name)) return;
         } else {
             // Non-players (mob)
             if (!EventUtils.MOD.config.hiddenEntityTypes.contains(type)) return;
@@ -45,6 +49,10 @@ public abstract class EntityMixin {
         }
 
         // Specific radius
+        //? if >=1.21.11 {
+        /*if (mainPlayer.getSyncedPos().distanceTo(getSyncedPos()) <= EventUtils.MOD.config.hidePlayersRadius) ci.cancel();
+        *///?} else {
         if (mainPlayer.getPos().distanceTo(getPos()) <= EventUtils.MOD.config.hidePlayersRadius) ci.cancel();
+        //?}
     }
 }

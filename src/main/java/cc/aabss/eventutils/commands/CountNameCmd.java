@@ -21,11 +21,19 @@ public class CountNameCmd {
                 return;
             }
 
+            //? if >=1.21.11 {
+            /*final List<String> namesFiltered = client.getNetworkHandler().getPlayerList().stream()
+                    .map(entry -> entry.getProfile().name())
+                    .filter(name -> name.toLowerCase().contains(filter.toLowerCase()))
+                    .filter(name -> !EventUtils.isNPC(name, true))
+                    .toList();
+                        *///?} else {
             final List<String> namesFiltered = client.getNetworkHandler().getPlayerList().stream()
                     .map(entry -> entry.getProfile().getName())
                     .filter(name -> name.toLowerCase().contains(filter.toLowerCase()))
                     .filter(name -> !EventUtils.isNPC(name, true))
                     .toList();
+            //?}
 
             if (namesFiltered.isEmpty()) {
                 context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", EventUtils.ERROR_MESSAGE_PREFIX, Text.literal(filter).formatted(Formatting.DARK_RED)));
@@ -44,11 +52,19 @@ public class CountNameCmd {
                 return;
             }
 
+            //? if >=1.21.11 {
+            /*final List<String> namesFiltered = client.getNetworkHandler().getPlayerList().stream()
+                    .map(entry -> entry.getProfile().name())
+                    .filter(name -> name.toLowerCase().contains(filter.toLowerCase()))
+                    .filter(name -> !EventUtils.isNPC(name, true))
+                    .toList();
+                        *///?} else {
             final List<String> namesFiltered = client.getNetworkHandler().getPlayerList().stream()
                     .map(entry -> entry.getProfile().getName())
                     .filter(name -> name.toLowerCase().contains(filter.toLowerCase()))
                     .filter(name -> !EventUtils.isNPC(name, true))
                     .toList();
+            //?}
 
             if (namesFiltered.isEmpty()) {
                 context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", EventUtils.ERROR_MESSAGE_PREFIX, Text.literal(filter).formatted(Formatting.DARK_RED)));

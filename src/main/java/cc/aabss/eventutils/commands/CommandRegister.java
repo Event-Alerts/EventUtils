@@ -1,6 +1,7 @@
 package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventType;
+import cc.aabss.eventutils.EventUtils;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -96,6 +97,12 @@ public class CommandRegister {
                     return 0;
                 }).build();
 
+        final LiteralCommandNode<FabricClientCommandSource> groupMsg = ClientCommandManager
+                .literal("groupmsg")
+                .then(ClientCommandManager.argument("payload", StringArgumentType.greedyString())
+                        .executes(context -> GroupMsgCmd.groupMsg(context, StringArgumentType.getString(context, "payload"))))
+                .build();
+
         // Build command tree
         dispatcher.getRoot().addChild(main);
         main.addChild(config);
@@ -103,5 +110,6 @@ public class CommandRegister {
         main.addChild(priority);
         main.addChild(priorityTop);
         main.addChild(countName);
+        main.addChild(groupMsg);
     }
 }

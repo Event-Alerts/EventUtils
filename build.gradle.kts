@@ -8,7 +8,7 @@ import xyz.srnyx.gradlegalaxy.utility.setupJava
 
 plugins {
     java
-    id("fabric-loom") version "1.11-SNAPSHOT"
+    id("fabric-loom") version "1.14-SNAPSHOT"
     id("xyz.srnyx.gradle-galaxy") version "2.1.0"
 }
 
@@ -37,10 +37,12 @@ dependencies {
 if (hasProperty("deps.placeholder_api")) dependencies.modCompileOnly("eu.pb4", "placeholder-api", property("deps.placeholder_api").toString())
 
 // Replacements for fabric.mod.json and config.json
+val mixinConfig = if (stonecutter.current.version == "1.21.11") "eventutils-1.21.11.mixin.json" else "eventutils.mixin.json"
 addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "mod_name" to property("mod.name").toString(),
     "mod_version" to property("mod.version").toString(),
-    "deps_minecraft" to property("deps.minecraft").toString()))
+    "deps_minecraft" to property("deps.minecraft").toString(),
+    "mixin_config" to mixinConfig))
 
 base.archivesName = name
 
