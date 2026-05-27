@@ -19,22 +19,24 @@ stonecutter.dependency("java", java.majorVersion)
 val fullVersion = "${stonecutter.current.version}-${property("mod.version").toString()}"
 setupJava(JavaSetupConfig("cc.aabss", fullVersion, "Alerting for Event Alerts Minecraft events", java))
 
-repository("https://maven.shedaniel.me/", "https://maven.fabricmc.net/", "https://maven.terraformersmc.com/releases/", "https://maven.isxander.dev/releases/", "https://maven.nucleoid.xyz/")
-repository(Repository.MAVEN_CENTRAL, Repository.JITPACK)
+repository("https://repo.faststats.dev/releases", "https://maven.nucleoid.xyz/")
+repository(Repository.SHEDANIEL, Repository.FABRIC, Repository.TERRAFORMERS, Repository.ISXANDER, Repository.MAVEN_CENTRAL, Repository.JITPACK)
 
 dependencies {
-    minecraft("com.mojang", "minecraft", property("deps.minecraft").toString())
-    mappings("net.fabricmc", "yarn", property("deps.yarn_mappings").toString())
+    minecraft("com.mojang:minecraft:${property("deps.minecraft")}")
+    mappings("net.fabricmc:yarn:${property("deps.yarn_mappings")}")
 
-    modImplementation("net.fabricmc", "fabric-loader", property("deps.fabric_loader").toString())
-    modImplementation("net.fabricmc.fabric-api", "fabric-api", property("deps.fabric_api").toString())
+    implementation("dev.faststats.metrics:fabric:0.23.0")
 
-    modImplementation("dev.isxander", "yet-another-config-lib", property("deps.yacl").toString())
-    modImplementation("com.terraformersmc", "modmenu", property("deps.modmenu").toString())
+    modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric_api")}")
+
+    modImplementation("dev.isxander:yet-another-config-lib:${property("deps.yacl")}")
+    modImplementation("com.terraformersmc:modmenu:${property("deps.modmenu")}")
 }
 
 // Add placeholder-api dependency if property exists
-if (hasProperty("deps.placeholder_api")) dependencies.modCompileOnly("eu.pb4", "placeholder-api", property("deps.placeholder_api").toString())
+if (hasProperty("deps.placeholder_api")) dependencies.modCompileOnly("eu.pb4:placeholder-api:${property("deps.placeholder_api")}")
 
 // Replacements for fabric.mod.json and config.json
 addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
