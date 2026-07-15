@@ -1,0 +1,15 @@
+name: Build
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: srnyx/tools/.github/workflows/publish.yml@main
+    with:
+      java: 21
+      task: buildAndCollect publishMods
+    secrets:
+      MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}

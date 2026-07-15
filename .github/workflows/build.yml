@@ -13,16 +13,11 @@ on:
       - 'gradle.properties'
       - 'gradlew'
       - 'gradlew.bat'
-  release:
-    types:
-      - published
   workflow_dispatch:
 
 jobs:
   build:
-    uses: srnyx/tools/.github/workflows/publish.yml@main
+    uses: srnyx/tools/.github/workflows/build.yml@main
     with:
       java: 21
-      task: buildAndCollect publishMods
-    secrets:
-      MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+      task: buildAndCollect
