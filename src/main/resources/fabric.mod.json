@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "eventutils",
+  "id": "${mod_id}",
   "version": "${mod_version}",
   "name": "${mod_name}",
   "description": "${description}",
@@ -11,7 +11,7 @@
   },
   "license": "MIT",
   "icon": "assets/eventutils/textures/icon.png",
-  "environment": "*",
+  "environment": "client",
   "mixins": [
     "${mixin_config}"
   ],
@@ -25,9 +25,12 @@
   },
   "depends": {
     "minecraft": ">=${deps_minecraft}",
-    "fabricloader": "*",
-    "fabric": "*",
-    "yet_another_config_lib_v3": "*"
+    "fabricloader": ">=${deps_loader}",
+    "fabric": ">=${deps_fabric_api}",
+    "yet_another_config_lib_v3": ">=${deps_yacl}"
+  },
+  "suggests": {
+    "modmenu": ">=${deps_modmenu}"
   },
   "custom": {
     "modmenu": {

@@ -2,13 +2,11 @@ package cc.aabss.eventutils;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
@@ -41,7 +39,7 @@ public class UpdateChecker {
                     false);
             *///?} else {
             client.player.sendMessage(
-                    EventUtils.MESSAGE_PREFIX.copy().append(" §e" + EventUtils.translate("eventutils.updatechecker.new")+"§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
+                    EventUtils.MESSAGE_PREFIX.copy().append(" §e" + EventUtils.translate("eventutils.updatechecker.new") + "§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
                             .setStyle(EventUtils.MESSAGE_PREFIX.getStyle()
                                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, translatable("eventutils.updatechecker.hover")))
                                     .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/alerts/version/" + latestVersion)))
@@ -54,7 +52,7 @@ public class UpdateChecker {
 
     public void checkUpdate() {
         try {
-            if (!mod.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
+            if (!mod.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.FULL_VERSION == null) return;
 
             // Ensure client in-game
             if (MinecraftClient.getInstance().player == null) return;
@@ -62,7 +60,9 @@ public class UpdateChecker {
             // Get client and request
             final HttpClient httpClient = HttpClient.newHttpClient();
             final HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("https://api.modrinth.com/v2/project/alerts/version?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D"))
+                    .uri(new URI("https://api.modrinth.com/v2/project/alerts/version" +
+                            "?game_versions=%5B%22" + Versions.MC_VERSION + "%22%5D" +
+                            "&include_changelog=false"))
                     .header("User-Agent", "EventUtils/" + Versions.EU_VERSION + " (Minecraft/" + Versions.MC_VERSION + ")")
                     .build();
 
@@ -71,20 +71,30 @@ public class UpdateChecker {
                     .thenApply(HttpResponse::body)
                     .thenAccept(body -> {
                         try {
-                            final JsonObject latestVersionObj = JsonParser
+                            final JsonObject version = JsonParser
                                     .parseString(body).getAsJsonArray()
                                     .get(0).getAsJsonObject();
-
-                            // Check if version field exists
-                            if (latestVersionObj == null || !latestVersionObj.has("version_number")) {
-                                EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth");
+                            if (version == null) {
+                                EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth (no version)");
                                 return;
                             }
 
-                            // Get version and notify update
-                            final String latestVersion = latestVersionObj.get("version_number").getAsString();
-                            final String currentVersion = Versions.MC_VERSION + "-" + Versions.EU_VERSION;
-                            if (!currentVersion.equals(latestVersion)) notifyUpdate(latestVersion);
+                            // Check if channel is release
+                            if (!version.has("version_type")) {
+                                EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth (no version_type)");
+                                return;
+                            }
+                            if (!version.get("version_type").getAsString().equals("release")) return;
+
+                            // Get version number
+                            if (!version.has("version_number")) {
+                                EventUtils.LOGGER.error("Failed to check for updates: Unexpected response from Modrinth (no version_number)");
+                                return;
+                            }
+                            final String latestVersion = version.get("version_number").getAsString();
+
+                            // Notify update
+                            if (!Versions.FULL_VERSION.equals(latestVersion)) notifyUpdate(latestVersion);
                         } catch (final Exception e) {
                             EventUtils.LOGGER.error("Failed to parse update check:", e);
                         }

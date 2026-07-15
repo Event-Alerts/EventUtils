@@ -17,6 +17,5 @@ jobs:
   build:
     uses: srnyx/tools/.github/workflows/build.yml@main
     with:
-      name: EventUtils
       java: 21
-      task: "chiseledBuild"
+      task: buildAndCollect
