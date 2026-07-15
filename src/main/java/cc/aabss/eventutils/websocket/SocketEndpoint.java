@@ -35,7 +35,7 @@ public enum SocketEndpoint {
 
             // Add event server to server list if it has an IP
             if (ip != null && !ip.isEmpty()) try {
-                mod.eventServerManager.addEventServer(json, ip);
+                mod.eventServerManager.addEventServer(eventType, json, ip);
             } catch (final Exception e) {
                 EventUtils.LOGGER.warn("Failed to add event server to server list: {}", json, e);
             }
@@ -56,7 +56,12 @@ public enum SocketEndpoint {
 
         String ip = mod.getIpAndConnect(eventType, json);
         eventType.sendToast(mod, null, ip != null && !ip.isEmpty());
-        mod.lastIps.put(eventType, mod.getIpAndConnect(eventType, json));
+        mod.lastIps.put(eventType, ip);
+        if (ip != null && !ip.isEmpty()) try {
+            mod.eventServerManager.addEventServer(eventType, json, ip);
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("Failed to add famous event server to server list: {}", json, e);
+        }
     }),
     EVENT_CANCELLED((mod, message) -> {
         // Get JSON

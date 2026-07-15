@@ -37,11 +37,13 @@ public class ConnectUtility {
         final ServerAddress address = ServerAddress.parse(ip);
         client.execute(() -> {
             try {
-                //? if >=1.21.6 {
-                /*client.disconnect(new MessageScreen(translatable("multiplayer.disconnect.generic")), false);
-                *///?} else {
-                client.disconnect();
-                //?}
+                //? if >=1.21.11 {
+                /*client.disconnect(new MessageScreen(translatable("multiplayer.disconnect.generic")), false, false);
+                *///?} else if >=1.21 {
+                client.disconnect(new MessageScreen(translatable("multiplayer.disconnect.generic")), false);
+                //?} else {
+                /*client.disconnect(new MessageScreen(translatable("multiplayer.disconnect.generic")));
+                *///?}
 
                 //? if <=1.20.4 {
                 /*ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true);

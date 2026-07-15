@@ -16,6 +16,7 @@ rootProject.name = "EventUtils"
 stonecutter {
     create(rootProject) {
         versions(
+            "1.21.11",
             "1.21.6",
             "1.21.5",
             "1.21.4",

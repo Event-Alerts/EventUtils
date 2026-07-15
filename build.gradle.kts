@@ -70,6 +70,7 @@ stonecutter {
 }
 
 // Replacements for fabric.mod.json and config.json
+val mixinConfig = if (stonecutter.current.version == "1.21.11") "eventutils-1.21.11.mixin.json" else "eventutils.mixin.json"
 addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "mod_id" to modId,
     "mod_name" to property("mod.name").toString(),

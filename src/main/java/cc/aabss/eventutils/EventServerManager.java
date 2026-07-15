@@ -31,7 +31,9 @@ public class EventServerManager {
         this.serverList = serverList;
     }
 
-    public void addEventServer(@NotNull JsonObject eventJson, @NotNull String ip) {
+    public void addEventServer(@NotNull EventType eventType, @NotNull JsonObject eventJson, @NotNull String ip) {
+        if (!mod.config.eventServersEnabled) return;
+        if (!mod.config.eventServerTypes.contains(eventType)) return;
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
 
@@ -94,9 +96,10 @@ public class EventServerManager {
             final EventServerInfo eventServerInfo = new EventServerInfo(finalEventId, serverInfo, finalEventTime);
             activeEventServers.put(finalEventId, eventServerInfo);
 
-            // Schedule removal 5 minutes after event starts
+            // Schedule removal after configurable grace period (default 5 minutes)
             final long currentTime = System.currentTimeMillis();
-            final long graceMs = TimeUnit.MINUTES.toMillis(5);
+            final int displayMinutes = mod.config.getEventServerDisplayMinutes();
+            final long graceMs = TimeUnit.MINUTES.toMillis(displayMinutes);
             final long timeUntilRemoval = (finalEventTime + graceMs) - currentTime;
 
             if (timeUntilRemoval > 0) {
@@ -105,9 +108,9 @@ public class EventServerManager {
                     timeUntilRemoval,
                     TimeUnit.MILLISECONDS);
                 removalTasks.put(finalEventId, removalTask);
-                EventUtils.LOGGER.info("Scheduled removal of event server '{}' in {} ms (5m after start)", finalTitle, timeUntilRemoval);
+                EventUtils.LOGGER.info("Scheduled removal of event server '{}' in {} ms ({}m after start)", finalTitle, timeUntilRemoval, displayMinutes);
             } else {
-                // If within 5-minute grace after event start, keep it briefly; else do not add
+                // If within grace period after event start, keep it briefly; else do not add
                 if (currentTime - finalEventTime <= graceMs) {
                     final long remaining = graceMs - (currentTime - finalEventTime);
                     final ScheduledFuture<?> removalTask = mod.scheduler.schedule(
@@ -115,11 +118,11 @@ public class EventServerManager {
                             remaining,
                             TimeUnit.MILLISECONDS);
                     removalTasks.put(finalEventId, removalTask);
-                    EventUtils.LOGGER.info("Event '{}' already started; keeping for {} ms (grace)", finalTitle, remaining);
+                    EventUtils.LOGGER.info("Event '{}' already started; keeping for {} ms ({}m grace)", finalTitle, remaining, displayMinutes);
                 } else {
                     serverList.remove(serverInfo);
                     activeEventServers.remove(finalEventId);
-                    EventUtils.LOGGER.info("Event '{}' started more than 5 minutes ago; not adding", finalTitle);
+                    EventUtils.LOGGER.info("Event '{}' started more than {} minutes ago; not adding", finalTitle, displayMinutes);
                     return;
                 }
             }

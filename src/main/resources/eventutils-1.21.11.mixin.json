@@ -7,12 +7,10 @@
     "EntityMixin"
   ],
   "client": [
-    "ButtonWidgetMixin",
     "ClientMixin",
     "EntityRenderDispatcherMixin",
     "EntryListWidgetAccessor",
     "KeyBindingMixin",
-    "MultiplayerScreenMixin",
     "PlayerListHudMixin",
     "PlayerEntityRendererMixin"
   ],
