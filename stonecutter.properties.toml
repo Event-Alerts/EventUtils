@@ -1,0 +1,51 @@
+# Centralized Stonecutter properties
+mod.id = "eventutils"
+mod.name = "EventUtils"
+mod.group = "cc.aabss"
+
+loader.version = "0.16.9"
+loomx.loom_version = "1.17-SNAPSHOT"
+loomx.loom_remap_plugin = "fabric-loom"
+
+["1.21.11"]
+deps.yarn_mappings="1.21.11+build.1"
+deps.fabric_api="0.141.0+1.21.11"
+deps.yacl="3.8.1+1.21.11-fabric"
+deps.modmenu="15.0.0-beta.3"
+
+["1.21.6"]
+deps.yarn_mappings="1.21.6+build.1"
+deps.fabric_api="0.128.2+1.21.6"
+deps.yacl="3.7.1+1.21.6-fabric"
+deps.modmenu="15.0.0-beta.3"
+
+["1.21.5"]
+deps.yarn_mappings="1.21.5+build.1"
+deps.fabric_api="0.128.2+1.21.5"
+deps.yacl="3.7.1+1.21.5-fabric"
+deps.modmenu="14.0.0-rc.2"
+
+["1.21.4"]
+deps.yarn_mappings="1.21.4+build.7"
+deps.fabric_api="0.114.0+1.21.4"
+deps.yacl="3.6.2+1.21.4-fabric"
+deps.modmenu="13.0.0-beta.1"
+
+["1.21.1"]
+deps.yarn_mappings="1.21.1+build.3"
+deps.fabric_api="0.102.0+1.21.1"
+deps.yacl="3.6.0+1.21-fabric"
+deps.modmenu="11.0.3"
+
+["1.21"]
+deps.yarn_mappings="1.21+build.9"
+deps.fabric_api="0.102.0+1.21"
+deps.yacl="3.6.0+1.21-fabric"
+deps.modmenu="11.0.3"
+
+["1.20.4"]
+deps.yarn_mappings="1.20.4+build.3"
+deps.fabric_api="0.97.1+1.20.4"
+deps.yacl="3.6.0+1.20.4-fabric"
+deps.modmenu="9.2.0"
+deps.placeholder_api="2.4.0-pre.1+1.20.4"

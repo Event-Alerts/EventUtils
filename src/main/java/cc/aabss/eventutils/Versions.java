@@ -3,15 +3,16 @@ package cc.aabss.eventutils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.VersionParsingException;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
 public class Versions {
     @Nullable public static final String MC_VERSION = getVersion("minecraft");
+    /**
+     * NOT semantic as-is (ex: 1.21.6-3.0.0, 1.21.6-dev, etc.)
+     */
     @Nullable public static final String EU_VERSION = getVersion("eventutils");
-    @Nullable public static final SemanticVersion EU_VERSION_SEMANTIC = EU_VERSION != null ? getSemantic(EU_VERSION) : null;
 
     @Nullable
     private static String getVersion(@NotNull String id) {

@@ -1,21 +1,27 @@
-pluginManagement.repositories {
+pluginManagement { repositories {
+    maven("https://maven.kikugie.dev/releases/")
+    maven("https://maven.kikugie.dev/snapshots/")
     maven("https://maven.fabricmc.net/")
     gradlePluginPortal()
+} }
+
+plugins {
+    id("dev.kikugie.stonecutter") version "0.9.6"
+    id("dev.kikugie.loom-back-compat") version "0.3"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-plugins { id("dev.kikugie.stonecutter") version "0.5.2" }
+rootProject.name = "EventUtils"
 
 stonecutter {
-    kotlinController = true
-    centralScript = "build.gradle.kts"
-    shared {
-        versions( // Make sure to update .github/workflows/publish.yml when changing versions!
+    create(rootProject) {
+        versions(
             "1.21.6",
             "1.21.5",
             "1.21.4",
             "1.21.1",
             "1.21",
             "1.20.4")
+        vcsVersion = "1.21.4"
     }
-    create(rootProject)
 }

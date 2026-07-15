@@ -54,7 +54,7 @@ public class UpdateChecker {
 
     public void checkUpdate() {
         try {
-            if (!mod.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null || Versions.EU_VERSION_SEMANTIC == null) return;
+            if (!mod.config.updateChecker || Versions.MC_VERSION == null || Versions.EU_VERSION == null) return;
 
             // Ensure client in-game
             if (MinecraftClient.getInstance().player == null) return;
