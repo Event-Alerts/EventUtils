@@ -1,18 +1,14 @@
 package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.EventUtils;
-
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Style;
-import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 
 import static net.minecraft.text.Text.literal;
 import static net.minecraft.text.Text.translatable;
@@ -44,7 +40,9 @@ public class GroupManagerScreen extends Screen {
 
             final ButtonWidget editBtn = ButtonWidget.builder(
                     literal(group.getName()).fillStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xE0E0E0))),
-                    button -> client.setScreen(new EditGroupScreen(this, index))
+                    button -> {
+                        if (client != null) client.setScreen(new EditGroupScreen(this, index));
+                    }
             ).dimensions(PADDING, y, width - PADDING * 2 - REMOVE_WIDTH - 4, 20).build();
             addDrawableChild(editBtn);
 
@@ -58,7 +56,7 @@ public class GroupManagerScreen extends Screen {
         final ButtonWidget addBtn = ButtonWidget.builder(translatable("eventutils.config.groups.add"), button -> {
             config.groups.add(new PlayerGroup());
             config.setSave("groups", config.groups);
-            client.setScreen(new GroupManagerScreen(parent));
+            if (client != null) client.setScreen(new GroupManagerScreen(parent));
         }).dimensions(width / 2 - BUTTON_WIDTH - 4, height - 32, BUTTON_WIDTH, 20).build();
         addDrawableChild(addBtn);
 
@@ -71,7 +69,7 @@ public class GroupManagerScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(@NotNull DrawContext context, int mouseX, int mouseY, float delta) {
         context.fill(0, 0, width, height, 0xC0101010);
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xFFFFFF);
         super.render(context, mouseX, mouseY, delta);

@@ -1,36 +1,41 @@
 package cc.aabss.eventutils;
 
 import cc.aabss.eventutils.commands.CommandRegister;
-import cc.aabss.eventutils.utility.ConnectUtility;
-import cc.aabss.eventutils.websocket.SocketEndpoint;
-import cc.aabss.eventutils.websocket.WebSocketClient;
 import cc.aabss.eventutils.config.EventConfig;
 import cc.aabss.eventutils.config.PlayerGroup;
 import cc.aabss.eventutils.plustag.EventAlertsApi;
-
-import com.google.gson.JsonObject;
-
+import cc.aabss.eventutils.websocket.listener.EventCancelledListener;
+import cc.aabss.eventutils.websocket.listener.EventPostedListener;
+import cc.aabss.eventutils.websocket.listener.FamousEventPostedListener;
+import gg.eventalerts.sdk.http.EAHTTP;
+import gg.eventalerts.sdk.object.EAEvent;
+import gg.eventalerts.sdk.object.EAFamousEvent;
+import gg.eventalerts.sdk.websocket.EAWebSocket;
+import gg.eventalerts.sdk.websocket.SocketEventName;
+import gg.eventalerts.sdk.websocket.message.event.SocketEvent;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-
-import net.minecraft.text.*;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Language;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.bson.types.ObjectId;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Date;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -42,6 +47,7 @@ public class EventUtils implements ClientModInitializer {
      */
     public static EventUtils MOD;
     @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
+    @NotNull public static final String USER_AGENT = "EventUtils/" + Versions.EU_VERSION + " (MC/" + Versions.MC_VERSION + ")";
     @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
     @NotNull public static final MutableText MESSAGE_PREFIX = Text.literal("EventUtils")
             .formatted(Formatting.BOLD)
@@ -56,10 +62,16 @@ public class EventUtils implements ClientModInitializer {
 
     @NotNull public final EventConfig config = new EventConfig();
     @NotNull public final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
-    @NotNull public final Set<WebSocketClient> webSockets = new HashSet<>();
+    public EAHTTP http;
+    public EAWebSocket webSocket;
+    @NotNull public final EventAlertsApi api = new EventAlertsApi(this);
     @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
     public KeybindManager keybindManager;
     @NotNull public final EventServerManager eventServerManager = new EventServerManager(this);
+    /**
+     * {@link EAEvent} or {@link EAFamousEvent}
+     */
+    @Nullable public Object lastEvent;
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     /** 0 = first group (or hide-all when no groups), 1 = second group, ... ; groups.size() = players revealed */
     public int hidePlayersViewMode = 0;
@@ -70,18 +82,15 @@ public class EventUtils implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-
-        // Websockets
-        webSockets.add(new WebSocketClient(this, SocketEndpoint.EVENT_POSTED));
-        webSockets.add(new WebSocketClient(this, SocketEndpoint.FAMOUS_EVENT_POSTED));
-        webSockets.add(new WebSocketClient(this, SocketEndpoint.EVENT_CANCELLED));
+        // Websocket
+        setupSdk(null);
 
         // Command registration
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> CommandRegister.register(dispatcher));
 
         // Game closed
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            webSockets.forEach(socket -> socket.close("Game closed"));
+            webSocket.close(1000, "Game closed");
             eventServerManager.removeAllEventServers();
         });
 
@@ -91,16 +100,16 @@ public class EventUtils implements ClientModInitializer {
         // Fetch Event Alerts plus tags for local player
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             if (client.player != null) {
-                var uuid = client.player.getUuid();
+                final UUID uuid = client.player.getUuid();
                 LOGGER.info("[EventUtils] JOIN: scheduling Event Alerts fetch for local player uuid={}", uuid);
-                EventAlertsApi.scheduleFetchIfNeeded(uuid.toString());
+                api.scheduleFetchIfNeeded(uuid);
             } else {
                 LOGGER.info("[EventUtils] JOIN: client.player is null, skipping fetch (will retry when tab list is opened)");
             }
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             LOGGER.info("[EventUtils] DISCONNECT: clearing Event Alerts cache");
-            EventAlertsApi.clearCache();
+            api.clearCache();
         });
 
         // Initialize keybind manager
@@ -132,28 +141,23 @@ public class EventUtils implements ClientModInitializer {
         }));
     }
 
-    @Nullable
-    public String getIpAndConnect(@NotNull EventType eventType, @NotNull JsonObject message) {
-        // Check if Famous/Potential Famous/Sighting
-        if (eventType == EventType.SKEPPY || eventType == EventType.POTENTIAL_FAMOUS || eventType == EventType.SIGHTING || eventType == EventType.FAMOUS) {
-            final String ip = ConnectUtility.getIp(message.get("message").getAsString());
-            if (config.autoTp) ConnectUtility.connect(ip == null ? config.defaultFamousIp : ip);
-            return ip;
-        }
+    public void setupSdk(@Nullable String reason) {
+        // HTTP
+        http = new EAHTTP.Builder(USER_AGENT)
+                .url(config.useTestingApi ? "http://localhost:8080/api/v1/" : "https://eventalerts.gg/api/v1/")
+                .build();
 
-        // Get IP
-        String ip = null;
-        if (eventType == EventType.HOUSING) {
-            ip = "hypixel.net";
-        } else {
-            final String extracted = ConnectUtility.extractIp(message);
-            if (extracted != null && !extracted.isEmpty()) ip = extracted;
-        }
+        // Disconnect old socket
+        if (webSocket != null) webSocket.close(1000, reason);
 
-        // Auto TP if enabled
-        if (config.autoTp && ip != null) ConnectUtility.connect(ip);
-
-        return ip;
+        // Connect new socket
+        webSocket = new EAWebSocket.Builder(USER_AGENT)
+                .url((config.useTestingApi ? "ws://localhost:9090" : "wss://eventalerts.gg") + "/api/v1/socket")
+                .handler(
+                        new EventCancelledListener(this),
+                        new EventPostedListener(this),
+                        new FamousEventPostedListener(this))
+                .buildThenConnect();
     }
 
     public static boolean isNPC(@NotNull String name, boolean bypass) {
@@ -223,7 +227,7 @@ public class EventUtils implements ClientModInitializer {
     }
 
     @Contract(pure = true)
-    public static int max(int... values) {
+    public static int max(int @NotNull ... values) {
         int max = Integer.MIN_VALUE;
         for (final int value : values) if (value > max) max = value;
         return max;
@@ -238,29 +242,21 @@ public class EventUtils implements ClientModInitializer {
      * Simulates an event being posted for testing purposes
      */
     public void simulateTestEvent() {
-        final long currentTime = System.currentTimeMillis();
-        final long eventTime = currentTime + (30 * 1000);
-
-        // Create a test event JSON object with the correct structure
-        final JsonObject testEvent = new JsonObject();
-        testEvent.addProperty("id", "test-event-" + currentTime);
-        testEvent.addProperty("title", "Test Event");
-        testEvent.addProperty("description", "This is a simulated test event for testing the server list feature. Server: mc.hypixel.net");
-        testEvent.addProperty("time", eventTime);
-        testEvent.addProperty("ip", "invadedlands.net");
-        testEvent.addProperty("prize", "$1000");
-
-        // Add the rolesNamed array that EventType.fromJson expects
-        final com.google.gson.JsonArray rolesArray = new com.google.gson.JsonArray();
-        rolesArray.add("MONEY");
-        testEvent.add("rolesNamed", rolesArray);
-
+        // Create a test event
+        final EAEvent testEvent = new EAEvent();
+        testEvent.id = new ObjectId();
+        testEvent.title = "Test Event";
+        testEvent.description = "This is a simulated test event for testing the server list feature. Server: mc.hypixel.net";
+        testEvent.time = new Date(System.currentTimeMillis() + (30 * 1000));
+        testEvent.ip = "invadedlands.net";
+        testEvent.prize = "$1000";
+        testEvent.rolesNamed = Set.of(EAEvent.PingRole.MONEY);
         LOGGER.info("Simulating test event: {}", testEvent.toString());
 
-        // Process the event through the EVENT_POSTED handler
-        SocketEndpoint.EVENT_POSTED.handler.accept(this, testEvent.toString());
+        // Process event through handler
+        new EventPostedListener(this).onMessage(new SocketEvent<>(SocketEventName.EVENT_POSTED, 1L, testEvent));
 
         // Set as last event for event info screen
-        SocketEndpoint.LAST_EVENT = testEvent;
+        lastEvent = testEvent;
     }
 }

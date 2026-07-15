@@ -2,7 +2,6 @@ package cc.aabss.eventutils;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.RenderLayer;
@@ -14,7 +13,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 //? if >=1.21.6
 /*import net.minecraft.client.gl.RenderPipelines;*/
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

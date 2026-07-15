@@ -1,80 +1,52 @@
 package cc.aabss.eventutils.plustag;
 
 import cc.aabss.eventutils.EventUtils;
-
 import net.minecraft.util.Identifier;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Set;
+
 
 /**
  * Plus (+) icon tag displayed next to names. Unlocked by linking Discord and roles.
- * Each tag uses its own texture file (no in-game slicing).
+ * Each tag uses its own texture file.
+ * <br><b>Order of this enum matters for priority!</b>
  */
 public enum PlusTag {
-    /** Linked (gray) - from linking Discord */
-    NONE("none", "linked", "eventutils.plustag.unlock.linked"),
-    /** Unused (white +) */
-    WHITE("white", "white", null),
-    /** Admin */
-    RED("red", "admin", "eventutils.plustag.unlock.admin"),
-    /** Developer / Contributor */
-    BLUE("blue", "contrib", "eventutils.plustag.unlock.contributor"),
-    /** Bee subscription */
-    ORANGE("orange", "bee", "eventutils.plustag.unlock.bee"),
-    /** Booster */
-    PINK("pink", "booster", "eventutils.plustag.unlock.booster");
+    RED("red", "eventutils.plustag.unlock.admin"),
+    BLUE("blue", "eventutils.plustag.unlock.contributor"),
+    GOLD("gold", "eventutils.plustag.unlock.bee"),
+    PINK("pink", "eventutils.plustag.unlock.booster"),
+    WHITE("white", null),
+    EMPTY("empty", "eventutils.plustag.unlock.linked");
 
-    private final String key;
-    @NotNull private final Identifier textureId;
-    @NotNull private final String unlockKey;
+    @NotNull public final String key;
+    @NotNull public final Identifier textureId;
+    @NotNull public final String unlockKey;
 
-    PlusTag(@NotNull String key, @NotNull String textureName, String unlockKey) {
+    PlusTag(@NotNull String key, @Nullable String unlockKey) {
         this.key = key;
-        this.textureId = Identifier.of("eventutils", "textures/gui/" + textureName + ".png");
-        this.unlockKey = unlockKey != null ? unlockKey : "eventutils.plustag.unlock.none";
+        this.textureId = Identifier.of("eventutils", "textures/bee/" + key + ".png");
+        this.unlockKey = Objects.requireNonNullElse(unlockKey, "eventutils.plustag.unlock.none");
     }
 
-    @NotNull
-    public String getKey() {
-        return key;
-    }
-
-    @NotNull
-    public Identifier getTextureId() {
-        return textureId;
-    }
-
-    @NotNull
-    public String getUnlockKey() {
-        return unlockKey;
-    }
-
-    /** Priority for "best" tag when we don't know the player's choice (higher = show first). */
-    private int displayPriority() {
-        return switch (this) {
-            case RED -> 5;
-            case BLUE -> 4;
-            case ORANGE -> 3;
-            case PINK -> 2;
-            case NONE -> 1;
-            case WHITE -> 0;
-        };
-    }
-
-    /** Pick the best tag to show for another player from their unlocked set (admin > contrib > bee > booster > linked). */
+    /**
+     * Pick the best tag to show for another player from their unlocked set
+     * */
     @Nullable
     public static PlusTag pickBestForDisplay(@Nullable Set<PlusTag> unlocked) {
         if (unlocked == null || unlocked.isEmpty()) {
             EventUtils.LOGGER.debug("[PlusTag] pickBestForDisplay: unlocked={} -> null", unlocked);
             return null;
         }
+
+        // Get best/highest ranking
         PlusTag best = null;
-        for (PlusTag tag : unlocked) {
+        for (final PlusTag tag : unlocked) {
             if (tag == WHITE) continue;
-            if (best == null || tag.displayPriority() > best.displayPriority()) best = tag;
+            if (best == null || tag.ordinal() < best.ordinal()) best = tag;
         }
         EventUtils.LOGGER.debug("[PlusTag] pickBestForDisplay: unlocked={} -> best={}", unlocked, best);
         return best;

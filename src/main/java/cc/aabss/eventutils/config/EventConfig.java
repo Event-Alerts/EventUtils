@@ -3,17 +3,13 @@ package cc.aabss.eventutils.config;
 import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.Versions;
-
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonObject;
-
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.impl.util.version.SemanticVersionImpl;
-
 import net.minecraft.entity.EntityType;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -128,11 +124,6 @@ public class EventConfig extends FileLoader {
     private void update(@NotNull String oldKey, @NotNull String newKey, @NotNull Type type) {
         set(newKey, get(oldKey, type));
         remove(oldKey);
-    }
-
-    @NotNull
-    public String getWebsocketHost() {
-        return useTestingApi ? "ws://localhost:9090" : "wss://eventalerts.gg";
     }
 
     @NotNull

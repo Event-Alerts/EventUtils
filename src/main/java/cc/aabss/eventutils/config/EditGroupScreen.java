@@ -1,12 +1,10 @@
 package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.EventUtils;
-
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;

@@ -1,18 +1,13 @@
 package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventType;
-import cc.aabss.eventutils.EventUtils;
-
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-
 import org.jetbrains.annotations.NotNull;
 
 

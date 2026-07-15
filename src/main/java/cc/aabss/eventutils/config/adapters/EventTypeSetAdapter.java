@@ -1,15 +1,14 @@
 package cc.aabss.eventutils.config.adapters;
 
 import cc.aabss.eventutils.EventType;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class EventTypeSetAdapter extends TypeAdapter<Set<EventType>> {

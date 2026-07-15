@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar.Companion.shadowJar
 import xyz.srnyx.gradlegalaxy.data.config.JavaSetupConfig
 import xyz.srnyx.gradlegalaxy.data.config.publishing.PublishingPlatformConfig
 import xyz.srnyx.gradlegalaxy.data.platforms.PluginPlatform
@@ -13,17 +14,19 @@ plugins {
     id("dev.kikugie.loom-back-compat")
     id("xyz.srnyx.gradle-galaxy") version "3.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.1.1"
+    id("com.gradleup.shadow") version "9.5.1"
 }
 
 // Properties
 val modId = property("mod.id").toString()
 val modName = property("mod.name").toString()
-val loaderVersion = property("loader.version").toString()
+val loaderVersion = property("deps.loader").toString()
 val fabricApiVersion = property("deps.fabric_api").toString()
 val yaclVersion = property("deps.yacl").toString()
 val modMenuVersion = property("deps.modmenu").toString()
 val placeholderApiVersion = if (hasProperty("deps.placeholder_api")) property("deps.placeholder_api").toString() else null
 
+// Java version
 val is261Plus: Boolean = sc.eval(sc.current.version, ">=26.1")
 val java = when {
     is261Plus -> JavaVersion.VERSION_25
@@ -41,7 +44,7 @@ val modVersion = version.toString() // ex: 1.0.0, dev, 25fsf52
 version = "${sc.current.version}-$modVersion" // ex: 1.21.6-1.0.0, 1.21.4-dev, 1.21.11-25fsf52
 
 repository("https://maven.gnomecraft.net/releases/", "https://maven.nucleoid.xyz/")
-repository(Repository.FABRIC, Repository.SHEDANIEL, Repository.ISXANDER, Repository.MAVEN_CENTRAL, Repository.JITPACK)
+repository(Repository.SRNYX_RELEASES, Repository.SRNYX_SNAPSHOTS, Repository.FABRIC, Repository.SHEDANIEL, Repository.ISXANDER, Repository.MAVEN_CENTRAL, Repository.JITPACK)
 
 dependencies {
     minecraft("com.mojang:minecraft:${sc.current.version}")
@@ -52,6 +55,11 @@ dependencies {
     } else {
         mappings("net.fabricmc:yarn:${property("deps.yarn_mappings").toString()}:v2")
     }
+
+    // Libraries
+    val sdkVersion = property("deps.sdk").toString()
+    shadow("gg.eventalerts.sdk:http:$sdkVersion")
+    shadow("gg.eventalerts.sdk:websocket:$sdkVersion")
 
     // Fabric
     modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
@@ -70,16 +78,55 @@ stonecutter {
 }
 
 // Replacements for fabric.mod.json and config.json
-val mixinConfig = if (stonecutter.current.version == "1.21.11") "eventutils-1.21.11.mixin.json" else "eventutils.mixin.json"
 addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "mod_id" to modId,
-    "mod_name" to property("mod.name").toString(),
+    "mod_name" to modName,
     "mod_version" to modVersion,
     "deps_minecraft" to sc.current.version,
     "deps_loader" to loaderVersion,
     "deps_fabric_api" to fabricApiVersion,
     "deps_yacl" to yaclVersion,
-    "deps_modmenu" to modMenuVersion))
+    "deps_modmenu" to modMenuVersion,
+    "mixin_config" to property("mod.mixin_config").toString()))
+
+tasks {
+    jar {
+        archiveClassifier.set("")
+    }
+
+    shadowJar {
+        archiveClassifier.set("shadow")
+        configurations.set(project.configurations.named("shadow").map { listOf(it) })
+        mergeServiceFiles()
+
+        // Event Alerts SDK
+        val libsPackage = "${project.group}.$modId.libs"
+        relocate("gg.eventalerts.sdk", "$libsPackage.sdk")
+        relocate("com.google.errorprone", "$libsPackage.errorprone")
+        relocate("com.google.gson", "$libsPackage.gson")
+        relocate("org.bson", "$libsPackage.bson")
+        relocate("org.java_websocket", "$libsPackage.java_websocket")
+        relocate("org.slf4j", "$libsPackage.slf4j")
+    }
+
+    remapJar {
+        dependsOn(shadowJar)
+        mustRunAfter(shadowJar)
+        inputFile.set(shadowJar.flatMap { it.archiveFile })
+    }
+
+    // Builds the version into a shared folder in `build/libs`
+    register<Copy>("buildAndCollect") {
+        group = "build"
+        description = "Builds the mod and copies the jar to a shared folder"
+
+        // loomx.modJar returns the jar task for the applied loom variant
+        from(loomx.modJar.map { it.archiveFile })
+        into(rootProject.layout.buildDirectory.file("libs"))
+
+        dependsOn("build")
+    }
+}
 
 loom {
     fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json") // Useful for interface injection
@@ -123,24 +170,6 @@ setupPublishingPlatforms(PublishingPlatformConfig(
             version.set(modMenuVersion)
         }
     }))
-
-tasks {
-    jar {
-        archiveClassifier.set("")
-    }
-
-    // Builds the version into a shared folder in `build/libs`
-    register<Copy>("buildAndCollect") {
-        group = "build"
-        description = "Builds the mod and copies the jar to a shared folder"
-
-        // loomx.modJar returns the jar task for the applied loom variant
-        from(loomx.modJar.map { it.archiveFile })
-        into(rootProject.layout.buildDirectory.file("libs"))
-
-        dependsOn("build")
-    }
-}
 
 // Register buildActive task
 if (sc.current.isActive) rootProject.tasks.register("buildActive") {

@@ -5,12 +5,9 @@ import cc.aabss.eventutils.config.adapters.EntityTypeAdapter;
 import cc.aabss.eventutils.config.adapters.EntityTypeListAdapter;
 import cc.aabss.eventutils.config.adapters.EventTypeSetAdapter;
 import cc.aabss.eventutils.config.adapters.MapEventTypeNotificationSoundAdapter;
-
 import com.google.common.reflect.TypeToken;
 import com.google.gson.*;
-
 import net.minecraft.entity.EntityType;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

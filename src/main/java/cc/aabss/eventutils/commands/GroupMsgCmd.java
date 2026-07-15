@@ -2,13 +2,8 @@ package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.PlayerGroup;
-
 import com.mojang.brigadier.context.CommandContext;
-
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-
-import net.minecraft.text.Text;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

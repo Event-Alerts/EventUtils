@@ -3,12 +3,11 @@ package cc.aabss.eventutils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.ServerList;
-
-import com.google.gson.JsonObject;
-
+import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
@@ -19,8 +18,8 @@ public class EventServerManager {
     public static final String EVENT_SERVER_PREFIX = "§7[Event] §r";
 
     @NotNull private final EventUtils mod;
-    @NotNull private final Map<String, EventServerInfo> activeEventServers = new HashMap<>();
-    @NotNull private final Map<String, ScheduledFuture<?>> removalTasks = new HashMap<>();
+    @NotNull private final Map<ObjectId, EventServerInfo> activeEventServers = new HashMap<>();
+    @NotNull private final Map<ObjectId, ScheduledFuture<?>> removalTasks = new HashMap<>();
     @Nullable private ServerList serverList;
 
     public EventServerManager(@NotNull EventUtils mod) {
@@ -31,44 +30,24 @@ public class EventServerManager {
         this.serverList = serverList;
     }
 
-    public void addEventServer(@NotNull EventType eventType, @NotNull JsonObject eventJson, @NotNull String ip) {
-        if (!mod.config.eventServersEnabled) return;
-        if (!mod.config.eventServerTypes.contains(eventType)) return;
+    public void addEventServer(@NotNull EventType eventType, @Nullable ObjectId id, @Nullable String title, @Nullable Date time, @NotNull String ip) {
+        if (!mod.config.eventServersEnabled || !mod.config.eventServerTypes.contains(eventType)) return;
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
 
-        // Get ID
-        String eventId = "event-" + System.currentTimeMillis();
-        if (eventJson.has("id")) try {
-            String idJson = eventJson.get("id").getAsString();
-            if (idJson != null && !idJson.isEmpty()) eventId = idJson;
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to parse ID from event: {}", eventJson, e);
-        }
-        final String finalEventId = eventId; // Requires final variable due to lambda
+        // Finalize ID
+        if (id == null) id = new ObjectId();
+        final ObjectId finalId = id;
 
         // Don't add if already exists (fast-path check)
-        if (activeEventServers.containsKey(eventId)) return;
+        if (activeEventServers.containsKey(id)) return;
 
-        // Get title
-        String title = "Event";
-        if (eventJson.has("title")) try {
-            String titleJson = eventJson.get("title").getAsString();
-            if (titleJson != null && !titleJson.isEmpty()) title = titleJson;
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to parse title from event: {}", eventJson, e);
-        }
-        final String finalTitle = title; // Requires final variable due to lambda
+        // Finalize title
+        if (title == null) title = eventType.name();
+        final String finalTitle = title;
 
-        // Get time
-        long eventTime = System.currentTimeMillis();
-        if (eventJson.has("time")) try {
-            long eventTimeJson = eventJson.get("time").getAsLong();
-            if (eventTimeJson > 0) eventTime = eventTimeJson;
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to parse time from event: {}", eventJson, e);
-        }
-        final long finalEventTime = eventTime; // Requires final variable due to lambda
+        // Get time in milliseconds
+        final long timeMillis = time != null ? time.getTime() : System.currentTimeMillis();
 
         client.execute(() -> {
             if (!ensureServerListLoaded()) {
@@ -93,35 +72,35 @@ public class EventServerManager {
             serverList.add(serverInfo, false);
 
             // Store event server info
-            final EventServerInfo eventServerInfo = new EventServerInfo(finalEventId, serverInfo, finalEventTime);
-            activeEventServers.put(finalEventId, eventServerInfo);
+            final EventServerInfo eventServerInfo = new EventServerInfo(finalId, serverInfo, timeMillis);
+            activeEventServers.put(finalId, eventServerInfo);
 
             // Schedule removal after configurable grace period (default 5 minutes)
             final long currentTime = System.currentTimeMillis();
             final int displayMinutes = mod.config.getEventServerDisplayMinutes();
             final long graceMs = TimeUnit.MINUTES.toMillis(displayMinutes);
-            final long timeUntilRemoval = (finalEventTime + graceMs) - currentTime;
+            final long timeUntilRemoval = (timeMillis + graceMs) - currentTime;
 
             if (timeUntilRemoval > 0) {
                 final ScheduledFuture<?> removalTask = mod.scheduler.schedule(
-                    () -> removeEventServer(finalEventId),
+                    () -> removeEventServer(finalId),
                     timeUntilRemoval,
                     TimeUnit.MILLISECONDS);
-                removalTasks.put(finalEventId, removalTask);
+                removalTasks.put(finalId, removalTask);
                 EventUtils.LOGGER.info("Scheduled removal of event server '{}' in {} ms ({}m after start)", finalTitle, timeUntilRemoval, displayMinutes);
             } else {
                 // If within grace period after event start, keep it briefly; else do not add
-                if (currentTime - finalEventTime <= graceMs) {
-                    final long remaining = graceMs - (currentTime - finalEventTime);
+                if (currentTime - timeMillis <= graceMs) {
+                    final long remaining = graceMs - (currentTime - timeMillis);
                     final ScheduledFuture<?> removalTask = mod.scheduler.schedule(
-                            () -> removeEventServer(finalEventId),
+                            () -> removeEventServer(finalId),
                             remaining,
                             TimeUnit.MILLISECONDS);
-                    removalTasks.put(finalEventId, removalTask);
+                    removalTasks.put(finalId, removalTask);
                     EventUtils.LOGGER.info("Event '{}' already started; keeping for {} ms ({}m grace)", finalTitle, remaining, displayMinutes);
                 } else {
                     serverList.remove(serverInfo);
-                    activeEventServers.remove(finalEventId);
+                    activeEventServers.remove(finalId);
                     EventUtils.LOGGER.info("Event '{}' started more than {} minutes ago; not adding", finalTitle, displayMinutes);
                     return;
                 }
@@ -138,7 +117,7 @@ public class EventServerManager {
         });
     }
 
-    public void removeEventServer(@NotNull String eventId) {
+    public void removeEventServer(@NotNull ObjectId eventId) {
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client != null) client.execute(() -> {
             final EventServerInfo eventServerInfo = activeEventServers.remove(eventId);
@@ -187,7 +166,7 @@ public class EventServerManager {
         removalTasks.clear();
 
         // Remove all event servers
-        for (final String eventId : new HashMap<>(activeEventServers).keySet()) {
+        for (final ObjectId eventId : new HashMap<>(activeEventServers).keySet()) {
             removeEventServer(eventId);
         }
     }
@@ -210,11 +189,11 @@ public class EventServerManager {
     }
 
     private static class EventServerInfo {
-        @NotNull public final String eventId;
+        @NotNull public final ObjectId eventId;
         @NotNull public final ServerInfo serverInfo;
         public final long eventTime;
 
-        public EventServerInfo(@NotNull String eventId, @NotNull ServerInfo serverInfo, long eventTime) {
+        public EventServerInfo(@NotNull ObjectId eventId, @NotNull ServerInfo serverInfo, long eventTime) {
             this.eventId = eventId;
             this.serverInfo = serverInfo;
             this.eventTime = eventTime;

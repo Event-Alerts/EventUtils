@@ -2,16 +2,15 @@ package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.EventUtils;
-
 import dev.isxander.yacl3.api.*;
-import dev.isxander.yacl3.api.controller.*;
-
+import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
+import dev.isxander.yacl3.api.controller.DropdownStringControllerBuilder;
+import dev.isxander.yacl3.api.controller.IntegerFieldControllerBuilder;
+import dev.isxander.yacl3.api.controller.StringControllerBuilder;
 import net.minecraft.client.MinecraftClient;
-
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -128,10 +127,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(translatable("eventutils.config.use_testing_api.description")))
                             .binding(EventConfig.Defaults.USE_TESTING_API, () -> config.useTestingApi, newValue -> {
                                 config.useTestingApi = newValue;
-                                EventUtils.MOD.webSockets.forEach(webSocket -> {
-                                    webSocket.close("Testing API enabled/disabled");
-                                    webSocket.connect();
-                                });
+                                EventUtils.MOD.setupSdk("Testing API enabled/disabled");
                                 config.setSave("use_testing_api", config.useTestingApi);
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
@@ -167,7 +163,7 @@ public class ConfigScreen {
                 .name(translatable("eventutils.config.server_list_minutes.title"))
                 .description(OptionDescription.of(translatable("eventutils.config.server_list_minutes.description")))
                 .binding(EventConfig.Defaults.EVENT_SERVER_DISPLAY_MINUTES, () -> config.eventServerDisplayMinutes, newValue -> {
-                    config.eventServerDisplayMinutes = Math.max(1, Math.min(15, newValue));
+                    config.eventServerDisplayMinutes = Math.max(1, Math.min(15, newValue)); // don't use Math.clamp to support older Java versions
                     config.setSave("event_server_display_minutes", config.eventServerDisplayMinutes);
                 })
                 .controller(option -> IntegerFieldControllerBuilder.create(option).min(1)).build());

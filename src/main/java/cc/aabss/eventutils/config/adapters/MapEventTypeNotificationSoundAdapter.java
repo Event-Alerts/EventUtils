@@ -2,11 +2,9 @@ package cc.aabss.eventutils.config.adapters;
 
 import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.config.NotificationSound;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

@@ -1,7 +1,10 @@
 package cc.aabss.eventutils;
 
-import org.apache.logging.log4j.message.*;
-
+import org.apache.logging.log4j.message.AbstractMessageFactory;
+import org.apache.logging.log4j.message.Message;
+import org.apache.logging.log4j.message.ObjectMessage;
+import org.apache.logging.log4j.message.ParameterizedMessage;
+import org.apache.logging.log4j.message.SimpleMessage;
 import org.jetbrains.annotations.NotNull;
 
 

@@ -1,16 +1,16 @@
 package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventUtils;
-
 import com.mojang.brigadier.context.CommandContext;
-
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.text.*;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;

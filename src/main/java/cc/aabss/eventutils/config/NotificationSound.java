@@ -1,15 +1,12 @@
 package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.EventUtils;
-
 import dev.isxander.yacl3.api.NameableEnum;
-
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

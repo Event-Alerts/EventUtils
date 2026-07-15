@@ -1,16 +1,12 @@
 package cc.aabss.eventutils.utility;
 
 import cc.aabss.eventutils.EventUtils;
-
-import com.google.gson.JsonObject;
-
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,45 +54,6 @@ public class ConnectUtility {
     }
 
     @Nullable
-    public static String extractIp(@NotNull JsonObject eventJson) {
-        // Direct IP field
-        if (eventJson.has("ip")) try {
-            final String ip = eventJson.get("ip").getAsString();
-            if (ip != null && !ip.isEmpty()) return ip;
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to parse ip from event: {}", eventJson, e);
-        }
-
-        // Extract from description
-        if (eventJson.has("description")) try {
-            final String description = eventJson.get("description").getAsString();
-            final String extracted = getIp(description);
-            if (extracted != null && !extracted.isEmpty()) return extracted;
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to parse description for IP from event: {}", eventJson, e);
-        }
-
-        // Extract from title
-        if (eventJson.has("title")) try {
-            final String title = eventJson.get("title").getAsString();
-            final String extracted = getIp(title);
-            if (extracted != null && !extracted.isEmpty()) return extracted;
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to parse title for IP from event: {}", eventJson, e);
-        }
-
-        // Extract from address (last resort, not a currently valid field but may be in the future)
-        if (eventJson.has("address")) try {
-            final String address = eventJson.get("address").getAsString();
-            if (address != null && !address.isEmpty()) return address;
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("Failed to parse address from event: {}", eventJson, e);
-        }
-
-        return null;
-    }
-
-    @Nullable
     public static String getIp(@NotNull String message) {
         // Get strings
         final List<String> strings = new ArrayList<>();
@@ -106,13 +63,7 @@ public class ConnectUtility {
 
         // Get IP
         final int size = strings.size();
-        if (size == 1) {
-            //? if java: <21 {
-            /*return strings.get(0);
-            *///?} else {
-            return strings.getFirst();
-            //?}
-        }
+        if (size == 1) return strings.get(0); // don't use getFirst() to support lower Java versions
         if (size > 1) for (final String string : strings) if (isValidIp(string)) return string;
 
         // No IP found

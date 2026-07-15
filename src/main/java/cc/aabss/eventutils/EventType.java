@@ -3,59 +3,64 @@ package cc.aabss.eventutils;
 import cc.aabss.eventutils.config.ConfigScreen;
 import cc.aabss.eventutils.config.EventConfig;
 import cc.aabss.eventutils.config.NotificationSound;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
 import dev.isxander.yacl3.api.OptionEventListener;
 import dev.isxander.yacl3.api.controller.EnumDropdownControllerBuilder;
-
+import gg.eventalerts.sdk.object.EAEvent;
+import gg.eventalerts.sdk.object.EAFamousEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Function;
 
 import static net.minecraft.text.Text.translatable;
 
 
 public enum EventType {
-    SKEPPY("eventutils.skeppy.display", translatable("eventutils.skeppy.new").formatted(Formatting.AQUA)),
-    POTENTIAL_FAMOUS("eventutils.potential_famous.display", translatable("eventutils.potential_famous.new").formatted(Formatting.DARK_AQUA)),
-    SIGHTING("eventutils.sighting.display", translatable("eventutils.sighting.new").formatted(Formatting.DARK_RED)),
-    FAMOUS("eventutils.famous.display", translatable("eventutils.famous.new").formatted(Formatting.AQUA)),
-    PARTNER("eventutils.partner.display", translatable("eventutils.partner.new").formatted(Formatting.LIGHT_PURPLE)),
-    COMMUNITY("eventutils.community.display", translatable("eventutils.community.new").formatted(Formatting.GRAY)),
-    MONEY("eventutils.money.display", prize -> {
+    SKEPPY(EAFamousEvent.Type.SKEPPY, "eventutils.skeppy.display", translatable("eventutils.skeppy.new").formatted(Formatting.AQUA)),
+    POTENTIAL_FAMOUS(EAFamousEvent.Type.POTENTIAL_FAMOUS, "eventutils.potential_famous.display", translatable("eventutils.potential_famous.new").formatted(Formatting.DARK_AQUA)),
+    SIGHTING(EAFamousEvent.Type.SIGHTING, "eventutils.sighting.display", translatable("eventutils.sighting.new").formatted(Formatting.DARK_RED)),
+    FAMOUS(EAFamousEvent.Type.FAMOUS, "eventutils.famous.display", translatable("eventutils.famous.new").formatted(Formatting.AQUA)),
+    PARTNER(EAEvent.PingRole.PARTNER, "eventutils.partner.display", translatable("eventutils.partner.new").formatted(Formatting.LIGHT_PURPLE)),
+    COMMUNITY(EAEvent.PingRole.COMMUNITY, "eventutils.community.display", translatable("eventutils.community.new").formatted(Formatting.GRAY)),
+    MONEY(EAEvent.PingRole.MONEY, "eventutils.money.display", prize -> {
         final MutableText text = translatable("eventutils.money.new").formatted(Formatting.GREEN);
         if (prize != null && prize > 0) text.append(Text.literal(" ($" + prize + ")").formatted(Formatting.GRAY));
         return text;
     }),
-    FUN("eventutils.fun.display", translatable("eventutils.fun.new").formatted(Formatting.RED)),
-    HOUSING("eventutils.housing.display", translatable("eventutils.housing.new").formatted(Formatting.GOLD)),
-    CIVILIZATION("eventutils.civilization.display", translatable("eventutils.civilization.new").formatted(Formatting.BLUE));
+    FUN(EAEvent.PingRole.FUN, "eventutils.fun.display", translatable("eventutils.fun.new").formatted(Formatting.RED)),
+    HOUSING(EAEvent.PingRole.HOUSING, "eventutils.housing.display", translatable("eventutils.housing.new").formatted(Formatting.GOLD)),
+    CIVILIZATION(EAEvent.PingRole.CIVILIZATION, "eventutils.civilization.display", translatable("eventutils.civilization.new").formatted(Formatting.BLUE));
 
+    @Nullable public final EAEvent.PingRole pingRole;
+    @Nullable public final EAFamousEvent.Type famousEventType;
     @NotNull public final MutableText displayName;
     @NotNull public final String displayNameString;
     @NotNull public final Function<Integer, MutableText> toast;
 
-    EventType(@NotNull String translateKey, @NotNull Function<Integer, MutableText> toast) {
+    EventType(@Nullable EAEvent.PingRole pingRole, @Nullable EAFamousEvent.Type famousEventType, @NotNull String translateKey, @NotNull Function<Integer, MutableText> toast) {
+        this.pingRole = pingRole;
+        this.famousEventType = famousEventType;
         this.displayName = translatable(translateKey);
         this.displayNameString = this.name().toLowerCase().replace("_", "");
         this.toast = toast;
     }
 
-    EventType(@NotNull String displayName, @NotNull MutableText toast) {
-        this(displayName, prize -> toast);
+    EventType(@NotNull EAEvent.PingRole pingRole, @NotNull String translateKey, @NotNull Function<Integer, MutableText> toast) {
+        this(pingRole, null, translateKey, toast);
+    }
+
+    EventType(@NotNull EAEvent.PingRole pingRole, @NotNull String displayName, @NotNull MutableText toast) {
+        this(pingRole, displayName, prize -> toast);
+    }
+
+    EventType(@NotNull EAFamousEvent.Type famousEventType, @NotNull String displayName, @NotNull MutableText toast) {
+        this(null, famousEventType, displayName, prize -> toast);
     }
 
     @NotNull
@@ -139,14 +144,15 @@ public enum EventType {
         }
     }
 
-    @NotNull
-    public static Set<EventType> fromJson(@NotNull JsonObject json) {
-        final Set<EventType> eventTypes = new HashSet<>();
-        final JsonArray roles = json.getAsJsonArray("rolesNamed");
-        if (roles != null) for (final JsonElement role : roles) {
-            final EventType eventType = EventType.fromString(role.getAsString());
-            if (eventType != null) eventTypes.add(eventType);
-        }
-        return eventTypes;
+    @Nullable
+    public static EventType fromPingRole(@NotNull EAEvent.PingRole pingRole) {
+        for (final EventType eventType : values()) if (eventType.pingRole == pingRole) return eventType;
+        return null;
+    }
+
+    @Nullable
+    public static EventType fromFamousEventType(@NotNull EAFamousEvent.Type famousEventType) {
+        for (final EventType eventType : values()) if (eventType.famousEventType == famousEventType) return eventType;
+        return null;
     }
 }

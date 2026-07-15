@@ -1,17 +1,15 @@
 package cc.aabss.eventutils;
 
-import cc.aabss.eventutils.utility.StringUtility;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
+import gg.eventalerts.sdk.json.GSONProvider;
+import net.fabricmc.loader.impl.util.StringUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
@@ -25,13 +23,13 @@ public class EventInfoScreen extends Screen {
 
     @NotNull private final JsonObject json;
 
-    public EventInfoScreen(@NotNull JsonObject json) {
+    public EventInfoScreen(@NotNull Object event) {
         //? if >=1.21.11 {
         /*super(Text.translatable(EventUtils.MOD.keybindManager.eventInfoKey.getId()));
         *///?} else {
         super(Text.translatable(EventUtils.MOD.keybindManager.eventInfoKey.getTranslationKey()));
         //?}
-        this.json = json;
+        this.json = GSONProvider.GSON.toJsonTree(event).getAsJsonObject();
     }
 
     @Override
@@ -62,7 +60,7 @@ public class EventInfoScreen extends Screen {
             if (key.equals("time") || key.equals("created")) value = formatTime(value);
 
             // Draw
-            drawContext.drawCenteredTextWithShadow(textRenderer, StringUtility.capitalize(key) + ": " + value, startX, startY, 0xFFFFFF);
+            drawContext.drawCenteredTextWithShadow(textRenderer, StringUtil.capitalize(key) + ": " + value, startX, startY, 0xFFFFFF);
             startY += 12;
         }
     }
@@ -70,7 +68,7 @@ public class EventInfoScreen extends Screen {
     @NotNull
     private String formatTime(@NotNull String unixTimestamp) {
         // Get timestamps
-        unixTimestamp = unixTimestamp.replaceAll("\"", "");
+        unixTimestamp = unixTimestamp.replace("\"", "");
         final Instant timestamp;
         try {
             timestamp = Instant.ofEpochMilli(Long.parseLong(unixTimestamp));
