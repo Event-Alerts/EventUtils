@@ -37,8 +37,8 @@ setupJava(JavaSetupConfig(
     javaVersion = java))
 version = "${sc.current.version}-$version" // We need to let setupJava process version first then prefix with Minecraft version
 
-repository("https://maven.shedaniel.me/", "https://maven.terraformersmc.com/releases/", "https://maven.isxander.dev/releases/", "https://maven.nucleoid.xyz/")
-repository(Repository.FABRIC, Repository.MAVEN_CENTRAL, Repository.JITPACK)
+repository("https://maven.gnomecraft.net/releases/", "https://maven.nucleoid.xyz/")
+repository(Repository.FABRIC, Repository.SHEDANIEL, Repository.ISXANDER, Repository.MAVEN_CENTRAL, Repository.JITPACK)
 
 dependencies {
     minecraft("com.mojang:minecraft:${sc.current.version}")
