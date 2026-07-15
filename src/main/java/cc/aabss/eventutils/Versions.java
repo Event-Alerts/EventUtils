@@ -9,10 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class Versions {
     @Nullable public static final String MC_VERSION = getVersion("minecraft");
-    /**
-     * NOT semantic as-is (ex: 1.21.6-3.0.0, 1.21.6-dev, etc.)
-     */
     @Nullable public static final String EU_VERSION = getVersion("eventutils");
+    @Nullable public static final String FULL_VERSION = MC_VERSION != null && EU_VERSION != null ? MC_VERSION + "-" + EU_VERSION : null;
 
     @Nullable
     private static String getVersion(@NotNull String id) {

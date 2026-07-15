@@ -35,7 +35,10 @@ setupJava(JavaSetupConfig(
     group = "cc.aabss",
     description = "Alerting for Event Alerts Minecraft events",
     javaVersion = java))
-version = "${sc.current.version}-$version" // We need to let setupJava process version first then prefix with Minecraft version
+
+// We need to let setupJava process version first then prefix with Minecraft version
+val modVersion = version.toString() // ex: 1.0.0, dev, 25fsf52
+version = "${sc.current.version}-$modVersion" // ex: 1.21.6-1.0.0, 1.21.4-dev, 1.21.11-25fsf52
 
 repository("https://maven.gnomecraft.net/releases/", "https://maven.nucleoid.xyz/")
 repository(Repository.FABRIC, Repository.SHEDANIEL, Repository.ISXANDER, Repository.MAVEN_CENTRAL, Repository.JITPACK)
@@ -70,7 +73,7 @@ stonecutter {
 addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "mod_id" to modId,
     "mod_name" to property("mod.name").toString(),
-    "mod_version" to version.toString(),
+    "mod_version" to modVersion,
     "deps_minecraft" to sc.current.version,
     "deps_loader" to loaderVersion,
     "deps_fabric_api" to fabricApiVersion,
