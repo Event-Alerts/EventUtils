@@ -1,8 +1,8 @@
 package cc.aabss.eventutils.config;
 
+import cc.aabss.eventutils.BuildProperties;
 import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.EventUtils;
-import cc.aabss.eventutils.Versions;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonObject;
 import net.fabricmc.loader.api.FabricLoader;
@@ -44,7 +44,7 @@ public class EventConfig extends FileLoader {
         boolean created = false;
         if (!file.exists()) {
             json = new JsonObject();
-            json.addProperty("version", Versions.EU_VERSION);
+            if (EventUtils.getSemantic(BuildProperties.MOD_VERSION, false) != null) json.addProperty("version", BuildProperties.MOD_VERSION);
             created = true;
         } else {
             load();
@@ -78,11 +78,8 @@ public class EventConfig extends FileLoader {
     private void update() {
         // Get old version
         final String oldVersionString = get("version", "1.4.0");
-        final SemanticVersion oldVersion = Versions.getSemantic(oldVersionString);
-        if (oldVersion == null) {
-            EventUtils.LOGGER.error("Failed to parse config version: {}", oldVersionString);
-            return;
-        }
+        final SemanticVersion oldVersion = EventUtils.getSemantic(oldVersionString, true);
+        if (oldVersion == null) return;
 
         // Older than 2.0.0
         if (oldVersion.compareTo((Version) new SemanticVersionImpl(new int[]{2, 0, 0}, null, null)) < 0) {
@@ -117,7 +114,7 @@ public class EventConfig extends FileLoader {
         }
 
         // Update version
-        set("version", Versions.EU_VERSION);
+        set("version", BuildProperties.MOD_VERSION);
         save();
     }
 

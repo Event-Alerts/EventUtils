@@ -15,6 +15,8 @@ plugins {
     id("xyz.srnyx.gradle-galaxy") version "3.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.1.1"
     id("com.gradleup.shadow") version "9.5.1"
+    id("net.kyori.blossom") version "2.2.0"
+    id("org.jetbrains.gradle.plugin.idea-ext") version "1.4.1" // For Blossom
 }
 
 // Properties
@@ -77,7 +79,7 @@ stonecutter {
     dependencies["java"] = java.majorVersion
 }
 
-// Replacements for fabric.mod.json and config.json
+// Replacements for fabric.mod.json
 addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "mod_id" to modId,
     "mod_name" to modName,
@@ -88,6 +90,14 @@ addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "deps_yacl" to yaclVersion,
     "deps_modmenu" to modMenuVersion,
     "mixin_config" to property("mod.mixin_config").toString()))
+
+// In-code "replacements" (Blossom)
+sourceSets { main { blossom { javaSources {
+    property("mod_id", modId)
+    property("mod_name", modName)
+    property("mod_version", modVersion)
+    property("mod_version_full", version.toString())
+} } } }
 
 tasks {
     jar {

@@ -22,7 +22,7 @@ import java.util.List;
 
 
 public class NotificationToast implements Toast {
-    @NotNull private static final Identifier TEXTURE = Identifier.of("eventutils", "toast/notification");
+    @NotNull private static final Identifier TEXTURE = Identifier.of(BuildProperties.MOD_ID, "toast/notification");
 
     @NotNull private final Text title;
     @NotNull private final List<OrderedText> lines;

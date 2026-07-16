@@ -47,14 +47,14 @@ public class EventUtils implements ClientModInitializer {
      */
     public static EventUtils MOD;
     @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
-    @NotNull public static final String USER_AGENT = "EventUtils/" + Versions.EU_VERSION + " (MC/" + Versions.MC_VERSION + ")";
+    @NotNull public static final String USER_AGENT = BuildProperties.MOD_NAME + "/" + BuildProperties.MOD_VERSION + " (MC/" + MC_VERSION + ")";
     @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
-    @NotNull public static final MutableText MESSAGE_PREFIX = Text.literal("EventUtils")
+    @NotNull public static final MutableText MESSAGE_PREFIX = Text.literal(BuildProperties.MOD_NAME)
             .formatted(Formatting.BOLD)
             .fillStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xF5AA42)))
             .append(Text.literal("§r »")
                     .fillStyle(Style.EMPTY.withBold(false).withColor(TextColor.fromRgb(0xB57C2F))));
-    @NotNull public static final MutableText ERROR_MESSAGE_PREFIX = Text.literal("EventUtils")
+    @NotNull public static final MutableText ERROR_MESSAGE_PREFIX = Text.literal(BuildProperties.MOD_NAME)
             .formatted(Formatting.BOLD)
             .formatted(Formatting.RED)
             .append(Text.literal("§r§4 »")
@@ -78,6 +78,16 @@ public class EventUtils implements ClientModInitializer {
 
     public EventUtils() {
         MOD = this;
+    }
+
+    @Nullable
+    public static SemanticVersion getSemantic(@Nullable String string, boolean logError) {
+        if (string != null) try {
+            return SemanticVersion.parse(string);
+        } catch (final VersionParsingException e) {
+            if (logError) LOGGER.error("Failed to parse version: {}", string, e);
+        }
+        return null;
     }
 
     @Override

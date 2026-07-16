@@ -30,7 +30,7 @@ public class KeybindManager {
     public KeybindManager(@NotNull EventUtils mod) {
         // Keybindings
         //? if >=1.21.11 {
-        /*final KeyBinding.Category category = KeyBinding.Category.create(Identifier.of("eventutils", "eventutils"));
+        /*final KeyBinding.Category category = KeyBinding.Category.create(Identifier.of(BuildProperties.MOD_ID, BuildProperties.MOD_ID));
         eventInfoKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.eventutils.eventinfo",
                 InputUtil.Type.KEYSYM,
