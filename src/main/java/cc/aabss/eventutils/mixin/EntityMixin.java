@@ -26,7 +26,7 @@ public abstract class EntityMixin {
 
     @Inject(method = "spawnSprintingParticles", at = @At("HEAD"), cancellable = true)
     private void spawnSprintingParticles(CallbackInfo ci) {
-        if (!EventUtils.MOD.isInHidePlayersMode()) return;
+        if (EventUtils.MOD.isHidePlayersRevealed()) return;
         final ClientPlayerEntity mainPlayer = MinecraftClient.getInstance().player;
         if (mainPlayer == null) return;
         final EntityType<?> type = getType();

@@ -18,6 +18,9 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.SemanticVersion;
+import net.fabricmc.loader.api.VersionParsingException;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -47,6 +50,9 @@ public class EventUtils implements ClientModInitializer {
      */
     public static EventUtils MOD;
     @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
+    @Nullable public static final String MC_VERSION = FabricLoader.getInstance().getModContainer("minecraft")
+            .map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString())
+            .orElse(null);
     @NotNull public static final String USER_AGENT = BuildProperties.MOD_NAME + "/" + BuildProperties.MOD_VERSION + " (MC/" + MC_VERSION + ")";
     @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
     @NotNull public static final MutableText MESSAGE_PREFIX = Text.literal(BuildProperties.MOD_NAME)
@@ -73,8 +79,8 @@ public class EventUtils implements ClientModInitializer {
      */
     @Nullable public Object lastEvent;
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
-    /** 0 = first group (or hide-all when no groups), 1 = second group, ... ; groups.size() = players revealed */
-    public int hidePlayersViewMode = 0;
+    @NotNull public HidePlayersMode hidePlayersMode = HidePlayersMode.REVEALED;
+    public int selectedGroup = 0;
 
     public EventUtils() {
         MOD = this;
@@ -182,26 +188,13 @@ public class EventUtils implements ClientModInitializer {
         return name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-") || name.equals("§z");
     }
 
-    /** Whether the current view mode is "players revealed" (show everyone). */
     public boolean isHidePlayersRevealed() {
-        final int n = config.groups.size();
-        if (n == 0) return hidePlayersViewMode == 1;
-        return hidePlayersViewMode >= n;
+        return hidePlayersMode == HidePlayersMode.REVEALED;
     }
 
-    /** Whether we are in a "hide" mode (any group or hide-all). */
-    public boolean isInHidePlayersMode() {
-        final int n = config.groups.size();
-        if (n == 0) return hidePlayersViewMode == 0;
-        return hidePlayersViewMode < n;
-    }
-
-    /** Current group when in group view mode, or null if revealed or no groups. */
     @Nullable
     public PlayerGroup getCurrentViewGroup() {
-        final var groups = config.groups;
-        if (groups.isEmpty() || hidePlayersViewMode >= groups.size()) return null;
-        return groups.get(hidePlayersViewMode);
+        return hidePlayersMode == HidePlayersMode.GROUP ? config.groups.get(selectedGroup) : null;
     }
 
     /**
@@ -209,27 +202,23 @@ public class EventUtils implements ClientModInitializer {
      * Caller must exclude main player.
      */
     public boolean isPlayerVisible(@NotNull String nameLower) {
-        if (isHidePlayersRevealed()) return true;
-        if (config.whitelistedPlayers.contains(nameLower)) return true;
+        if (isHidePlayersRevealed() || config.whitelistedPlayers.contains(nameLower)) return true;
         final PlayerGroup group = getCurrentViewGroup();
-        final boolean isNpc = looksLikeNPC(nameLower);
 
         // NPC behavior: if the global hide toggle is OFF, NPCs should always stay visible.
-        if (isNpc) {
+        if (looksLikeNPC(nameLower)) {
             if (!config.hideNPCs) return true;
             if (group == null) return false;
-            final boolean listed = group.containsPlayer(nameLower);
-            return group.isHideListedNpcs() ? !listed : listed;
+            return group.isHideListedNpcs() != group.containsPlayer(nameLower);
         }
 
         if (group == null) return false; // no groups, hide mode: only whitelisted players are visible
-        final boolean listed = group.containsPlayer(nameLower);
-        return group.isHideListedPlayers() ? !listed : listed;
+        return group.isHideListedPlayers() != group.containsPlayer(nameLower);
     }
 
     /** True if the nametag for this visible player should be drawn (per-group setting when in group view). */
     public boolean shouldShowNametagFor(@NotNull String nameLower) {
-        if (!isInHidePlayersMode()) return true;
+        if (isHidePlayersRevealed()) return true;
         final PlayerGroup group = getCurrentViewGroup();
         if (group == null) return true; // hide-all with no groups: use default
         if (!group.containsPlayer(nameLower)) return true; // whitelist/NPC visibility: show nametag

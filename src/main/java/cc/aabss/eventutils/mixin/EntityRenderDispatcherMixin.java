@@ -57,7 +57,7 @@ public class EntityRenderDispatcherMixin {
     *///?} else {
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private <E extends Entity> void render(E entity, double x, double y, double z, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
-        if (!EventUtils.MOD.isInHidePlayersMode()) return;
+        if (EventUtils.MOD.isHidePlayersRevealed()) return;
 
         if (entity instanceof PlayerEntity player) {
             // Players

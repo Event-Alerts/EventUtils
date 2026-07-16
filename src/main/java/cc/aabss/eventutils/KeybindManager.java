@@ -1,5 +1,6 @@
 package cc.aabss.eventutils;
 
+import cc.aabss.eventutils.config.PlayerGroup;
 import cc.aabss.eventutils.mixin.KeyBindingMixin;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -63,11 +64,11 @@ public class KeybindManager {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (windowHandle == null) windowHandle = client.getWindow().getHandle();
 
-            // Event info key
+            // Event info key TODO: prevent activating when in chat box or similar
             if (!eventInfoKey.isUnbound()) {
                 if (GLFW.glfwGetKey(windowHandle, ((KeyBindingMixin) eventInfoKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
                     if (canNotPress(eventInfoKey)) return;
-                    EventUtils.LOGGER.info("Event info key pressed");
+                    EventUtils.LOGGER.debug("Event info key pressed");
                     if (mod.lastEvent != null) {
                         client.setScreen(new EventInfoScreen(mod.lastEvent));
                         return;
@@ -93,17 +94,32 @@ public class KeybindManager {
 
             // Hide players key: cycle Group 1 -> Group 2 -> ... -> Players Revealed -> repeat
             if (hidePlayersKey.wasPressed()) {
-                final int groupCount = mod.config.groups.size();
-                final int totalStates = groupCount == 0 ? 2 : groupCount + 1;
-                mod.hidePlayersViewMode = (mod.hidePlayersViewMode + 1) % totalStates;
-                final boolean revealed = EventUtils.MOD.isHidePlayersRevealed();
+                final int groupsSize = mod.config.groups.size();
+                if (mod.hidePlayersMode == HidePlayersMode.REVEALED) {
+                    if (groupsSize == 0) {
+                        // No groups, hide all players
+                        mod.hidePlayersMode = HidePlayersMode.HIDE_ALL;
+                    } else {
+                        // Cycle to first group
+                        mod.hidePlayersMode = HidePlayersMode.GROUP;
+                        mod.selectedGroup = 0;
+                    }
+                } else if (mod.hidePlayersMode == HidePlayersMode.HIDE_ALL) {
+                    mod.hidePlayersMode = HidePlayersMode.REVEALED;
+                } else {
+                    // Cycle to next group
+                    mod.selectedGroup++;
+                    // Reached end of groups, cycle back to players revealed
+                    if (mod.selectedGroup >= groupsSize) mod.hidePlayersMode = HidePlayersMode.REVEALED;
+                }
+
+                // Send action bar
                 final Text message;
-                if (revealed) {
+                if (EventUtils.MOD.isHidePlayersRevealed()) {
                     message = translatable("eventutils.hideplayers.view_revealed").formatted(Formatting.GREEN);
                 } else {
-                    final var group = EventUtils.MOD.getCurrentViewGroup();
-                    message = (group != null ? literal(group.getName()) : translatable("eventutils.hideplayers.view_whitelist_only"))
-                            .formatted(Formatting.GREEN);
+                    final PlayerGroup group = EventUtils.MOD.getCurrentViewGroup();
+                    message = (group != null ? literal(group.getName()) : translatable("eventutils.hideplayers.view_whitelist_only")).formatted(Formatting.GREEN);
                 }
                 client.player.sendMessage(translatable("eventutils.hideplayers.view_prefix").append(message), true);
             }

@@ -56,7 +56,7 @@ public class PlayerEntityRendererMixin {
     *///?} else {
     public void renderLabelIfPresent(PlayerEntityRenderState player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
     //?}
-        if (!EventUtils.MOD.isInHidePlayersMode()) return;
+        if (EventUtils.MOD.isHidePlayersRevealed()) return;
         final ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
         if (clientPlayer == null) return;
 
