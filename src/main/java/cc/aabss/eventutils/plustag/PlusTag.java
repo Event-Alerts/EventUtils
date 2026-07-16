@@ -1,12 +1,14 @@
 package cc.aabss.eventutils.plustag;
 
+import cc.aabss.eventutils.BuildProperties;
 import cc.aabss.eventutils.EventUtils;
+import gg.eventalerts.sdk.object.EAPlayer;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 
 /**
@@ -15,21 +17,25 @@ import java.util.Set;
  * <br><b>Order of this enum matters for priority!</b>
  */
 public enum PlusTag {
-    RED("red", "eventutils.plustag.unlock.admin"),
-    BLUE("blue", "eventutils.plustag.unlock.contributor"),
-    GOLD("gold", "eventutils.plustag.unlock.bee"),
-    PINK("pink", "eventutils.plustag.unlock.booster"),
-    WHITE("white", null),
-    EMPTY("empty", "eventutils.plustag.unlock.linked");
+    RED("red", player -> player.discord != null && player.discord.roles != null && player.discord.roles.contains(EAPlayer.Discord.Role.ADMIN)),
+
+    LIGHT_RED("light_red", player -> player.discord != null && player.discord.roles != null && player.discord.roles.contains(EAPlayer.Discord.Role.STAFF)),
+
+    BLUE("blue", player -> player.discord != null && player.discord.roles != null && player.discord.roles.contains(EAPlayer.Discord.Role.CONTRIBUTOR)),
+
+    GOLD("gold", player -> player.subscription != null),
+
+    EMPTY("empty", player -> player.discord != null && player.minecraft != null);
+
 
     @NotNull public final String key;
     @NotNull public final Identifier textureId;
-    @NotNull public final String unlockKey;
+    @NotNull public final Predicate<EAPlayer> isUnlocked;
 
-    PlusTag(@NotNull String key, @Nullable String unlockKey) {
+    PlusTag(@NotNull String key, @NotNull Predicate<EAPlayer> isUnlocked) {
         this.key = key;
-        this.textureId = Identifier.of("eventutils", "textures/bee/" + key + ".png");
-        this.unlockKey = Objects.requireNonNullElse(unlockKey, "eventutils.plustag.unlock.none");
+        this.textureId = Identifier.of(BuildProperties.MOD_ID, "textures/bee/" + key + ".png");
+        this.isUnlocked = isUnlocked;
     }
 
     /**
@@ -44,10 +50,7 @@ public enum PlusTag {
 
         // Get best/highest ranking
         PlusTag best = null;
-        for (final PlusTag tag : unlocked) {
-            if (tag == WHITE) continue;
-            if (best == null || tag.ordinal() < best.ordinal()) best = tag;
-        }
+        for (final PlusTag tag : unlocked) if (best == null || tag.ordinal() < best.ordinal()) best = tag;
         EventUtils.LOGGER.debug("[PlusTag] pickBestForDisplay: unlocked={} -> best={}", unlocked, best);
         return best;
     }

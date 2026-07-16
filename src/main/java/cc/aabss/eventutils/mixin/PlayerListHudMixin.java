@@ -28,9 +28,9 @@ public abstract class PlayerListHudMixin {
         if (client.player == null) return;
 
         //? if >=1.21.11 {
-        /*String name = entry.getProfile().name();
+        /*final String name = entry.getProfile().name();
         final boolean isLocal = entry.getProfile().id().equals(client.player.getUuid());
-        UUID uuid = entry.getProfile().id();
+        final UUID uuid = entry.getProfile().id();
         *///?} else {
         final String name = entry.getProfile().getName();
         final boolean isLocal = entry.getProfile().getId().equals(client.player.getUuid());
@@ -52,8 +52,8 @@ public abstract class PlayerListHudMixin {
 
         final PlusTag tag = PlusTag.pickBestForDisplay(cached);
         EventUtils.LOGGER.debug("[TabList] entry={} uuid={} cache HIT unlocked={} pickBest={}", name, uuid, cached, tag);
-        if (tag == null || tag == PlusTag.WHITE) {
-            EventUtils.LOGGER.debug("[TabList] entry={} skip draw: tag={} (null or WHITE)", name, tag);
+        if (tag == null) {
+            EventUtils.LOGGER.debug("[TabList] entry={} skip draw: tag=null", name);
             return;
         }
 

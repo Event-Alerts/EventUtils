@@ -29,67 +29,41 @@ public class EventAlertsApi {
         this.mod = mod;
     }
 
-    /** Fetch unlocked plus tags for a Minecraft UUID. Returns empty set on failure. */
-    @NotNull
-    public EnumSet<PlusTag> fetchUnlockedTags(@NotNull UUID minecraftUuid) {
+    /**
+     * Fetch unlocked plus tags for a Minecraft UUID. Returns empty set on failure.
+     */
+    public void populateCachedUnlockedTags(@NotNull UUID minecraftUuid) {
+        // Check if already cached
         final EnumSet<PlusTag> cached = cache.get(minecraftUuid);
         if (cached != null) {
             EventUtils.LOGGER.debug("[API] fetchUnlockedTags: cache HIT uuid={} tags={}", minecraftUuid, cached);
-            return cached;
+            return;
         }
 
-        EventUtils.LOGGER.info("[API] Fetching tags for uuid={}", minecraftUuid);
+        EventUtils.LOGGER.debug("[API] Fetching tags for uuid={}", minecraftUuid);
         try {
+            // Retrieve EAPlayer
             final EAPlayer player = mod.http.players.retrieveOneByMinecraftUuid(minecraftUuid).complete();
-            final EnumSet<PlusTag> unlocked = parseUnlockedTags(player);
-            EventUtils.LOGGER.debug("[API] parsed unlocked tags={} for uuid={}", unlocked, minecraftUuid);
+            if (player == null) {
+                EventUtils.LOGGER.debug("[API] parse: player is null, returning empty set");
+                return;
+            }
+
+            // Get unlocked tags
+            final EnumSet<PlusTag> unlocked = EnumSet.noneOf(PlusTag.class);
+            for (final PlusTag tag : PlusTag.values()) {
+                if (tag.isUnlocked.test(player)) {
+                    unlocked.add(tag);
+                    EventUtils.LOGGER.debug("[API] parse: +{} (isUnlocked)", tag);
+                }
+            }
+
+            // Add to cache
+            EventUtils.LOGGER.debug("[API] fetched unlocked tags={} for uuid={}", unlocked, minecraftUuid);
             cache.put(minecraftUuid, unlocked);
-            EventUtils.LOGGER.info("[API] Fetched uuid={} tags={}", minecraftUuid, unlocked);
-            return unlocked;
         } catch (final Exception e) {
             EventUtils.LOGGER.warn("[API] Fetch failed uuid={} error={}", minecraftUuid, e.getMessage(), e);
-            return EnumSet.noneOf(PlusTag.class);
         }
-    }
-
-    /**
-     * Parse API response into unlocked tags
-     */
-    @NotNull
-    private static EnumSet<PlusTag> parseUnlockedTags(@Nullable EAPlayer player) {
-        final EnumSet<PlusTag> tags = EnumSet.noneOf(PlusTag.class);
-        if (player == null || player.discord == null) {
-            EventUtils.LOGGER.debug("[API] parse: player or player.discord is null, returning empty set");
-            return tags;
-        }
-
-        // Linked: has minecraft
-        if (player.minecraft != null) {
-            tags.add(PlusTag.EMPTY); // "Linked" icon
-            EventUtils.LOGGER.debug("[API] parse: +EMPTY (linked, discord+minecraft.uuid)");
-        }
-
-        // Bee / Premium: subscription tier
-        if (player.subscription != null) {
-            tags.add(PlusTag.GOLD);
-            EventUtils.LOGGER.debug("[API] parse: +GOLD (subscription.tier)");
-        }
-
-        if (player.discord.roles != null) {
-            // Admin
-            if (player.discord.roles.contains(EAPlayer.Discord.Role.ADMIN)) {
-                tags.add(PlusTag.RED);
-                EventUtils.LOGGER.debug("[API] parse: +RED (roles contains ADMIN)");
-            }
-
-            // Contributor
-            if (player.discord.roles.contains(EAPlayer.Discord.Role.CONTRIBUTOR)) {
-                tags.add(PlusTag.BLUE);
-                EventUtils.LOGGER.debug("[API] parse: +BLUE (roles contains DEV/CONTRIBUTOR)");
-            }
-        }
-
-        return tags;
     }
 
     /**
@@ -99,7 +73,7 @@ public class EventAlertsApi {
         int size = cache.size();
         cache.clear();
         fetchScheduled.clear();
-        EventUtils.LOGGER.info("[API] Cache cleared (was {} entries)", size);
+        EventUtils.LOGGER.debug("[API] Cache cleared (was {} entries)", size);
     }
 
     /**
@@ -108,8 +82,8 @@ public class EventAlertsApi {
     public void scheduleFetchIfNeeded(@NotNull UUID minecraftUuid) {
         if (cache.containsKey(minecraftUuid)) return;
         if (!fetchScheduled.add(minecraftUuid)) return; // already scheduled
-        EventUtils.LOGGER.info("[API] Scheduling fetch for uuid={}", minecraftUuid);
-        EventUtils.MOD.scheduler.execute(() -> fetchUnlockedTags(minecraftUuid));
+        EventUtils.LOGGER.debug("[API] Scheduling fetch for uuid={}", minecraftUuid);
+        EventUtils.MOD.scheduler.execute(() -> populateCachedUnlockedTags(minecraftUuid));
     }
 
     /**
