@@ -100,9 +100,7 @@ sourceSets { main { blossom { javaSources {
 } } } }
 
 tasks {
-    jar {
-        archiveClassifier.set("")
-    }
+    jar { archiveClassifier.set("") }
 
     shadowJar {
         archiveClassifier.set("shadow")
@@ -156,7 +154,7 @@ setupPublishingPlatforms(PublishingPlatformConfig(
     platforms = mapOf(PluginPlatform.MODRINTH to "ZcRRACSs"),
     minecraftVersionStart = sc.current.version,
     minecraftVersionEnd = sc.current.version,
-    loaders = listOf("fabric", "quilt"),
+    loaders = listOf("fabric"),
     addAnnoyingApiDependency = false,
     modrinthAction = {
         // Fabric API
