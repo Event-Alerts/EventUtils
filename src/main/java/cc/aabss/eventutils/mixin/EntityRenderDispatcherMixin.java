@@ -31,7 +31,7 @@ public class EntityRenderDispatcherMixin {
     //? if >=1.21.11 {
     /*@Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void render(EntityRenderState renderState, CameraRenderState cameraRenderState, double x, double y, double z, MatrixStack matrixStack, OrderedRenderCommandQueue orderedRenderCommandQueue, CallbackInfo ci) {
-        if (!EventUtils.MOD.isInHidePlayersMode()) return;
+        if (EventUtils.MOD.isHidePlayersRevealed()) return;
 
         if (renderState.entityType == EntityType.PLAYER) {
             final ClientPlayerEntity mainPlayer = MinecraftClient.getInstance().player;

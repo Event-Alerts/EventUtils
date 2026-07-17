@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
@@ -28,25 +29,25 @@ public class UpdateChecker {
         final MinecraftClient client = MinecraftClient.getInstance();
         client.send(() -> {
             if (client.player == null) return;
-            //? if >=1.21.5 {
-            /*client.player.sendMessage(
-                    EventUtils.MESSAGE_PREFIX.copy().append(" §e" + EventUtils.translate("eventutils.updatechecker.new")+"§r §7(v" + Versions.EU_VERSION + " -> v" + latestVersion.replace(Versions.MC_VERSION + "-", "") + ")" + "\n")
-                            .setStyle(EventUtils.MESSAGE_PREFIX.getStyle()
-                                    .withHoverEvent(new HoverEvent.ShowText(translatable("eventutils.updatechecker.hover")))
-                                    .withClickEvent(new ClickEvent.OpenUrl(URI.create("https://modrinth.com/mod/alerts/version/" + latestVersion))))
-                            .append(Text.literal("§7§o" + EventUtils.translate("eventutils.updatechecker.config"))
-                                    .setStyle(Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/event utils")))),
-                    false);
-            *///?} else {
+            final MutableText hover = translatable("eventutils.updatechecker.hover");
+            final String link = "https://modrinth.com/mod/alerts/version/" + latestVersion;
+            final String configCommand = "/eventutils config";
             client.player.sendMessage(
                     EventUtils.MESSAGE_PREFIX.copy().append(" §e" + EventUtils.translate("eventutils.updatechecker.new") + "§r §7(" + BuildProperties.MOD_VERSION + " -> v" + latestVersion.replace(EventUtils.MC_VERSION + "-", "") + ")" + "\n")
                             .setStyle(EventUtils.MESSAGE_PREFIX.getStyle()
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, translatable("eventutils.updatechecker.hover")))
-                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/alerts/version/" + latestVersion)))
+                                    //? if >=1.21.5 {
+                                    /*.withHoverEvent(new HoverEvent.ShowText(hover))
+                                    .withClickEvent(new ClickEvent.OpenUrl(URI.create(link))))
+                                    *///?} else {
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
+                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link)))
+                                    //?}
                             .append(Text.literal("§7§o" + EventUtils.translate("eventutils.updatechecker.config"))
-                                    .setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/eventutils config")))),
+                                    //? if >=1.21.5 {
+                                    /*.setStyle(Style.EMPTY.withClickEvent(new ClickEvent.RunCommand(configCommand)))),
+                                    *///?} else
+                                    .setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, configCommand)))),
                     false);
-            //?}
         });
     }
 
