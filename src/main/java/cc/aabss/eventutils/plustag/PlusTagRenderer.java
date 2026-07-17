@@ -3,8 +3,9 @@ package cc.aabss.eventutils.plustag;
 import net.minecraft.client.gui.DrawContext;
 //? if >=1.21.6 {
 /*import net.minecraft.client.gl.RenderPipelines;
-*///?} else if >=1.21.4
+*///?} else if >=1.21.4 {
 import net.minecraft.client.render.RenderLayer;
+//?}
 import org.jetbrains.annotations.NotNull;
 
 
@@ -23,7 +24,8 @@ public final class PlusTagRenderer {
         /*context.drawTexture(RenderPipelines.GUI_TEXTURED, tag.textureId, x, y, 0f, 0f, size, size, TEX_SIZE, TEX_SIZE, TEX_SIZE, TEX_SIZE);
         *///?} else if >=1.21.4 {
         context.drawTexture(RenderLayer::getGuiTextured, tag.textureId, x, y, 0f, 0f, size, size, TEX_SIZE, TEX_SIZE, TEX_SIZE, TEX_SIZE);
-        //?} else
+        //?} else {
         //context.drawTexture(tag.textureId, x, y, 0f, 0f, size, size, TEX_SIZE, TEX_SIZE);
+        //?}
     }
 }

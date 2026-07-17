@@ -2,7 +2,6 @@
 mod.id = "eventutils"
 mod.name = "EventUtils"
 mod.group = "cc.aabss"
-mod.mixin_config = "eventutils.mixin.json"
 
 loomx.loom_version = "1.17-SNAPSHOT"
 loomx.loom_remap_plugin = "fabric-loom"
@@ -12,7 +11,6 @@ deps.sdk = "c149ccb"
 
 
 ["1.21.11"]
-mod.mixin_config = "eventutils-1.21.11.mixin.json"
 deps.yarn_mappings="1.21.11+build.1"
 deps.fabric_api="0.141.0+1.21.11"
 deps.yacl="3.8.1+1.21.11-fabric"

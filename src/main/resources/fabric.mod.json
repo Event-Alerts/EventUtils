@@ -13,7 +13,7 @@
   "icon": "assets/eventutils/textures/icon.png",
   "environment": "client",
   "mixins": [
-    "${mixin_config}"
+    "${mod_id}.mixin.json"
   ],
   "entrypoints": {
     "client": [

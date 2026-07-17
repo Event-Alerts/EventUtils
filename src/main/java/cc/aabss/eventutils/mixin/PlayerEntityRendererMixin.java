@@ -27,24 +27,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class PlayerEntityRendererMixin {
     @Inject(at = {@At("HEAD")}, method = "renderLabelIfPresent*", cancellable = true)
     //? if >=1.21.11 {
-    //public void renderLabelIfPresent(PlayerEntityRenderState player, MatrixStack matrixStack, OrderedRenderCommandQueue orderedRenderCommandQueue, CameraRenderState cameraRenderState, CallbackInfo ci) {
-    //?} else if <=1.20.4 {
-    //public void renderLabelIfPresent(AbstractClientPlayerEntity player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
-     //?} else if <1.21.3 {
+    /*public void renderLabelIfPresent(PlayerEntityRenderState player, MatrixStack matrixStack, OrderedRenderCommandQueue orderedRenderCommandQueue, CameraRenderState cameraRenderState, CallbackInfo ci) {
+    *///?} else if >=1.21.4 {
+    public void renderLabelIfPresent(PlayerEntityRenderState player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
+    //?} else if >1.20.4 {
     //public void renderLabelIfPresent(AbstractClientPlayerEntity player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, float f, CallbackInfo ci) {
     //?} else {
-    public void renderLabelIfPresent(PlayerEntityRenderState player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
+    //public void renderLabelIfPresent(AbstractClientPlayerEntity player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
     //?}
         if (EventUtils.MOD.isHidePlayersRevealed()) return;
         final ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
         if (clientPlayer == null) return;
 
         // Get player name
-        //? if <1.21.3 {
-        /*final Text nameText = player.getName();
-        *///?} else {
+        //? if >=1.21.4 {
         final Text nameText = player.playerName;
         if (nameText == null) return;
+        //?} else {
+        //final Text nameText = player.getName();
         //?}
         final String name = nameText.getString().toLowerCase();
 
@@ -78,8 +78,8 @@ public class PlayerEntityRendererMixin {
 
         // Get distance to client player
         //? if >=1.21.11 {
-        //final double distance = clientPlayer.getSyncedPos().distanceTo(playerPos);
-        //?} else {
+        /*final double distance = clientPlayer.getSyncedPos().distanceTo(playerPos);
+        *///?} else {
         final double distance = clientPlayer.getPos().distanceTo(playerPos);
         //?}
 

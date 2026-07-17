@@ -12,7 +12,7 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 //? if >=1.21.6
-/*import net.minecraft.client.gl.RenderPipelines;*/
+//import net.minecraft.client.gl.RenderPipelines;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

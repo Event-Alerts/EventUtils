@@ -32,7 +32,7 @@ public class EventConfig extends FileLoader {
     @NotNull public List<EntityType<?>> hiddenEntityTypes;
     @NotNull public List<String> whitelistedPlayers;
     @NotNull public List<PlayerGroup> groups;
-    public boolean useTestingApi;
+    public boolean developerMode;
     @NotNull public final List<EventType> eventTypes;
     @NotNull public final List<EventType> eventServerTypes;
     @NotNull public final Map<EventType, NotificationSound> notificationSounds;
@@ -44,7 +44,7 @@ public class EventConfig extends FileLoader {
         boolean created = false;
         if (!file.exists()) {
             json = new JsonObject();
-            if (EventUtils.getSemantic(BuildProperties.MOD_VERSION, false) != null) json.addProperty("version", BuildProperties.MOD_VERSION);
+            if (EventUtils.getSemantic(BuildProperties.MOD_VERSION) != null) json.addProperty("version", BuildProperties.MOD_VERSION);
             created = true;
         } else {
             load();
@@ -66,7 +66,7 @@ public class EventConfig extends FileLoader {
         hiddenEntityTypes = get("hidden_entity_types", Defaults.hiddenEntityTypes(), new TypeToken<List<EntityType<?>>>(){}.getType());
         whitelistedPlayers = get("whitelisted_players", Defaults.whitelistedPlayers(), new TypeToken<List<String>>(){}.getType());
         groups = get("groups", Defaults.groups(), new TypeToken<List<PlayerGroup>>(){}.getType());
-        useTestingApi = get("use_testing_api", Defaults.USE_TESTING_API);
+        developerMode = get("developer_mode", Defaults.DEVELOPER_MODE);
         eventTypes = get("notifications", Defaults.eventTypes(), new TypeToken<List<EventType>>(){}.getType());
         eventServerTypes = get("event_server_types", Defaults.eventServerTypes(), new TypeToken<List<EventType>>(){}.getType());
         notificationSounds = get("notification_sounds", Defaults.notificationSounds(), new TypeToken<Map<EventType, NotificationSound>>(){}.getType());
@@ -78,7 +78,7 @@ public class EventConfig extends FileLoader {
     private void update() {
         // Get old version
         final String oldVersionString = get("version", "1.4.0");
-        final SemanticVersion oldVersion = EventUtils.getSemantic(oldVersionString, true);
+        final SemanticVersion oldVersion = EventUtils.getSemantic(oldVersionString);
         if (oldVersion == null) return;
 
         // Older than 2.0.0
@@ -113,8 +113,18 @@ public class EventConfig extends FileLoader {
             if (radius != null && radius == 1) set("hide_players_radius", 0);
         }
 
+        // 2.3.0 or older
+        if (oldVersion.compareTo((Version) new SemanticVersionImpl(new int[]{2, 3, 0}, null, null)) <= 0) {
+            update("use_testing_api", "developer_mode", Boolean.class);
+        }
+
+        // --- ADD NEW MIGRATIONS ABOVE THIS LINE ---
+        // Make sure to update the "fallback version" below when adding new migrations!
+        // The fallback version should always be one patch version higher than the latest migration.
+        // We need this fallback version to prevent semantic parsing issues when using "dev" version.
+
         // Update version
-        set("version", BuildProperties.MOD_VERSION);
+        set("version", EventUtils.getSemantic(BuildProperties.MOD_VERSION) != null ? BuildProperties.MOD_VERSION : "2.3.1");
         save();
     }
 
@@ -150,7 +160,7 @@ public class EventConfig extends FileLoader {
         @NotNull private static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = List.of(EntityType.GLOW_ITEM_FRAME);
         @NotNull private static final List<String> HIDDEN_ENTITY_TYPES_STRING = List.of("minecraft:glow_item_frame");
         @NotNull private static final List<String> WHITELISTED_PLAYERS = List.of("skeppy", "badboyhalo");
-        public static final boolean USE_TESTING_API = false;
+        public static final boolean DEVELOPER_MODE = false;
         @NotNull private static final List<EventType> EVENT_TYPES = List.of(EventType.values());
         @NotNull private static final List<EventType> EVENT_SERVER_TYPES = List.of(EventType.values());
         @NotNull private static final Map<EventType, NotificationSound> NOTIFICATION_SOUNDS = Arrays.stream(EventType.values())

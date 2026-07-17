@@ -30,6 +30,8 @@
 
   "key.eventutils.hideplayers": "Hide Players",
   "key.eventutils.eventinfo": "Event Info",
+  "key.eventutils.testevent": "Test Event (Dev Mode)",
+
   "eventutils.hideplayers.enabled": "Enabled hide players!",
   "eventutils.hideplayers.disabled": "Disabled hide players!",
   "eventutils.hideplayers.view_prefix": "View: ",
@@ -88,8 +90,8 @@
   "eventutils.config.npchide.description": "Whether the mod will hide NPCs",
   "eventutils.config.radius.title": "Hide Players in Radius",
   "eventutils.config.radius.description": "Hides all the players in the specified radius, set to 0 to ignore distance",
-  "eventutils.config.use_testing_api.title": "Use Testing API",
-  "eventutils.config.use_testing_api.description": "(ADVANCED) Whether to use the testing API for the mod",
+  "eventutils.config.developer_mode.title": "Developer Mode",
+  "eventutils.config.developer_mode.description": "(ADVANCED) Whether to enable special developer features (testing API, simulate events, etc.)",
   "eventutils.config.groups.category": "Groups",
   "eventutils.config.groups.manage_title": "Manage Groups",
   "eventutils.config.groups.manage_description": "Create and edit groups for player visibility and group chat. Use the Hide Players key to cycle: Group 1 → Group 2 → ... → Players Revealed.",

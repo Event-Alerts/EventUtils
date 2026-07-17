@@ -9,7 +9,7 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 //? if >=1.21.11
-/*import net.minecraft.util.Identifier;*/
+//import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -22,7 +22,11 @@ import static net.minecraft.text.Text.translatable;
 
 
 public class KeybindManager {
+    //? if >=1.21.11 {
+    /*@NotNull private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of(BuildProperties.MOD_ID, BuildProperties.MOD_ID));
+    *///? } else {
     @NotNull private static final String CATEGORY = "key.category.eventutils";
+    //?}
 
     @Nullable private Long windowHandle;
     @NotNull public KeyBinding eventInfoKey;
@@ -30,19 +34,6 @@ public class KeybindManager {
 
     public KeybindManager(@NotNull EventUtils mod) {
         // Keybindings
-        //? if >=1.21.11 {
-        /*final KeyBinding.Category category = KeyBinding.Category.create(Identifier.of(BuildProperties.MOD_ID, BuildProperties.MOD_ID));
-        eventInfoKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.eventutils.eventinfo",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_F9,
-                category));
-        final KeyBinding hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.eventutils.hideplayers",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_F10,
-                category));
-        *///?} else {
         eventInfoKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.eventutils.eventinfo",
                 InputUtil.Type.KEYSYM,
@@ -53,13 +44,11 @@ public class KeybindManager {
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_F10,
                 CATEGORY));
-        //?}
-        // DEV: Uncomment to force test event
-//        final KeyBindingMixin testEventKey = (KeyBindingMixin) KeyBindingHelper.registerKeyBinding(new KeyBinding(
-//                "key.eventutils.testevent",
-//                InputUtil.Type.KEYSYM,
-//                GLFW.GLFW_KEY_SEMICOLON,
-//                CATEGORY));
+        final KeyBinding testEventKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.eventutils.testevent",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_SEMICOLON,
+                CATEGORY));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (windowHandle == null) windowHandle = client.getWindow().getHandle();
@@ -77,17 +66,19 @@ public class KeybindManager {
                 }
             }
 
-            // DEV: Uncomment to force test event
-//            if (GLFW.glfwGetKey(WINDOW_HANDLE, testEventKey.getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
-//                if (canNotPress((KeyBinding) testEventKey)) return;
-//                EventUtils.LOGGER.info("Test event key pressed");
-//                mod.simulateTestEvent();
-//                if (client.player == null) {
-//                    EventUtils.LOGGER.info("Test event simulated from main menu");
-//                    return;
-//                }
-//                client.player.sendMessage(Text.literal("Test event simulated! Check your server list and you should see a toast notification.").formatted(Formatting.GREEN), true);
-//            }
+            // Developer Mode: simulate test event
+            if (!testEventKey.isUnbound() && mod.config.developerMode) {
+                if (GLFW.glfwGetKey(windowHandle, ((KeyBindingMixin) testEventKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
+                    if (canNotPress(testEventKey)) return;
+                    EventUtils.LOGGER.info("Test event key pressed");
+                    mod.simulateTestEvent();
+                    if (client.player == null) {
+                        EventUtils.LOGGER.info("Test event simulated from main menu");
+                        return;
+                    }
+                    client.player.sendMessage(Text.literal("Test event simulated! Check your server list and you should see a toast notification.").formatted(Formatting.GREEN), true);
+                }
+            }
 
             // In-game keybinds
             if (client.player == null) return;

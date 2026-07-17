@@ -46,11 +46,14 @@ public abstract class EntityMixin {
             return;
         }
 
-        // Specific radius
+        // Get distance to entity
         //? if >=1.21.11 {
-        /*if (mainPlayer.getSyncedPos().distanceTo(getSyncedPos()) <= EventUtils.MOD.config.hidePlayersRadius) ci.cancel();
+        /*final double distance = mainPlayer.getSyncedPos().distanceTo(getSyncedPos());
         *///?} else {
-        if (mainPlayer.getPos().distanceTo(getPos()) <= EventUtils.MOD.config.hidePlayersRadius) ci.cancel();
+        final double distance = mainPlayer.getPos().distanceTo(getPos());
         //?}
+
+        // Specific radius
+        if (distance <= EventUtils.MOD.config.hidePlayersRadius) ci.cancel();
     }
 }

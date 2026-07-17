@@ -54,7 +54,7 @@ public class ConfigScreen {
                             .binding(EventConfig.Defaults.UPDATE_CHECKER, () -> config.updateChecker, newValue -> {
                                 config.updateChecker = newValue;
                                 config.setSave("update_checker", config.updateChecker);
-                                if (newValue) EventUtils.MOD.updateChecker.checkUpdate();
+                                EventUtils.MOD.updateChecker.notifyUpdate();
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
                     .option(Option.<Boolean>createBuilder()
@@ -123,12 +123,12 @@ public class ConfigScreen {
                             .controller(StringControllerBuilder::create)
                             .initial("skeppy").build())
                     .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.use_testing_api.title"))
-                            .description(OptionDescription.of(translatable("eventutils.config.use_testing_api.description")))
-                            .binding(EventConfig.Defaults.USE_TESTING_API, () -> config.useTestingApi, newValue -> {
-                                config.useTestingApi = newValue;
-                                EventUtils.MOD.setupSdk("Testing API enabled/disabled");
-                                config.setSave("use_testing_api", config.useTestingApi);
+                            .name(translatable("eventutils.config.developer_mode.title"))
+                            .description(OptionDescription.of(translatable("eventutils.config.developer_mode.description")))
+                            .binding(EventConfig.Defaults.DEVELOPER_MODE, () -> config.developerMode, newValue -> {
+                                config.developerMode = newValue;
+                                EventUtils.MOD.setupSdk("Developer Mode enabled/disabled");
+                                config.setSave("developer_mode", config.developerMode);
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
                     .build());

@@ -88,8 +88,7 @@ addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "deps_loader" to loaderVersion,
     "deps_fabric_api" to fabricApiVersion,
     "deps_yacl" to yaclVersion,
-    "deps_modmenu" to modMenuVersion,
-    "mixin_config" to property("mod.mixin_config").toString()))
+    "deps_modmenu" to modMenuVersion))
 
 // In-code "replacements" (Blossom)
 sourceSets { main { blossom { javaSources {

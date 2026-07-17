@@ -7,6 +7,7 @@ import cc.aabss.eventutils.plustag.EventAlertsApi;
 import cc.aabss.eventutils.websocket.listener.EventCancelledListener;
 import cc.aabss.eventutils.websocket.listener.EventPostedListener;
 import cc.aabss.eventutils.websocket.listener.FamousEventPostedListener;
+import com.mojang.authlib.GameProfile;
 import gg.eventalerts.sdk.http.EAHTTP;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAFamousEvent;
@@ -21,6 +22,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.VersionParsingException;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -41,6 +44,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.regex.Matcher;
 
 
 public class EventUtils implements ClientModInitializer {
@@ -77,7 +81,7 @@ public class EventUtils implements ClientModInitializer {
     /**
      * {@link EAEvent} or {@link EAFamousEvent}
      */
-    @Nullable public Object lastEvent;
+    @Nullable public Object lastEvent; //TODO turn into custom type with universal getters
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
     @NotNull public HidePlayersMode hidePlayersMode = HidePlayersMode.REVEALED;
     public int selectedGroup = 0;
@@ -87,12 +91,10 @@ public class EventUtils implements ClientModInitializer {
     }
 
     @Nullable
-    public static SemanticVersion getSemantic(@Nullable String string, boolean logError) {
+    public static SemanticVersion getSemantic(@Nullable String string) {
         if (string != null) try {
             return SemanticVersion.parse(string);
-        } catch (final VersionParsingException e) {
-            if (logError) LOGGER.error("Failed to parse version: {}", string, e);
-        }
+        } catch (final VersionParsingException ignored) {}
         return null;
     }
 
@@ -111,7 +113,7 @@ public class EventUtils implements ClientModInitializer {
         });
 
         // Update checker
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> updateChecker.checkUpdate());
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> updateChecker.notifyUpdate());
 
         // Fetch Event Alerts plus tags for local player
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
@@ -137,20 +139,17 @@ public class EventUtils implements ClientModInitializer {
             if (config.simpleQueueMessage && text.getString().contains(QUEUE_TEXT)) {
                 final String original = text.getString();
                 final MutableText resultText = Text.literal("");
-                for (final String line : original.replace(QUEUE_TEXT, "").replaceFirst("\n", "").split("\n")) {
-                    final String[] parts = line.split(": ");
-                    if (parts.length <= 1) {
-                        resultText.append(Text.literal(line).formatted(Formatting.GOLD));
-                        continue;
-                    }
+                final Matcher matcher = java.util.regex.Pattern
+                        .compile("([\\w -]+?Queue Position)\\s*:\\s*(\\d+)/(\\d+)")
+                        .matcher(original);
+                while (matcher.find()) {
                     if (!resultText.getSiblings().isEmpty()) resultText.append("\n");
-                    final String[] valueParts = parts[1].split("/");
-                    resultText.append(Text.literal(parts[0]).formatted(Formatting.GOLD).append(": ")
-                            .append(Text.literal(valueParts[0]).formatted(Formatting.YELLOW))
+                    resultText.append(Text.literal(matcher.group(1)).formatted(Formatting.GOLD).append(": ")
+                            .append(Text.literal(matcher.group(2)).formatted(Formatting.YELLOW))
                             .append(Text.literal("/").formatted(Formatting.GOLD))
-                            .append(Text.literal(valueParts[1]).formatted(Formatting.YELLOW)));
+                            .append(Text.literal(matcher.group(3)).formatted(Formatting.YELLOW)));
                 }
-                return resultText;
+                if (!resultText.getSiblings().isEmpty()) return resultText;
             }
             // May need to manipulate later
             return text;
@@ -160,7 +159,7 @@ public class EventUtils implements ClientModInitializer {
     public void setupSdk(@Nullable String reason) {
         // HTTP
         http = new EAHTTP.Builder(USER_AGENT)
-                .url(config.useTestingApi ? "http://localhost:8080/api/v1/" : "https://eventalerts.gg/api/v1/")
+                .url(config.developerMode ? "http://localhost:8080/api/v1/" : "https://eventalerts.gg/api/v1/")
                 .build();
 
         // Disconnect old socket
@@ -168,7 +167,7 @@ public class EventUtils implements ClientModInitializer {
 
         // Connect new socket
         webSocket = new EAWebSocket.Builder(USER_AGENT)
-                .url((config.useTestingApi ? "ws://localhost:9090" : "wss://eventalerts.gg") + "/api/v1/socket")
+                .url((config.developerMode ? "ws://localhost:9090" : "wss://eventalerts.gg") + "/api/v1/socket")
                 .handler(
                         new EventCancelledListener(this),
                         new EventPostedListener(this),
@@ -176,8 +175,40 @@ public class EventUtils implements ClientModInitializer {
                 .buildThenConnect();
     }
 
+    public static boolean isNPC(@NotNull GameProfile profile) {
+        //? if >=1.21.11 {
+        /*final UUID uuid = profile.id();
+        final String name = profile.name();
+        *///?} else {
+        final UUID uuid = profile.getId();
+        final String name = profile.getName();
+        //?}
+
+        if (name.length() > 16 || name.length() < 3) return true;
+        if (!name.matches("^[a-zA-Z0-9_]{3,16}$")) return true;
+
+        final ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
+        if (networkHandler == null) return false;
+        return networkHandler.getPlayerListEntry(uuid) == null;
+    }
+
     public static boolean isNPC(@NotNull String name, boolean bypass) {
-        return (MOD.config.hideNPCs || bypass) && looksLikeNPC(name);
+        if (name.isEmpty()) return !MOD.config.hideNPCs || bypass;
+        if (!name.matches("^[a-zA-Z0-9_]{3,16}$")) return !MOD.config.hideNPCs || bypass;
+        final ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
+        if (networkHandler != null) {
+            final boolean inTabList = networkHandler.getPlayerList().stream()
+                    .anyMatch(entry -> {
+                        //? if >=1.21.11 {
+                        /*final String entryName = entry.getProfile().name();
+                        *///?} else {
+                        final String entryName = entry.getProfile().getName();
+                        //?}
+                        return entryName.equalsIgnoreCase(name);
+                    });
+            if (!inTabList) return !MOD.config.hideNPCs || bypass;
+        }
+        return false;
     }
 
     public static boolean isNPC(@NotNull String name) {
@@ -246,7 +277,7 @@ public class EventUtils implements ClientModInitializer {
         testEvent.id = new ObjectId();
         testEvent.title = "Test Event";
         testEvent.description = "This is a simulated test event for testing the server list feature. Server: mc.hypixel.net";
-        testEvent.time = new Date(System.currentTimeMillis() + (30 * 1000));
+        testEvent.time = new Date(System.currentTimeMillis() + (30 * 1000)); // +30 seconds
         testEvent.ip = "invadedlands.net";
         testEvent.prize = "$1000";
         testEvent.rolesNamed = Set.of(EAEvent.PingRole.MONEY);

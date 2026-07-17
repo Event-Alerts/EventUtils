@@ -61,6 +61,7 @@ public class EventAlertsApi {
             // Add to cache
             EventUtils.LOGGER.debug("[API] fetched unlocked tags={} for uuid={}", unlocked, minecraftUuid);
             cache.put(minecraftUuid, unlocked);
+            fetchScheduled.remove(minecraftUuid);
         } catch (final Exception e) {
             EventUtils.LOGGER.warn("[API] Fetch failed uuid={} error={}", minecraftUuid, e.getMessage(), e);
         }
@@ -80,7 +81,7 @@ public class EventAlertsApi {
      * Schedule a fetch for this UUID if not cached and not already scheduled. Call from main thread
      */
     public void scheduleFetchIfNeeded(@NotNull UUID minecraftUuid) {
-        if (cache.containsKey(minecraftUuid)) return;
+        if (cache.containsKey(minecraftUuid)) return; // already cached
         if (!fetchScheduled.add(minecraftUuid)) return; // already scheduled
         EventUtils.LOGGER.debug("[API] Scheduling fetch for uuid={}", minecraftUuid);
         EventUtils.MOD.scheduler.execute(() -> populateCachedUnlockedTags(minecraftUuid));
