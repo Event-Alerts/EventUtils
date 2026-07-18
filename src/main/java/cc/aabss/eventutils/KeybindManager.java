@@ -1,11 +1,13 @@
 package cc.aabss.eventutils;
 
-import cc.aabss.eventutils.config.PlayerGroup;
+import cc.aabss.eventutils.config.Group;
 import cc.aabss.eventutils.mixin.KeyBindingMixin;
+import cc.aabss.eventutils.screen.EventInfoScreen;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 //? if >=1.21.11
@@ -22,6 +24,7 @@ import static net.minecraft.text.Text.translatable;
 
 
 public class KeybindManager {
+    private static final long DEFAULT_COOLDOWN_TIME_MS = 500;
     //? if >=1.21.11 {
     /*@NotNull private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of(BuildProperties.MOD_ID, BuildProperties.MOD_ID));
     *///? } else {
@@ -56,7 +59,7 @@ public class KeybindManager {
             // Event info key TODO: prevent activating when in chat box or similar
             if (!eventInfoKey.isUnbound()) {
                 if (GLFW.glfwGetKey(windowHandle, ((KeyBindingMixin) eventInfoKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
-                    if (canNotPress(eventInfoKey)) return;
+                    if (canNotPress(eventInfoKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.debug("Event info key pressed");
                     if (mod.lastEvent != null) {
                         client.setScreen(new EventInfoScreen(mod.lastEvent));
@@ -69,7 +72,7 @@ public class KeybindManager {
             // Developer Mode: simulate test event
             if (!testEventKey.isUnbound() && mod.config.developerMode) {
                 if (GLFW.glfwGetKey(windowHandle, ((KeyBindingMixin) testEventKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
-                    if (canNotPress(testEventKey)) return;
+                    if (canNotPress(testEventKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.info("Test event key pressed");
                     mod.simulateTestEvent();
                     if (client.player == null) {
@@ -83,41 +86,28 @@ public class KeybindManager {
             // In-game keybinds
             if (client.player == null) return;
 
-            // Hide players key: cycle Group 1 -> Group 2 -> ... -> Players Revealed -> repeat
+            // Hide players key
             if (hidePlayersKey.wasPressed()) {
-                final int groupsSize = mod.config.groups.size();
-                if (mod.hidePlayersMode == HidePlayersMode.REVEALED) {
-                    if (groupsSize == 0) {
-                        // No groups, hide all players
-                        mod.hidePlayersMode = HidePlayersMode.HIDE_ALL;
-                    } else {
-                        // Cycle to first group
-                        mod.hidePlayersMode = HidePlayersMode.GROUP;
-                        mod.selectedGroup = 0;
-                    }
-                } else if (mod.hidePlayersMode == HidePlayersMode.HIDE_ALL) {
-                    mod.hidePlayersMode = HidePlayersMode.REVEALED;
-                } else {
-                    // Cycle to next group
-                    mod.selectedGroup++;
-                    // Reached end of groups, cycle back to players revealed
-                    if (mod.selectedGroup >= groupsSize) mod.hidePlayersMode = HidePlayersMode.REVEALED;
-                }
+                if (canNotPress(hidePlayersKey, 100)) return;
+                EventUtils.LOGGER.debug("Hide players key pressed");
+
+                // Cycle groups
+                mod.groupManager.cycle();
 
                 // Send action bar
-                final Text message;
-                if (EventUtils.MOD.isHidePlayersRevealed()) {
-                    message = translatable("eventutils.hideplayers.view_revealed").formatted(Formatting.GREEN);
+                final MutableText message;
+                final Group group = mod.groupManager.getSelectedGroup();
+                if (group != null) {
+                    message = literal(group.getName());
                 } else {
-                    final PlayerGroup group = EventUtils.MOD.getCurrentViewGroup();
-                    message = (group != null ? literal(group.getName()) : translatable("eventutils.hideplayers.view_whitelist_only")).formatted(Formatting.GREEN);
+                    message = translatable("eventutils.hideplayers.view_revealed");
                 }
-                client.player.sendMessage(translatable("eventutils.hideplayers.view_prefix").append(message), true);
+                client.player.sendMessage(translatable("eventutils.hideplayers.view_prefix").append(message.formatted(Formatting.GREEN)), true);
             }
         });
     }
 
-    private boolean canNotPress(@NotNull KeyBinding keyBinding) {
+    private boolean canNotPress(@NotNull KeyBinding keyBinding, long cooldownTimeMs) {
         //? if >=1.21.11 {
         /*final String translationKey = keyBinding.getId();
         *///?} else {
@@ -125,7 +115,7 @@ public class KeybindManager {
         //?}
         final Long lastPressTime = lastKeyPresses.get(translationKey);
         final long now = System.currentTimeMillis();
-        if (lastPressTime != null && now - lastPressTime < 500) return true;
+        if (lastPressTime != null && now - lastPressTime < cooldownTimeMs) return true;
         lastKeyPresses.put(translationKey, now);
         return false;
     }

@@ -6,6 +6,7 @@ import net.minecraft.client.option.ServerList;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.srnyx.javautilities.MiscUtility;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -82,20 +83,14 @@ public class EventServerManager {
             final long timeUntilRemoval = (timeMillis + graceMs) - currentTime;
 
             if (timeUntilRemoval > 0) {
-                final ScheduledFuture<?> removalTask = mod.scheduler.schedule(
-                    () -> removeEventServer(finalId),
-                    timeUntilRemoval,
-                    TimeUnit.MILLISECONDS);
+                final ScheduledFuture<?> removalTask = MiscUtility.IO_SCHEDULER.schedule(() -> removeEventServer(finalId), timeUntilRemoval, TimeUnit.MILLISECONDS);
                 removalTasks.put(finalId, removalTask);
                 EventUtils.LOGGER.info("Scheduled removal of event server '{}' in {} ms ({}m after start)", finalTitle, timeUntilRemoval, displayMinutes);
             } else {
                 // If within grace period after event start, keep it briefly; else do not add
                 if (currentTime - timeMillis <= graceMs) {
                     final long remaining = graceMs - (currentTime - timeMillis);
-                    final ScheduledFuture<?> removalTask = mod.scheduler.schedule(
-                            () -> removeEventServer(finalId),
-                            remaining,
-                            TimeUnit.MILLISECONDS);
+                    final ScheduledFuture<?> removalTask = MiscUtility.IO_SCHEDULER.schedule(() -> removeEventServer(finalId), remaining, TimeUnit.MILLISECONDS);
                     removalTasks.put(finalId, removalTask);
                     EventUtils.LOGGER.info("Event '{}' already started; keeping for {} ms ({}m grace)", finalTitle, remaining, displayMinutes);
                 } else {
@@ -133,8 +128,7 @@ public class EventServerManager {
             int removedCount = 0;
             for (int i = serverList.size() - 1; i >= 0; i--) {
                 final ServerInfo candidate = serverList.get(i);
-                if (candidate.name.equals(eventServerInfo.serverInfo.name)
-                        && candidate.address.equalsIgnoreCase(eventServerInfo.serverInfo.address)) {
+                if (candidate.name.equals(eventServerInfo.serverInfo.name) && candidate.address.equalsIgnoreCase(eventServerInfo.serverInfo.address)) {
                     serverList.remove(candidate);
                     removedCount++;
                 }
@@ -169,10 +163,6 @@ public class EventServerManager {
         for (final ObjectId eventId : new HashMap<>(activeEventServers).keySet()) {
             removeEventServer(eventId);
         }
-    }
-
-    public int getActiveEventCount() {
-        return activeEventServers.size();
     }
 
     private boolean ensureServerListLoaded() {

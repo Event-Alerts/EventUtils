@@ -1,6 +1,6 @@
 package cc.aabss.eventutils;
 
-import cc.aabss.eventutils.config.ConfigScreen;
+import cc.aabss.eventutils.screen.ConfigScreen;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import org.jetbrains.annotations.NotNull;

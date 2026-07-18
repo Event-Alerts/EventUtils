@@ -2,12 +2,11 @@ package cc.aabss.eventutils;
 
 import cc.aabss.eventutils.commands.CommandRegister;
 import cc.aabss.eventutils.config.EventConfig;
-import cc.aabss.eventutils.config.PlayerGroup;
 import cc.aabss.eventutils.plustag.EventAlertsApi;
+import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import cc.aabss.eventutils.websocket.listener.EventCancelledListener;
 import cc.aabss.eventutils.websocket.listener.EventPostedListener;
 import cc.aabss.eventutils.websocket.listener.FamousEventPostedListener;
-import com.mojang.authlib.GameProfile;
 import gg.eventalerts.sdk.http.EAHTTP;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAFamousEvent;
@@ -30,20 +29,18 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Language;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Date;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.*;
 import java.util.regex.Matcher;
 
 
@@ -70,21 +67,19 @@ public class EventUtils implements ClientModInitializer {
             .append(Text.literal("§r§4 »")
                     .fillStyle(Style.EMPTY.withBold(false)));
 
-    @NotNull public final EventConfig config = new EventConfig();
-    @NotNull public final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
+    @NotNull public final EventConfig config = new EventConfig(this);
     public EAHTTP http;
     public EAWebSocket webSocket;
     @NotNull public final EventAlertsApi api = new EventAlertsApi(this);
     @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
     public KeybindManager keybindManager;
     @NotNull public final EventServerManager eventServerManager = new EventServerManager(this);
+    @NotNull public final GroupManager groupManager = new GroupManager(this);
     /**
      * {@link EAEvent} or {@link EAFamousEvent}
      */
     @Nullable public Object lastEvent; //TODO turn into custom type with universal getters
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
-    @NotNull public HidePlayersMode hidePlayersMode = HidePlayersMode.REVEALED;
-    public int selectedGroup = 0;
 
     public EventUtils() {
         MOD = this;
@@ -115,16 +110,7 @@ public class EventUtils implements ClientModInitializer {
         // Update checker
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> updateChecker.notifyUpdate());
 
-        // Fetch Event Alerts plus tags for local player
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            if (client.player != null) {
-                final UUID uuid = client.player.getUuid();
-                LOGGER.info("[EventUtils] JOIN: scheduling Event Alerts fetch for local player uuid={}", uuid);
-                api.scheduleFetchIfNeeded(uuid);
-            } else {
-                LOGGER.info("[EventUtils] JOIN: client.player is null, skipping fetch (will retry when tab list is opened)");
-            }
-        });
+        // Clear API cache on disconnect
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             LOGGER.info("[EventUtils] DISCONNECT: clearing Event Alerts cache");
             api.clearCache();
@@ -156,6 +142,23 @@ public class EventUtils implements ClientModInitializer {
         }));
     }
 
+    public void setLogLevel(@NotNull Level level) {
+        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        final Configuration config = context.getConfiguration();
+        final String name = LOGGER.getName();
+
+        // Create LoggerConfig if doesn't exist
+        LoggerConfig loggerConfig = config.getLoggerConfig(name);
+        if (!loggerConfig.getName().equals(name)) {
+            loggerConfig = new LoggerConfig(name, level, true);
+            config.addLogger(name, loggerConfig);
+        } else {
+            loggerConfig.setLevel(level);
+        }
+
+        context.updateLoggers();
+    }
+
     public void setupSdk(@Nullable String reason) {
         // HTTP
         http = new EAHTTP.Builder(USER_AGENT)
@@ -175,85 +178,19 @@ public class EventUtils implements ClientModInitializer {
                 .buildThenConnect();
     }
 
-    public static boolean isNPC(@NotNull GameProfile profile) {
-        //? if >=1.21.11 {
-        /*final UUID uuid = profile.id();
-        final String name = profile.name();
-        *///?} else {
-        final UUID uuid = profile.getId();
-        final String name = profile.getName();
-        //?}
-
-        if (name.length() > 16 || name.length() < 3) return true;
-        if (!name.matches("^[a-zA-Z0-9_]{3,16}$")) return true;
-
+    public static boolean isNpc(@NotNull UUID uuid) {
         final ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
-        if (networkHandler == null) return false;
-        return networkHandler.getPlayerListEntry(uuid) == null;
+        return networkHandler != null && networkHandler.getPlayerListEntry(uuid) == null;
     }
 
-    public static boolean isNPC(@NotNull String name, boolean bypass) {
-        if (name.isEmpty()) return !MOD.config.hideNPCs || bypass;
-        if (!name.matches("^[a-zA-Z0-9_]{3,16}$")) return !MOD.config.hideNPCs || bypass;
+    public static boolean isNpc(@NotNull String name) {
+        // Invalid name = NPC
+        if (name.isEmpty() || !name.matches("^[a-zA-Z0-9_]{3,16}$")) return true;
+
+        // Check if name in player-list
         final ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
-        if (networkHandler != null) {
-            final boolean inTabList = networkHandler.getPlayerList().stream()
-                    .anyMatch(entry -> {
-                        //? if >=1.21.11 {
-                        /*final String entryName = entry.getProfile().name();
-                        *///?} else {
-                        final String entryName = entry.getProfile().getName();
-                        //?}
-                        return entryName.equalsIgnoreCase(name);
-                    });
-            if (!inTabList) return !MOD.config.hideNPCs || bypass;
-        }
-        return false;
-    }
-
-    public static boolean isNPC(@NotNull String name) {
-        return isNPC(name, false);
-    }
-
-    public static boolean looksLikeNPC(@NotNull String name) {
-        return name.contains("[") || name.contains("]") || name.contains(" ") || name.contains("-") || name.equals("§z");
-    }
-
-    public boolean isHidePlayersRevealed() {
-        return hidePlayersMode == HidePlayersMode.REVEALED;
-    }
-
-    @Nullable
-    public PlayerGroup getCurrentViewGroup() {
-        return hidePlayersMode == HidePlayersMode.GROUP ? config.groups.get(selectedGroup) : null;
-    }
-
-    /**
-     * True if the player (by lowercased name) should be visible with current view mode.
-     * Caller must exclude main player.
-     */
-    public boolean isPlayerVisible(@NotNull String nameLower) {
-        if (isHidePlayersRevealed() || config.whitelistedPlayers.contains(nameLower)) return true;
-        final PlayerGroup group = getCurrentViewGroup();
-
-        // NPC behavior: if the global hide toggle is OFF, NPCs should always stay visible.
-        if (looksLikeNPC(nameLower)) {
-            if (!config.hideNPCs) return true;
-            if (group == null) return false;
-            return group.isHideListedNpcs() != group.containsPlayer(nameLower);
-        }
-
-        if (group == null) return false; // no groups, hide mode: only whitelisted players are visible
-        return group.isHideListedPlayers() != group.containsPlayer(nameLower);
-    }
-
-    /** True if the nametag for this visible player should be drawn (per-group setting when in group view). */
-    public boolean shouldShowNametagFor(@NotNull String nameLower) {
-        if (isHidePlayersRevealed()) return true;
-        final PlayerGroup group = getCurrentViewGroup();
-        if (group == null) return true; // hide-all with no groups: use default
-        if (!group.containsPlayer(nameLower)) return true; // whitelist/NPC visibility: show nametag
-        return group.isShowNametags();
+        return networkHandler != null && networkHandler.getPlayerList().stream()
+                .noneMatch(entry -> new VersionedGameProfile(entry.getProfile()).getName().equalsIgnoreCase(name));
     }
 
     @Contract(pure = true)

@@ -1,5 +1,6 @@
-package cc.aabss.eventutils;
+package cc.aabss.eventutils.screen;
 
+import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.sdk.EventUtility;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAFamousEvent;

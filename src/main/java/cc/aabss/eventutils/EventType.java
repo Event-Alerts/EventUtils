@@ -1,6 +1,6 @@
 package cc.aabss.eventutils;
 
-import cc.aabss.eventutils.config.ConfigScreen;
+import cc.aabss.eventutils.screen.ConfigScreen;
 import cc.aabss.eventutils.config.EventConfig;
 import cc.aabss.eventutils.config.NotificationSound;
 import dev.isxander.yacl3.api.Option;

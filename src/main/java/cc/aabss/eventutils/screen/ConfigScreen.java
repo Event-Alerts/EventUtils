@@ -1,31 +1,25 @@
-package cc.aabss.eventutils.config;
+package cc.aabss.eventutils.screen;
 
 import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.config.EventConfig;
+import cc.aabss.eventutils.screen.group.GroupManagerScreen;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
-import dev.isxander.yacl3.api.controller.DropdownStringControllerBuilder;
+import dev.isxander.yacl3.api.controller.EnumControllerBuilder;
 import dev.isxander.yacl3.api.controller.IntegerFieldControllerBuilder;
 import dev.isxander.yacl3.api.controller.StringControllerBuilder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.Registries;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.spi.StandardLevel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static net.minecraft.text.Text.translatable;
 
 
 public class ConfigScreen {
-    @NotNull private static final List<String> ENTITY_TYPES = Registries.ENTITY_TYPE.stream()
-            .map(entityType -> EntityType.getId(entityType).toString())
-            .toList();
-
     @NotNull
     public static Screen getConfigScreen(@Nullable Screen parent) {
         final EventConfig config = EventUtils.MOD.config;
@@ -82,47 +76,6 @@ public class ConfigScreen {
                             })
                             .controller(StringControllerBuilder::create).build())
                     .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.npchide.title"))
-                            .description(OptionDescription.of(translatable("eventutils.config.npchide.description")))
-                            .binding(EventConfig.Defaults.HIDE_NPCS, () -> config.hideNPCs, newValue -> {
-                                config.hideNPCs = newValue;
-                                config.setSave("hide_npcs", config.hideNPCs);
-                            })
-                            .controller(ConfigScreen::getBooleanBuilder).build())
-                    .option(Option.<Integer>createBuilder()
-                            .name(translatable("eventutils.config.radius.title"))
-                            .description(OptionDescription.of(translatable("eventutils.config.radius.description")))
-                            .binding(EventConfig.Defaults.HIDE_PLAYERS_RADIUS, () -> config.hidePlayersRadius, newValue -> {
-                                config.hidePlayersRadius = newValue;
-                                config.setSave("hide_players_radius", config.hidePlayersRadius);
-                            })
-                            .controller(option -> IntegerFieldControllerBuilder.create(option).min(0)).build())
-                    .group(ListOption.<String>createBuilder()
-                            .name(translatable("eventutils.config.entity.title"))
-                            .description(OptionDescription.of(translatable("eventutils.config.entity.description")))
-                            .binding(EventConfig.Defaults.hiddenEntityTypesString(), () -> config.hiddenEntityTypes.stream()
-                                            .map(entityType -> EntityType.getId(entityType).toString())
-                                            .toList(),
-                                    newValue -> {
-                                        config.hiddenEntityTypes = newValue.stream()
-                                                .map(id -> EntityType.get(id).orElse(null))
-                                                .collect(Collectors.toList());
-                                        config.setSave("hidden_entity_types", config.hiddenEntityTypes);
-                                    })
-                            .controller(option -> DropdownStringControllerBuilder.create(option).values(ENTITY_TYPES))
-                            .initial(EntityType.getId(EntityType.ALLAY).toString()).build())
-                    .group(ListOption.<String>createBuilder()
-                            .name(translatable("eventutils.config.players.title"))
-                            .description(OptionDescription.of(translatable("eventutils.config.players.description")))
-                            .binding(EventConfig.Defaults.whitelistedPlayers(), () -> new ArrayList<>(config.whitelistedPlayers), newValue -> {
-                                config.whitelistedPlayers = newValue.stream()
-                                        .map(String::toLowerCase)
-                                        .toList();
-                                config.setSave("whitelisted_players", config.whitelistedPlayers);
-                            })
-                            .controller(StringControllerBuilder::create)
-                            .initial("skeppy").build())
-                    .option(Option.<Boolean>createBuilder()
                             .name(translatable("eventutils.config.developer_mode.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.developer_mode.description")))
                             .binding(EventConfig.Defaults.DEVELOPER_MODE, () -> config.developerMode, newValue -> {
@@ -131,6 +84,15 @@ public class ConfigScreen {
                                 config.setSave("developer_mode", config.developerMode);
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
+                    .option(Option.<StandardLevel>createBuilder()
+                            .name(translatable("eventutils.config.log_level.title"))
+                            .description(OptionDescription.of(translatable("eventutils.config.log_level.description")))
+                            .binding(EventConfig.Defaults.LOG_LEVEL.getStandardLevel(), () -> config.logLevel.getStandardLevel(), newValue -> {
+                                config.logLevel = Level.getLevel(newValue.name());
+                                EventUtils.MOD.setLogLevel(config.logLevel);
+                                config.setSave("log_level", config.logLevel);
+                            })
+                            .controller(opt -> EnumControllerBuilder.create(opt).enumClass(StandardLevel.class)).build())
                     .build());
 
         // Groups
@@ -138,7 +100,7 @@ public class ConfigScreen {
                 .option(ButtonOption.createBuilder()
                         .name(translatable("eventutils.config.groups.manage_title"))
                         .description(OptionDescription.of(translatable("eventutils.config.groups.manage_description")))
-                        .action((yaclScreen, option) -> MinecraftClient.getInstance().setScreen(new GroupManagerScreen(yaclScreen)))
+                        .action((yaclScreen, option) -> MinecraftClient.getInstance().setScreen(new GroupManagerScreen(yaclScreen, EventUtils.MOD)))
                         .build())
                 .build());
 

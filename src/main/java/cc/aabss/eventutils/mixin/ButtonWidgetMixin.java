@@ -19,15 +19,15 @@ import static net.minecraft.text.Text.translatable;
 
 @Mixin(ButtonWidget.class)
 public abstract class ButtonWidgetMixin extends PressableWidget {
+    public ButtonWidgetMixin(int i, int j, int k, int l, Text text) {
+        super(i, j, k, l, text);
+    }
+
     //? if >=1.21.11 {
     /*@Shadow public abstract void onPress(AbstractInput abstractInput);
     *///?} else {
     @Shadow public abstract void onPress();
     //?}
-
-    public ButtonWidgetMixin(int i, int j, int k, int l, Text text) {
-        super(i, j, k, l, text);
-    }
 
     @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
     //? if >=1.21.11 {

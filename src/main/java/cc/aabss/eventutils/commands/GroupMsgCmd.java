@@ -1,10 +1,11 @@
 package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventUtils;
-import cc.aabss.eventutils.config.PlayerGroup;
+import cc.aabss.eventutils.config.Group;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
@@ -16,7 +17,7 @@ public class GroupMsgCmd {
     public static int groupMsg(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull String payload) {
         final String input = payload.trim();
         if (input.isEmpty()) return 0;
-        final PlayerGroup group = findLongestPrefixGroup(input);
+        final Group group = findLongestPrefixGroup(input);
         if (group == null) {
             context.getSource().sendError(translatable("eventutils.command.groupmsg.no_group", EventUtils.ERROR_MESSAGE_PREFIX, input));
             return 0;
@@ -26,25 +27,9 @@ public class GroupMsgCmd {
         return sendToGroup(context, group, message);
     }
 
-    public static int groupMsg(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull String groupNameArg, @NotNull String message) {
-        final String search = groupNameArg.toLowerCase(Locale.ROOT);
-        PlayerGroup group = null;
-        for (final PlayerGroup g : EventUtils.MOD.config.groups) {
-            if (g.getName().toLowerCase(Locale.ROOT).equals(search)) {
-                group = g;
-                break;
-            }
-        }
-        if (group == null) {
-            context.getSource().sendError(translatable("eventutils.command.groupmsg.no_group", EventUtils.ERROR_MESSAGE_PREFIX, groupNameArg));
-            return 0;
-        }
-        return sendToGroup(context, group, message);
-    }
-
-    private static int sendToGroup(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull PlayerGroup group, @NotNull String message) {
+    private static int sendToGroup(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull Group group, @NotNull String message) {
         final var sender = context.getSource().getPlayer();
-        if (sender == null || sender.networkHandler == null) return 0;
+        if (sender.networkHandler == null) return 0;
 
         final List<String> recipients = group.getPlayers().stream()
                 .filter(name -> !name.isBlank())
@@ -60,11 +45,12 @@ public class GroupMsgCmd {
         return 1;
     }
 
-    private static PlayerGroup findLongestPrefixGroup(@NotNull String input) {
-        PlayerGroup best = null;
+    @Nullable
+    private static Group findLongestPrefixGroup(@NotNull String input) {
+        Group best = null;
         int bestLen = -1;
         final String lowered = input.toLowerCase(Locale.ROOT);
-        for (final PlayerGroup group : EventUtils.MOD.config.groups) {
+        for (final Group group : EventUtils.MOD.config.groups.values()) {
             final String groupName = group.getName().toLowerCase(Locale.ROOT);
             if (groupName.isEmpty()) continue;
             if (!lowered.startsWith(groupName)) continue;

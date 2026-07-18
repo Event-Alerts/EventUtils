@@ -16,7 +16,7 @@ plugins {
     id("me.modmuss50.mod-publish-plugin") version "2.1.1"
     id("com.gradleup.shadow") version "9.6.0"
     id("net.kyori.blossom") version "2.2.0"
-    id("org.jetbrains.gradle.plugin.idea-ext") version "1.4.1" // For Blossom
+//    id("org.jetbrains.gradle.plugin.idea-ext") version "1.4.1" // For Blossom to auto-run generateTemplates
 }
 
 // Properties
@@ -58,7 +58,10 @@ dependencies {
         mappings("net.fabricmc:yarn:${property("deps.yarn_mappings").toString()}:v2")
     }
 
-    // Libraries
+    // Library: Java Utilities
+    val javaUtilitiesVersion = property("deps.java_utilities").toString()
+    shadow("xyz.srnyx:java-utilities:$javaUtilitiesVersion")
+    // Library: Event Alerts SDK
     val sdkVersion = property("deps.sdk").toString()
     shadow("gg.eventalerts.sdk:http:$sdkVersion")
     shadow("gg.eventalerts.sdk:websocket:$sdkVersion")
@@ -106,8 +109,10 @@ tasks {
         configurations.set(project.configurations.named("shadow").map { listOf(it) })
         mergeServiceFiles()
 
-        // Event Alerts SDK
         val libsPackage = "${project.group}.$modId.libs"
+        // Java Utilities
+        relocate("xyz.srnyx.javautilities", "$libsPackage.javautilities")
+        // Event Alerts SDK
         relocate("gg.eventalerts.sdk", "$libsPackage.sdk")
         relocate("com.google.errorprone", "$libsPackage.errorprone")
         relocate("com.google.gson", "$libsPackage.gson")

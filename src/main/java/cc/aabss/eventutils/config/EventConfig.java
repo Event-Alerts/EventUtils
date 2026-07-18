@@ -9,7 +9,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.impl.util.version.SemanticVersionImpl;
-import net.minecraft.entity.EntityType;
+import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -24,20 +24,17 @@ public class EventConfig extends FileLoader {
     public boolean updateChecker;
     public boolean confirmWindowClose;
     public boolean confirmDisconnect;
-    public boolean hideNPCs;
-    public int hidePlayersRadius;
     public boolean eventServersEnabled;
     public int eventServerDisplayMinutes;
     @NotNull public String defaultFamousIp;
-    @NotNull public List<EntityType<?>> hiddenEntityTypes;
-    @NotNull public List<String> whitelistedPlayers;
-    @NotNull public List<PlayerGroup> groups;
+    @NotNull public Map<UUID, Group> groups;
     public boolean developerMode;
+    @NotNull public Level logLevel;
     @NotNull public final List<EventType> eventTypes;
     @NotNull public final List<EventType> eventServerTypes;
     @NotNull public final Map<EventType, NotificationSound> notificationSounds;
 
-    public EventConfig() {
+    public EventConfig(@NotNull EventUtils mod) {
         super(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
 
         // Create empty file if it doesn't exist
@@ -59,20 +56,20 @@ public class EventConfig extends FileLoader {
         confirmWindowClose = get("confirm_window_close", Defaults.CONFIRM_WINDOW_CLOSE);
         confirmDisconnect = get("confirm_disconnect", Defaults.CONFIRM_DISCONNECT);
         defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
-        hidePlayersRadius = get("hide_players_radius", Defaults.HIDE_PLAYERS_RADIUS);
-        hideNPCs = get("hide_npcs", Defaults.HIDE_NPCS);
         eventServersEnabled = get("event_servers_enabled", Defaults.EVENT_SERVERS_ENABLED);
         eventServerDisplayMinutes = get("event_server_display_minutes", Defaults.EVENT_SERVER_DISPLAY_MINUTES);
-        hiddenEntityTypes = get("hidden_entity_types", Defaults.hiddenEntityTypes(), new TypeToken<List<EntityType<?>>>(){}.getType());
-        whitelistedPlayers = get("whitelisted_players", Defaults.whitelistedPlayers(), new TypeToken<List<String>>(){}.getType());
-        groups = get("groups", Defaults.groups(), new TypeToken<List<PlayerGroup>>(){}.getType());
+        groups = new LinkedHashMap<>(get("groups", Defaults.groups(), new TypeToken<Map<UUID, Group>>(){}.getType()));
         developerMode = get("developer_mode", Defaults.DEVELOPER_MODE);
+        logLevel = get("log_level", Defaults.LOG_LEVEL);
         eventTypes = get("notifications", Defaults.eventTypes(), new TypeToken<List<EventType>>(){}.getType());
         eventServerTypes = get("event_server_types", Defaults.eventServerTypes(), new TypeToken<List<EventType>>(){}.getType());
         notificationSounds = get("notification_sounds", Defaults.notificationSounds(), new TypeToken<Map<EventType, NotificationSound>>(){}.getType());
 
         // Save if created (default values)
         if (created) save();
+
+        // Log level
+        mod.setLogLevel(logLevel);
     }
 
     private void update() {
@@ -92,7 +89,7 @@ public class EventConfig extends FileLoader {
             update("default-famous-ip", "default_famous_ip", String.class);
 
             // whitelisted_players
-            set("whitelisted_players", get("whitelisted-players", Defaults.WHITELISTED_PLAYERS, new TypeToken<List<String>>(){}.getType()).stream()
+            set("whitelisted_players", get("whitelisted-players", List.<String>of(), new TypeToken<List<String>>(){}.getType()).stream()
                     .map(String::toLowerCase)
                     .toList());
             remove("whitelisted-players");
@@ -115,7 +112,22 @@ public class EventConfig extends FileLoader {
 
         // 2.3.0 or older
         if (oldVersion.compareTo((Version) new SemanticVersionImpl(new int[]{2, 3, 0}, null, null)) <= 0) {
+            // use_testing_api -> developer_mode
             update("use_testing_api", "developer_mode", Boolean.class);
+
+            // Flat hide values -> default group
+            final Group group = new Group()
+                    .setName("Legacy Group")
+                    .setPlayers(get("whitelisted_players", List.of(), new TypeToken<List<String>>(){}.getType()))
+                    .setEntities(get("hidden_entity_types", List.of(), new TypeToken<List<String>>(){}.getType()))
+                    .setPlayerMode(Group.Mode.SHOW)
+                    .setEntityMode(Group.Mode.HIDE)
+                    .setRadius(get("hide_players_radius", Integer.class));
+            set("groups", Map.of(UUID.randomUUID(), group));
+            remove("whitelisted_players");
+            remove("hidden_entity_types");
+            remove("hide_players_radius");
+            remove("hide_npcs");
         }
 
         // --- ADD NEW MIGRATIONS ABOVE THIS LINE ---
@@ -152,35 +164,20 @@ public class EventConfig extends FileLoader {
         public static final boolean UPDATE_CHECKER = true;
         public static final boolean CONFIRM_WINDOW_CLOSE = true;
         public static final boolean CONFIRM_DISCONNECT = true;
-        public static final boolean HIDE_NPCS = true;
-        public static final int HIDE_PLAYERS_RADIUS = 0;
         public static final boolean EVENT_SERVERS_ENABLED = true;
         public static final int EVENT_SERVER_DISPLAY_MINUTES = 5;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
-        @NotNull private static final List<EntityType<?>> HIDDEN_ENTITY_TYPES = List.of(EntityType.GLOW_ITEM_FRAME);
-        @NotNull private static final List<String> HIDDEN_ENTITY_TYPES_STRING = List.of("minecraft:glow_item_frame");
-        @NotNull private static final List<String> WHITELISTED_PLAYERS = List.of("skeppy", "badboyhalo");
+        @NotNull public static final Map<UUID, Group> DEFAULT_GROUPS = Map.of(UUID.randomUUID(), new Group().setName("Hide All Players"));
         public static final boolean DEVELOPER_MODE = false;
+        @NotNull public static final Level LOG_LEVEL = Level.INFO;
         @NotNull private static final List<EventType> EVENT_TYPES = List.of(EventType.values());
         @NotNull private static final List<EventType> EVENT_SERVER_TYPES = List.of(EventType.values());
         @NotNull private static final Map<EventType, NotificationSound> NOTIFICATION_SOUNDS = Arrays.stream(EventType.values())
                 .collect(HashMap::new, (map, type) -> map.put(type, NotificationSound.ALERT), HashMap::putAll);
 
         @NotNull
-        public static List<EntityType<?>> hiddenEntityTypes() {
-            return new ArrayList<>(HIDDEN_ENTITY_TYPES);
-        }
-        @NotNull
-        public static List<String> hiddenEntityTypesString() {
-            return new ArrayList<>(HIDDEN_ENTITY_TYPES_STRING);
-        }
-        @NotNull
-        public static List<String> whitelistedPlayers() {
-            return new ArrayList<>(WHITELISTED_PLAYERS);
-        }
-        @NotNull
-        public static List<PlayerGroup> groups() {
-            return new ArrayList<>();
+        public static Map<UUID, Group> groups() {
+            return new HashMap<>(DEFAULT_GROUPS);
         }
         @NotNull
         public static List<EventType> eventTypes() {

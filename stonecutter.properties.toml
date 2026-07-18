@@ -7,7 +7,8 @@ loomx.loom_version = "1.17-SNAPSHOT"
 loomx.loom_remap_plugin = "fabric-loom"
 
 deps.loader = "0.16.9"
-deps.sdk = "c149ccb"
+deps.java_utilities = "3575647"
+deps.sdk = "317045d"
 
 
 ["1.21.11"]

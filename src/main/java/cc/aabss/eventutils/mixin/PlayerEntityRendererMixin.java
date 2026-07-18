@@ -2,7 +2,6 @@ package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 //? if >=1.21.11 {
@@ -35,9 +34,7 @@ public class PlayerEntityRendererMixin {
     //?} else {
     //public void renderLabelIfPresent(AbstractClientPlayerEntity player, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
     //?}
-        if (EventUtils.MOD.isHidePlayersRevealed()) return;
-        final ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
-        if (clientPlayer == null) return;
+        if (MinecraftClient.getInstance().player == null) return;
 
         // Get player name
         //? if >=1.21.4 {
@@ -46,44 +43,15 @@ public class PlayerEntityRendererMixin {
         //?} else {
         //final Text nameText = player.getName();
         //?}
-        final String name = nameText.getString().toLowerCase();
-
-        // Check if main player
-        //? if <1.21.3 {
-        /*if (player.isMainPlayer()) return;
-        *///?} else {
-        if (name.equals(clientPlayer.getName().getString().toLowerCase())) return;
-        //?}
-
-        // Not visible in current view mode -> hide nametag
-        if (!EventUtils.MOD.isPlayerVisible(name)) {
-            ci.cancel();
-            return;
-        }
-        // Visible: respect per-group nametag setting
-        if (!EventUtils.MOD.shouldShowNametagFor(name)) {
-            ci.cancel();
-            return;
-        }
-
-        // Any radius
-        if (EventUtils.MOD.config.hidePlayersRadius == 0) return;
 
         // Get player position
-        //? if <1.21.3 {
-        //final Vec3d playerPos = player.getPos();
+        //? if >=1.21.4 {
+        final Vec3d position = new Vec3d(player.x, player.y, player.z);
         //?} else {
-        final Vec3d playerPos = new Vec3d(player.x, player.y, player.z);
+        //final Vec3d position = player.getPos();
         //?}
 
-        // Get distance to client player
-        //? if >=1.21.11 {
-        /*final double distance = clientPlayer.getSyncedPos().distanceTo(playerPos);
-        *///?} else {
-        final double distance = clientPlayer.getPos().distanceTo(playerPos);
-        //?}
-
-        // Radius-specific
-        if (distance <= EventUtils.MOD.config.hidePlayersRadius) ci.cancel();
+        // Check if nametag is visible
+        if (!EventUtils.MOD.groupManager.isNametagVisible(nameText.getString(), position)) ci.cancel();
     }
 }

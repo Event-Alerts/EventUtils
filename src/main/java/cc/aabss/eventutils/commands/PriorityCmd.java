@@ -12,6 +12,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
@@ -20,19 +21,25 @@ import java.util.List;
 public class PriorityCmd {
     private static final int PLAYERS_PER_PAGE = 10;
 
+    @Nullable
+    private static List<String> getNamesSorted(@NotNull MinecraftClient client) {
+        if (client.world == null || client.player == null) return null;
+        return client.world.getPlayers().stream()
+                .filter(player -> !EventUtils.isNpc(player.getUuid()))
+                .sorted(Comparator.comparingInt(AbstractClientPlayerEntity::getId))
+                .map(player -> player.getName().getString())
+                .toList();
+    }
+
     public static void priority(@NotNull CommandContext<FabricClientCommandSource> context, String name) {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             // Get names
-            if (client.world == null || client.player == null) {
+            final List<String> namesSorted = getNamesSorted(client);
+            if (namesSorted == null || client.player == null) {
                 context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.noplayer", EventUtils.ERROR_MESSAGE_PREFIX));
                 return;
             }
-            final List<String> namesSorted = client.world.getPlayers().stream()
-                    .sorted(Comparator.comparingInt(AbstractClientPlayerEntity::getId))
-                    .map(player -> player.getName().getString())
-                    .filter(str -> !EventUtils.isNPC(str, true))
-                    .toList();
 
             final String nameLower = name.toLowerCase();
             for (final String playerName : namesSorted) if (nameLower.equals(playerName.toLowerCase())) {
@@ -53,15 +60,11 @@ public class PriorityCmd {
         final MinecraftClient client = source.getClient();
         client.send(() -> {
             // Get names
-            if (client.world == null || client.player == null) {
+            final List<String> namesSorted = getNamesSorted(client);
+            if (namesSorted == null || client.player == null) {
                 source.sendFeedback(Text.translatable("eventutils.command.prioritytop.emptypage"));
                 return;
             }
-            final List<String> namesSorted = client.world.getPlayers().stream()
-                    .sorted(Comparator.comparingInt(AbstractClientPlayerEntity::getId))
-                    .map(player -> player.getName().getString())
-                    .filter(str -> !EventUtils.isNPC(str, true))
-                    .toList();
 
             // Check page bounds
             final int totalPlayers = namesSorted.size();

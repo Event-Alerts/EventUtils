@@ -4,11 +4,11 @@ import cc.aabss.eventutils.EventUtils;
 import gg.eventalerts.sdk.object.EAPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.srnyx.javautilities.MiscUtility;
 
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 /**
@@ -17,13 +17,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EventAlertsApi {
     @NotNull private final EventUtils mod;
     /**
-     * Cache: Minecraft UUID -> unlocked tags. Cleared on world unload
+     * UUIDs we've cached. This is used to represent a UUID cached that has no best tag (null in map).
      */
-    private final ConcurrentHashMap<UUID, EnumSet<PlusTag>> cache = new ConcurrentHashMap<>();
+    @NotNull private final Set<UUID> cached = ConcurrentHashMap.newKeySet();
+    /**
+     * Cache: Minecraft UUID -> best unlocked tag. Cleared on world unload
+     */
+    @NotNull private final ConcurrentHashMap<UUID, PlusTag> cache = new ConcurrentHashMap<>();
     /**
      * UUIDs we've already scheduled a fetch for (avoid duplicate requests until cache clear)
      */
-    private final Set<UUID> fetchScheduled = ConcurrentHashMap.newKeySet();
+    @NotNull private final Set<UUID> fetchScheduled = ConcurrentHashMap.newKeySet();
 
     public EventAlertsApi(@NotNull EventUtils mod) {
         this.mod = mod;
@@ -32,66 +36,72 @@ public class EventAlertsApi {
     /**
      * Fetch unlocked plus tags for a Minecraft UUID. Returns empty set on failure.
      */
-    public void populateCachedUnlockedTags(@NotNull UUID minecraftUuid) {
-        // Check if already cached
-        final EnumSet<PlusTag> cached = cache.get(minecraftUuid);
-        if (cached != null) {
-            EventUtils.LOGGER.debug("[API] fetchUnlockedTags: cache HIT uuid={} tags={}", minecraftUuid, cached);
-            return;
-        }
+    public void populateCachedBestTag(@NotNull Collection<UUID> uuids) {
+        final Set<UUID> uuidsToFetch = uuids.stream()
+                .filter(uuid -> !cached.contains(uuid) && fetchScheduled.add(uuid))
+                .collect(Collectors.toSet());
+        if (uuidsToFetch.isEmpty()) return;
 
-        EventUtils.LOGGER.debug("[API] Fetching tags for uuid={}", minecraftUuid);
-        try {
-            // Retrieve EAPlayer
-            final EAPlayer player = mod.http.players.retrieveOneByMinecraftUuid(minecraftUuid).complete();
-            if (player == null) {
-                EventUtils.LOGGER.debug("[API] parse: player is null, returning empty set");
-                return;
-            }
-
-            // Get unlocked tags
-            final EnumSet<PlusTag> unlocked = EnumSet.noneOf(PlusTag.class);
-            for (final PlusTag tag : PlusTag.values()) {
-                if (tag.isUnlocked.test(player)) {
-                    unlocked.add(tag);
-                    EventUtils.LOGGER.debug("[API] parse: +{} (isUnlocked)", tag);
+        EventUtils.LOGGER.debug("[API] Fetching tags for uuids={}", uuidsToFetch);
+        MiscUtility.IO_SCHEDULER.execute(() -> {
+            try {
+                // Retrieve players
+                final List<EAPlayer> players = mod.http.players.retrieveMany(uuidsToFetch.size(), Map.of("minecraft_uuid", uuidsToFetch)).complete();
+                if (players == null) {
+                    EventUtils.LOGGER.debug("[API] parse: players is null, returning empty set");
+                    return;
                 }
-            }
+                EventUtils.LOGGER.debug("[API] parse: fetched players={}", players);
 
-            // Add to cache
-            EventUtils.LOGGER.debug("[API] fetched unlocked tags={} for uuid={}", unlocked, minecraftUuid);
-            cache.put(minecraftUuid, unlocked);
-            fetchScheduled.remove(minecraftUuid);
-        } catch (final Exception e) {
-            EventUtils.LOGGER.warn("[API] Fetch failed uuid={} error={}", minecraftUuid, e.getMessage(), e);
-        }
+                for (final EAPlayer player : players) {
+                    if (player.minecraft == null || player.minecraft.uuid == null) continue;
+
+                    // Get best unlocked tag
+                    PlusTag bestTag = null;
+                    for (final PlusTag tag : PlusTag.values()) {
+                        if (tag.isUnlocked.test(player)) {
+                            bestTag = tag;
+                            EventUtils.LOGGER.debug("[API] parse: +{} (isUnlocked)", tag);
+                            break;
+                        }
+                    }
+                    EventUtils.LOGGER.debug("[API] fetched best tag={} for uuid={}", bestTag, player.minecraft.uuid);
+
+                    // Add to cache
+                    cached.add(player.minecraft.uuid);
+                    if (bestTag != null) cache.put(player.minecraft.uuid, bestTag);
+                    fetchScheduled.remove(player.minecraft.uuid);
+                }
+            } catch (final Exception e) {
+                EventUtils.LOGGER.warn("[API] Fetch failed", e);
+            }
+        });
+    }
+
+    public void populateCachedBestTag(@NotNull UUID uuid) {
+        populateCachedBestTag(Set.of(uuid));
     }
 
     /**
      * Clear cache (e.g. on disconnect)
      */
     public void clearCache() {
-        int size = cache.size();
+        int size = cached.size();
+        cached.clear();
         cache.clear();
         fetchScheduled.clear();
         EventUtils.LOGGER.debug("[API] Cache cleared (was {} entries)", size);
     }
 
-    /**
-     * Schedule a fetch for this UUID if not cached and not already scheduled. Call from main thread
-     */
-    public void scheduleFetchIfNeeded(@NotNull UUID minecraftUuid) {
-        if (cache.containsKey(minecraftUuid)) return; // already cached
-        if (!fetchScheduled.add(minecraftUuid)) return; // already scheduled
-        EventUtils.LOGGER.debug("[API] Scheduling fetch for uuid={}", minecraftUuid);
-        EventUtils.MOD.scheduler.execute(() -> populateCachedUnlockedTags(minecraftUuid));
+    public boolean isCached(@NotNull UUID minecraftUuid) {
+        return cached.contains(minecraftUuid);
     }
 
     /**
-     * Get cached unlocked tags for UUID, or null if not cached. (No per-call debug log to avoid spam from tab list.)
+     * Get cached best tag for UUID, or null if not cached
      */
     @Nullable
-    public EnumSet<PlusTag> getCached(@NotNull UUID minecraftUuid) {
+    public PlusTag getCached(@NotNull UUID minecraftUuid) {
         return cache.get(minecraftUuid);
     }
 }

@@ -13,8 +13,8 @@
     "EntryListWidgetAccessor",
     "KeyBindingMixin",
     "MultiplayerScreenMixin",
-    "PlayerListHudMixin",
-    "PlayerEntityRendererMixin"
+    "PlayerEntityRendererMixin",
+    "PlayerListHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1

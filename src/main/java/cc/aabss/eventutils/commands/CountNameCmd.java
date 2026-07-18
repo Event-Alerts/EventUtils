@@ -1,11 +1,10 @@
 package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventUtils;
-import com.mojang.authlib.GameProfile;
+import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -26,13 +25,9 @@ public class CountNameCmd {
 
         // Filter names based on config and "isNPC"
         final List<String> namesFiltered = client.getNetworkHandler().getPlayerList().stream()
-                .map(PlayerListEntry::getProfile)
-                .filter(profile -> !EventUtils.isNPC(profile))
-                //? if >=1.21.11 {
-                /*.map(GameProfile::name)
-                *///?} else {
-                .map(GameProfile::getName)
-                //?}
+                .map(entry -> new VersionedGameProfile(entry.getProfile()))
+                .filter(profile -> !EventUtils.isNpc(profile.getId()))
+                .map(VersionedGameProfile::getName)
                 .filter(name -> name.toLowerCase().contains(filter.toLowerCase()))
                 .toList();
 

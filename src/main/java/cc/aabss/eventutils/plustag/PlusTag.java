@@ -1,13 +1,10 @@
 package cc.aabss.eventutils.plustag;
 
 import cc.aabss.eventutils.BuildProperties;
-import cc.aabss.eventutils.EventUtils;
 import gg.eventalerts.sdk.object.EAPlayer;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Set;
 import java.util.function.Predicate;
 
 
@@ -36,22 +33,5 @@ public enum PlusTag {
         this.key = key;
         this.textureId = Identifier.of(BuildProperties.MOD_ID, "textures/bee/" + key + ".png");
         this.isUnlocked = isUnlocked;
-    }
-
-    /**
-     * Pick the best tag to show for another player from their unlocked set
-     * */
-    @Nullable
-    public static PlusTag pickBestForDisplay(@Nullable Set<PlusTag> unlocked) {
-        if (unlocked == null || unlocked.isEmpty()) {
-            EventUtils.LOGGER.debug("[PlusTag] pickBestForDisplay: unlocked={} -> null", unlocked);
-            return null;
-        }
-
-        // Get best/highest ranking
-        PlusTag best = null;
-        for (final PlusTag tag : unlocked) if (best == null || tag.ordinal() < best.ordinal()) best = tag;
-        EventUtils.LOGGER.debug("[PlusTag] pickBestForDisplay: unlocked={} -> best={}", unlocked, best);
-        return best;
     }
 }

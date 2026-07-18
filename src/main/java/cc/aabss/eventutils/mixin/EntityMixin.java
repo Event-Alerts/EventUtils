@@ -13,47 +13,38 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.UUID;
+
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
+    @Shadow public abstract UUID getUuid();
+    @Shadow public abstract Text getName();
     @Shadow public abstract EntityType<?> getType();
     //? if >=1.21.11 {
     /*@Shadow public abstract Vec3d getSyncedPos();
     *///?} else {
     @Shadow public abstract Vec3d getPos();
     //?}
-    @Shadow public abstract Text getName();
 
     @Inject(method = "spawnSprintingParticles", at = @At("HEAD"), cancellable = true)
     private void spawnSprintingParticles(CallbackInfo ci) {
-        if (EventUtils.MOD.isHidePlayersRevealed()) return;
-        final ClientPlayerEntity mainPlayer = MinecraftClient.getInstance().player;
-        if (mainPlayer == null) return;
+        if (MinecraftClient.getInstance().player == null) return;
         final EntityType<?> type = getType();
 
-        if (type == EntityType.PLAYER) {
-            // Players
-            final String name = getName().getString().toLowerCase();
-            if (mainPlayer.getName().getString().toLowerCase().equals(name) || EventUtils.MOD.isPlayerVisible(name)) return;
-        } else {
-            // Non-players (mob)
-            if (!EventUtils.MOD.config.hiddenEntityTypes.contains(type)) return;
-        }
-
-        // Any radius
-        if (EventUtils.MOD.config.hidePlayersRadius == 0) {
-            ci.cancel();
-            return;
-        }
-
-        // Get distance to entity
+        // Get position
         //? if >=1.21.11 {
-        /*final double distance = mainPlayer.getSyncedPos().distanceTo(getSyncedPos());
+        /*final Vec3d position = getSyncedPos();
         *///?} else {
-        final double distance = mainPlayer.getPos().distanceTo(getPos());
+        final Vec3d position = getPos();
         //?}
 
-        // Specific radius
-        if (distance <= EventUtils.MOD.config.hidePlayersRadius) ci.cancel();
+        if (((Object) this) instanceof ClientPlayerEntity player) {
+            // Players
+            if (!EventUtils.MOD.groupManager.isPlayerVisible(player.getGameProfile(), position)) ci.cancel();
+        } else {
+            // Entity
+            if (!EventUtils.MOD.groupManager.isEntityVisible(type, position)) ci.cancel();
+        }
     }
 }
