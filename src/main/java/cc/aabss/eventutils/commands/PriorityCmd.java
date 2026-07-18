@@ -13,6 +13,7 @@ import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Comparator;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
 public class PriorityCmd {
     private static final int PLAYERS_PER_PAGE = 10;
 
-    @Nullable
+    @Nullable @Unmodifiable
     private static List<String> getNamesSorted(@NotNull MinecraftClient client) {
         if (client.world == null || client.player == null) return null;
         return client.world.getPlayers().stream()
@@ -51,7 +52,7 @@ public class PriorityCmd {
 
                 return;
             }
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.noplayer"));
+            context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.noplayer", EventUtils.ERROR_MESSAGE_PREFIX));
         });
     }
 

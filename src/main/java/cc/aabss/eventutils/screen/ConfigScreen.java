@@ -75,34 +75,31 @@ public class ConfigScreen {
                                 config.setSave("default_famous_ip", config.defaultFamousIp);
                             })
                             .controller(StringControllerBuilder::create).build())
-                    .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.developer_mode.title"))
-                            .description(OptionDescription.of(translatable("eventutils.config.developer_mode.description")))
-                            .binding(EventConfig.Defaults.DEVELOPER_MODE, () -> config.developerMode, newValue -> {
-                                config.developerMode = newValue;
-                                EventUtils.MOD.setupSdk("Developer Mode enabled/disabled");
-                                config.setSave("developer_mode", config.developerMode);
-                            })
-                            .controller(ConfigScreen::getBooleanBuilder).build())
-                    .option(Option.<StandardLevel>createBuilder()
-                            .name(translatable("eventutils.config.log_level.title"))
-                            .description(OptionDescription.of(translatable("eventutils.config.log_level.description")))
-                            .binding(EventConfig.Defaults.LOG_LEVEL.getStandardLevel(), () -> config.logLevel.getStandardLevel(), newValue -> {
-                                config.logLevel = Level.getLevel(newValue.name());
-                                EventUtils.MOD.setLogLevel(config.logLevel);
-                                config.setSave("log_level", config.logLevel);
-                            })
-                            .controller(opt -> EnumControllerBuilder.create(opt).enumClass(StandardLevel.class)).build())
+                    // Advanced
+                    .group(OptionGroup.createBuilder()
+                            .name(translatable("eventutils.config.advanced"))
+                            .collapsed(true)
+                            .option(Option.<Boolean>createBuilder()
+                                    .name(translatable("eventutils.config.advanced.developer_mode.title"))
+                                    .description(OptionDescription.of(translatable("eventutils.config.advanced.developer_mode.description")))
+                                    .binding(EventConfig.Defaults.DEVELOPER_MODE, () -> config.developerMode, newValue -> {
+                                        config.developerMode = newValue;
+                                        EventUtils.MOD.updateLogLevel();
+                                        EventUtils.MOD.setupSdk("Developer Mode enabled/disabled");
+                                        config.setSave("developer_mode", config.developerMode);
+                                    })
+                                    .controller(ConfigScreen::getBooleanBuilder).build())
+                            .option(Option.<StandardLevel>createBuilder()
+                                    .name(translatable("eventutils.config.advanced.log_level.title"))
+                                    .description(OptionDescription.of(translatable("eventutils.config.advanced.log_level.description")))
+                                    .binding(EventConfig.Defaults.LOG_LEVEL, () -> config.logLevel, newValue -> {
+                                        config.logLevel = newValue;
+                                        EventUtils.MOD.updateLogLevel();
+                                        config.setSave("log_level", config.logLevel);
+                                    })
+                                    .controller(opt -> EnumControllerBuilder.create(opt).enumClass(StandardLevel.class)).build())
+                            .build())
                     .build());
-
-        // Groups
-        builder.category(ConfigCategory.createBuilder().name(translatable("eventutils.config.groups.category"))
-                .option(ButtonOption.createBuilder()
-                        .name(translatable("eventutils.config.groups.manage_title"))
-                        .description(OptionDescription.of(translatable("eventutils.config.groups.manage_description")))
-                        .action((yaclScreen, option) -> MinecraftClient.getInstance().setScreen(new GroupManagerScreen(yaclScreen, EventUtils.MOD)))
-                        .build())
-                .build());
 
         // Alerts & notification sounds
         final OptionGroup.Builder alertsGroup = OptionGroup.createBuilder()
@@ -125,7 +122,7 @@ public class ConfigScreen {
                 .name(translatable("eventutils.config.server_list_minutes.title"))
                 .description(OptionDescription.of(translatable("eventutils.config.server_list_minutes.description")))
                 .binding(EventConfig.Defaults.EVENT_SERVER_DISPLAY_MINUTES, () -> config.eventServerDisplayMinutes, newValue -> {
-                    config.eventServerDisplayMinutes = Math.max(1, Math.min(15, newValue)); // don't use Math.clamp to support older Java versions
+                    config.setEventServerDisplayMinutes(newValue);
                     config.setSave("event_server_display_minutes", config.eventServerDisplayMinutes);
                 })
                 .controller(option -> IntegerFieldControllerBuilder.create(option).min(1)).build());
@@ -141,6 +138,15 @@ public class ConfigScreen {
         alertsCategory.group(serverListGroup.build());
         alertsCategory.group(soundsGroup.build());
         builder.category(alertsCategory.build());
+
+        // Groups
+        builder.category(ConfigCategory.createBuilder().name(translatable("eventutils.config.groups.category"))
+                .option(ButtonOption.createBuilder()
+                        .name(translatable("eventutils.config.groups.manage_title"))
+                        .description(OptionDescription.of(translatable("eventutils.config.groups.manage_description")))
+                        .action((yaclScreen, option) -> MinecraftClient.getInstance().setScreen(new GroupManagerScreen(yaclScreen, EventUtils.MOD)))
+                        .build())
+                .build());
 
         // Return
         return builder.build().generateScreen(parent);

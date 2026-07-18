@@ -6,8 +6,6 @@ import cc.aabss.eventutils.EventUtils;
 import net.minecraft.client.render.entity.EntityRenderManager;
 import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.entity.EntityType;
 *///?} else {
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -17,7 +15,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 //?}
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,22 +36,21 @@ public class EntityRenderDispatcherMixin {
     //?}
         // Get target position
         //? if >=1.21.11 {
-        //final Vec3d position = new Vec3d(renderState.x, renderState.y, renderState.z);
-        //?} else {
+        /*final Vec3d position = new Vec3d(renderState.x, renderState.y, renderState.z);
+        *///?} else {
         final Vec3d position = entity.getSyncedPos();
         //?}
 
         // Player
         //? if >=1.21.11 {
         /*if (renderState.entityType == EntityType.PLAYER) {
-            final Text name = renderState.displayName;
-            if (name == null) return;
+            final String name = renderState.displayName != null ? renderState.displayName.getString() : null;
         *///?} else {
         if (entity instanceof PlayerEntity player) {
-            final Text name = player.getName();
+            final String name = player.getName().getString();
             //?}
 
-            if (!EventUtils.MOD.groupManager.isPlayerVisible(name.getString(), position)) ci.cancel();
+            if (!EventUtils.MOD.groupManager.isPlayerVisible(name, position)) ci.cancel();
         } else {
             // Entity
             //? if >=1.21.11 {

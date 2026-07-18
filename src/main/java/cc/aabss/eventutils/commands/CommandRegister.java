@@ -1,13 +1,17 @@
 package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventType;
+import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.command.CommandSource;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -48,7 +52,11 @@ public class CommandRegister {
                 .literal("priority")
                 .then(ClientCommandManager.argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            for (final AbstractClientPlayerEntity player : context.getSource().getWorld().getPlayers()) builder.suggest(player.getName().getString());
+                            final ClientPlayNetworkHandler networkHandler = context.getSource().getClient().getNetworkHandler();
+                            if (networkHandler != null) for (final PlayerListEntry player : networkHandler.getPlayerList()) {
+                                final VersionedGameProfile profile = new VersionedGameProfile(player.getProfile());
+                                if (!EventUtils.isNpc(profile.getId())) builder.suggest(profile.getName());
+                            }
                             return builder.buildFuture();
                         })
                         .executes(context -> {
@@ -94,11 +102,18 @@ public class CommandRegister {
 
         final LiteralCommandNode<FabricClientCommandSource> groupMsg = ClientCommandManager
                 .literal("groupmsg")
-                .then(ClientCommandManager.argument("payload", StringArgumentType.greedyString())
-                        .executes(context -> GroupMsgCmd.groupMsg(context, StringArgumentType.getString(context, "payload"))))
+                .then(ClientCommandManager.argument("group", StringArgumentType.word())
+                        .suggests((context, builder) ->
+                                CommandSource.suggestMatching(() -> EventUtils.MOD.config.getGroupNames().iterator(), builder))
+                        .then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
+                                .executes(context -> GroupMsgCmd.groupMsg(
+                                        context,
+                                        StringArgumentType.getString(context, "group"),
+                                        StringArgumentType.getString(context, "message")))))
                 .build();
 
         // Build command tree
+        dispatcher.getRoot().addChild(groupMsg);
         dispatcher.getRoot().addChild(main);
         main.addChild(config);
         main.addChild(teleport);

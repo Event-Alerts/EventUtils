@@ -66,7 +66,7 @@ public class EventServerManager {
             for (int i = 0; i < serverList.size(); i++) {
                 final ServerInfo existing = serverList.get(i);
                 if (existing.name.equals(serverName) && existing.address.equalsIgnoreCase(ip)) {
-                    EventUtils.LOGGER.info("Event server already present in server list: '{}' -> '{}'", serverName, ip);
+                    EventUtils.LOGGER.debug("Event server already present in server list: '{}' -> '{}'", serverName, ip);
                     return;
                 }
             }
@@ -78,25 +78,24 @@ public class EventServerManager {
 
             // Schedule removal after configurable grace period (default 5 minutes)
             final long currentTime = System.currentTimeMillis();
-            final int displayMinutes = mod.config.getEventServerDisplayMinutes();
-            final long graceMs = TimeUnit.MINUTES.toMillis(displayMinutes);
+            final long graceMs = TimeUnit.MINUTES.toMillis(mod.config.eventServerDisplayMinutes);
             final long timeUntilRemoval = (timeMillis + graceMs) - currentTime;
 
             if (timeUntilRemoval > 0) {
                 final ScheduledFuture<?> removalTask = MiscUtility.IO_SCHEDULER.schedule(() -> removeEventServer(finalId), timeUntilRemoval, TimeUnit.MILLISECONDS);
                 removalTasks.put(finalId, removalTask);
-                EventUtils.LOGGER.info("Scheduled removal of event server '{}' in {} ms ({}m after start)", finalTitle, timeUntilRemoval, displayMinutes);
+                EventUtils.LOGGER.debug("Scheduled removal of event server '{}' in {} ms ({}m after start)", finalTitle, timeUntilRemoval, mod.config.eventServerDisplayMinutes);
             } else {
                 // If within grace period after event start, keep it briefly; else do not add
                 if (currentTime - timeMillis <= graceMs) {
                     final long remaining = graceMs - (currentTime - timeMillis);
                     final ScheduledFuture<?> removalTask = MiscUtility.IO_SCHEDULER.schedule(() -> removeEventServer(finalId), remaining, TimeUnit.MILLISECONDS);
                     removalTasks.put(finalId, removalTask);
-                    EventUtils.LOGGER.info("Event '{}' already started; keeping for {} ms ({}m grace)", finalTitle, remaining, displayMinutes);
+                    EventUtils.LOGGER.debug("Event '{}' already started; keeping for {} ms ({}m grace)", finalTitle, remaining, mod.config.eventServerDisplayMinutes);
                 } else {
                     serverList.remove(serverInfo);
                     activeEventServers.remove(finalId);
-                    EventUtils.LOGGER.info("Event '{}' started more than {} minutes ago; not adding", finalTitle, displayMinutes);
+                    EventUtils.LOGGER.debug("Event '{}' started more than {} minutes ago; not adding", finalTitle, mod.config.eventServerDisplayMinutes);
                     return;
                 }
             }
@@ -108,7 +107,7 @@ public class EventServerManager {
                 EventUtils.LOGGER.error("Failed to save server list after adding event server", e);
             }
 
-            EventUtils.LOGGER.info("Added event server '{}' with IP '{}' to server list", finalTitle, ip);
+            EventUtils.LOGGER.debug("Added event server '{}' with IP '{}' to server list", finalTitle, ip);
         });
     }
 
@@ -150,7 +149,7 @@ public class EventServerManager {
                 EventUtils.LOGGER.error("Failed to save server list after removing event server", e);
             }
 
-            EventUtils.LOGGER.info("Removed event server from server list: {}", eventServerInfo.serverInfo.name);
+            EventUtils.LOGGER.debug("Removed event server from server list: {}", eventServerInfo.serverInfo.name);
         });
     }
 

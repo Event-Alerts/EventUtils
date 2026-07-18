@@ -54,7 +54,9 @@ public class ConnectUtility {
     }
 
     @Nullable
-    public static String getIp(@NotNull String message) {
+    public static String getIp(@Nullable String message) {
+        if (message == null) return null;
+
         // Get strings
         final List<String> strings = new ArrayList<>();
         for (final String string : removeMarkdown(message).split("\\s+|\\n+")) {
@@ -63,7 +65,10 @@ public class ConnectUtility {
 
         // Get IP
         final int size = strings.size();
-        if (size == 1) return strings.get(0); // don't use getFirst() to support lower Java versions
+        if (size == 1) {
+            final String ip = strings.get(0); // don't use getFirst() to support lower Java versions
+            return !ip.isEmpty() ? ip : null;
+        }
         if (size > 1) for (final String string : strings) if (isValidIp(string)) return string;
 
         // No IP found
@@ -71,6 +76,8 @@ public class ConnectUtility {
     }
 
     private static boolean isValidIp(@NotNull String ip) {
+        if (ip.isEmpty()) return false;
+
         // Get request
         final HttpRequest request;
         try {

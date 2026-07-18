@@ -73,10 +73,10 @@ public class KeybindManager {
             if (!testEventKey.isUnbound() && mod.config.developerMode) {
                 if (GLFW.glfwGetKey(windowHandle, ((KeyBindingMixin) testEventKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
                     if (canNotPress(testEventKey, DEFAULT_COOLDOWN_TIME_MS)) return;
-                    EventUtils.LOGGER.info("Test event key pressed");
+                    EventUtils.LOGGER.debug("Test event key pressed");
                     mod.simulateTestEvent();
                     if (client.player == null) {
-                        EventUtils.LOGGER.info("Test event simulated from main menu");
+                        EventUtils.LOGGER.debug("Test event simulated from main menu");
                         return;
                     }
                     client.player.sendMessage(Text.literal("Test event simulated! Check your server list and you should see a toast notification.").formatted(Formatting.GREEN), true);

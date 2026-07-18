@@ -68,13 +68,13 @@ public class GroupManager {
         return group.isPlayerVisible(versionedProfile, position);
     }
 
-    public boolean isPlayerVisible(@NotNull String name, @Nullable Vec3d position) {
+    public boolean isPlayerVisible(@Nullable String name, @Nullable Vec3d position) {
         // All visible
         final Group group = getSelectedGroup();
         if (group == null) return true;
 
         // Always show self
-        if (isSelf(name)) return true;
+        if (name != null && isSelf(name)) return true;
 
         // Delegate to Group
         return group.isPlayerVisible(name, position);

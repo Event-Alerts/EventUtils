@@ -3,6 +3,7 @@ package cc.aabss.eventutils;
 import cc.aabss.eventutils.commands.CommandRegister;
 import cc.aabss.eventutils.config.EventConfig;
 import cc.aabss.eventutils.plustag.EventAlertsApi;
+import cc.aabss.eventutils.sdk.EventWrapper;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import cc.aabss.eventutils.websocket.listener.EventCancelledListener;
 import cc.aabss.eventutils.websocket.listener.EventPostedListener;
@@ -67,7 +68,7 @@ public class EventUtils implements ClientModInitializer {
             .append(Text.literal("§r§4 »")
                     .fillStyle(Style.EMPTY.withBold(false)));
 
-    @NotNull public final EventConfig config = new EventConfig(this);
+    @NotNull public final EventConfig config = new EventConfig();
     public EAHTTP http;
     public EAWebSocket webSocket;
     @NotNull public final EventAlertsApi api = new EventAlertsApi(this);
@@ -78,11 +79,12 @@ public class EventUtils implements ClientModInitializer {
     /**
      * {@link EAEvent} or {@link EAFamousEvent}
      */
-    @Nullable public Object lastEvent; //TODO turn into custom type with universal getters
+    @Nullable public EventWrapper lastEvent;
     @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
 
     public EventUtils() {
         MOD = this;
+        updateLogLevel(); // Need to wait for config to be set
     }
 
     @Nullable
@@ -112,7 +114,7 @@ public class EventUtils implements ClientModInitializer {
 
         // Clear API cache on disconnect
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            LOGGER.info("[EventUtils] DISCONNECT: clearing Event Alerts cache");
+            LOGGER.debug("[EventUtils] DISCONNECT: clearing Event Alerts cache");
             api.clearCache();
         });
 
@@ -142,7 +144,11 @@ public class EventUtils implements ClientModInitializer {
         }));
     }
 
-    public void setLogLevel(@NotNull Level level) {
+    public void updateLogLevel() {
+        // Get level
+        Level level = Level.toLevel(config.logLevel.name());
+        if (level == Level.INFO && config.developerMode) level = Level.DEBUG;
+
         final LoggerContext context = (LoggerContext) LogManager.getContext(false);
         final Configuration config = context.getConfiguration();
         final String name = LOGGER.getName();
@@ -165,8 +171,8 @@ public class EventUtils implements ClientModInitializer {
                 .url(config.developerMode ? "http://localhost:8080/api/v1/" : "https://eventalerts.gg/api/v1/")
                 .build();
 
-        // Disconnect old socket
-        if (webSocket != null) webSocket.close(1000, reason);
+        // Shutdown old socket
+        if (webSocket != null) webSocket.shutdown(reason);
 
         // Connect new socket
         webSocket = new EAWebSocket.Builder(USER_AGENT)
@@ -183,9 +189,9 @@ public class EventUtils implements ClientModInitializer {
         return networkHandler != null && networkHandler.getPlayerListEntry(uuid) == null;
     }
 
-    public static boolean isNpc(@NotNull String name) {
+    public static boolean isNpc(@Nullable String name) {
         // Invalid name = NPC
-        if (name.isEmpty() || !name.matches("^[a-zA-Z0-9_]{3,16}$")) return true;
+        if (name == null || name.isEmpty() || !name.matches("^[a-zA-Z0-9_]{3,16}$")) return true;
 
         // Check if name in player-list
         final ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
@@ -218,12 +224,12 @@ public class EventUtils implements ClientModInitializer {
         testEvent.ip = "invadedlands.net";
         testEvent.prize = "$1000";
         testEvent.rolesNamed = Set.of(EAEvent.PingRole.MONEY);
-        LOGGER.info("Simulating test event: {}", testEvent.toString());
+        LOGGER.debug("Simulating test event: {}", testEvent.toString());
 
         // Process event through handler
         new EventPostedListener(this).onMessage(new SocketEvent<>(SocketEventName.EVENT_POSTED, 1L, testEvent));
 
         // Set as last event for event info screen
-        lastEvent = testEvent;
+        lastEvent = new EventWrapper(testEvent);
     }
 }

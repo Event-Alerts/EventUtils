@@ -2,6 +2,7 @@ package cc.aabss.eventutils.websocket.listener;
 
 import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.sdk.EventWrapper;
 import cc.aabss.eventutils.utility.ConnectUtility;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.websocket.handler.EventPostedHandler;
@@ -23,7 +24,7 @@ public class EventPostedListener extends EventPostedHandler {
         for (final EAEvent.PingRole pingRole : socketEvent.data.rolesNamed) {
             final EventType eventType = EventType.fromPingRole(pingRole);
             if (eventType == null || !mod.config.eventTypes.contains(eventType)) continue;
-            mod.lastEvent = socketEvent.data;
+            mod.lastEvent = new EventWrapper(socketEvent.data);
 
             // Get IP
             String ip = null;
@@ -39,8 +40,7 @@ public class EventPostedListener extends EventPostedHandler {
             if (mod.config.autoTp && hasIp) ConnectUtility.connect(ip);
 
             // Send toast
-            final int prizeAmount = eventType == EventType.MONEY ? prize(socketEvent.data) : 0;
-            eventType.sendToast(mod, prizeAmount > 0 ? prizeAmount : null, hasIp);
+            eventType.sendToast(mod, eventType == EventType.MONEY ? prize(socketEvent.data) : null, hasIp);
             mod.lastIps.put(eventType, ip);
 
             // Add event server to server list if it has an IP
@@ -60,26 +60,25 @@ public class EventPostedListener extends EventPostedHandler {
         // Extract from description
         if (event.description != null) {
             final String extracted = ConnectUtility.getIp(event.description);
-            if (extracted != null && !extracted.isEmpty()) return extracted;
+            if (extracted != null) return extracted;
         }
 
         // Extract from title
         if (event.title != null) {
             final String extracted = ConnectUtility.getIp(event.title);
-            if (extracted != null && !extracted.isEmpty()) return extracted;
+            if (extracted != null) return extracted;
         }
 
         return null;
     }
 
-    private static int prize(@NotNull EAEvent event) {
+    @Nullable
+    private static Integer prize(@NotNull EAEvent event) {
         // Get prize from JSON
         if (event.prize != null) return Integer.parseInt(event.prize.replaceAll("[$€£]", "").split(" ")[0]);
 
-        // Get description
-        if (event.description == null) return 0;
-
         // Extract prize from description
+        if (event.description == null) return null;
         for (final String line : ConnectUtility.removeMarkdown(event.description.toLowerCase()).split("\\n+")) {
             if (!line.contains("$") && !line.contains("€") && !line.contains("£") && !line.contains("dollars") && !line.contains("prize")) continue;
 
@@ -90,6 +89,6 @@ public class EventPostedListener extends EventPostedHandler {
                 } catch (final NumberFormatException ignored) {}
             }
         }
-        return 0;
+        return null;
     }
 }

@@ -10,8 +10,8 @@ public record VersionedGameProfile(@NotNull GameProfile profile) {
     @NotNull
     public UUID getId() {
         //? if >=1.21.11 {
-        //return profile.id();
-        //?} else {
+        /*return profile.id();
+        *///?} else {
         return profile.getId();
         //?}
     }
@@ -19,8 +19,8 @@ public record VersionedGameProfile(@NotNull GameProfile profile) {
     @NotNull
     public String getName() {
         //? if >=1.21.11 {
-        //return profile.name();
-        //?} else {
+        /*return profile.name();
+        *///?} else {
         return profile.getName();
         //?}
     }

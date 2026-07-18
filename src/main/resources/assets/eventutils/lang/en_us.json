@@ -89,8 +89,6 @@
   "eventutils.config.npchide.description": "Whether the mod will hide NPCs",
   "eventutils.config.radius.title": "Hide Players in Radius",
   "eventutils.config.radius.description": "Hides all the players in the specified radius, set to 0 to ignore distance",
-  "eventutils.config.developer_mode.title": "Developer Mode",
-  "eventutils.config.developer_mode.description": "(ADVANCED) Whether to enable special developer features (testing API, simulate events, etc.)",
   "eventutils.config.groups.category": "Groups",
   "eventutils.config.groups.manage_title": "Manage Groups",
   "eventutils.config.groups.manage_description": "Create and edit groups for player visibility and group chat. Use the Hide Players key to cycle: Group 1 → Group 2 → ... → Players Revealed.",
@@ -110,6 +108,12 @@
   "eventutils.config.groups.entity_mode": "Entity mode: %s",
   "eventutils.config.groups.nametag_mode": "Nametags: %s",
   "eventutils.config.groups.npc_mode": "NPCs: %s",
+
+  "eventutils.config.advanced": "Advanced",
+  "eventutils.config.advanced.developer_mode.title": "Developer Mode",
+  "eventutils.config.advanced.developer_mode.description": "Whether to enable special developer features (testing API, simulate events, etc.)",
+  "eventutils.config.advanced.log_level.title": "Log Level",
+  "eventutils.config.advanced.log_level.description": "The level of logging to use",
 
   "eventutils.sound.alarm": "Alarm",
   "eventutils.sound.alert": "Alert",

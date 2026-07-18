@@ -10,7 +10,10 @@ import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.impl.util.version.SemanticVersionImpl;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.spi.StandardLevel;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -18,6 +21,9 @@ import java.util.*;
 
 
 public class EventConfig extends FileLoader {
+    public static final int MIN_EVENT_SERVER_DISPLAY_MINUTES = 1;
+    public static final int MAX_EVENT_SERVER_DISPLAY_MINUTES = 15;
+
     public boolean discordRpc;
     public boolean autoTp;
     public boolean simpleQueueMessage;
@@ -25,16 +31,16 @@ public class EventConfig extends FileLoader {
     public boolean confirmWindowClose;
     public boolean confirmDisconnect;
     public boolean eventServersEnabled;
-    public int eventServerDisplayMinutes;
+    @Range(from = MIN_EVENT_SERVER_DISPLAY_MINUTES, to = MAX_EVENT_SERVER_DISPLAY_MINUTES) public int eventServerDisplayMinutes;
     @NotNull public String defaultFamousIp;
     @NotNull public Map<UUID, Group> groups;
     public boolean developerMode;
-    @NotNull public Level logLevel;
+    @NotNull public StandardLevel logLevel;
     @NotNull public final List<EventType> eventTypes;
     @NotNull public final List<EventType> eventServerTypes;
     @NotNull public final Map<EventType, NotificationSound> notificationSounds;
 
-    public EventConfig(@NotNull EventUtils mod) {
+    public EventConfig() {
         super(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
 
         // Create empty file if it doesn't exist
@@ -57,7 +63,7 @@ public class EventConfig extends FileLoader {
         confirmDisconnect = get("confirm_disconnect", Defaults.CONFIRM_DISCONNECT);
         defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
         eventServersEnabled = get("event_servers_enabled", Defaults.EVENT_SERVERS_ENABLED);
-        eventServerDisplayMinutes = get("event_server_display_minutes", Defaults.EVENT_SERVER_DISPLAY_MINUTES);
+        setEventServerDisplayMinutes(get("event_server_display_minutes", Defaults.EVENT_SERVER_DISPLAY_MINUTES));
         groups = new LinkedHashMap<>(get("groups", Defaults.groups(), new TypeToken<Map<UUID, Group>>(){}.getType()));
         developerMode = get("developer_mode", Defaults.DEVELOPER_MODE);
         logLevel = get("log_level", Defaults.LOG_LEVEL);
@@ -67,9 +73,6 @@ public class EventConfig extends FileLoader {
 
         // Save if created (default values)
         if (created) save();
-
-        // Log level
-        mod.setLogLevel(logLevel);
     }
 
     private void update() {
@@ -150,10 +153,24 @@ public class EventConfig extends FileLoader {
         return notificationSounds.getOrDefault(type, NotificationSound.ALERT);
     }
 
-    public int getEventServerDisplayMinutes() {
-        if (eventServerDisplayMinutes < 1) eventServerDisplayMinutes = 1;
-        if (eventServerDisplayMinutes > 15) eventServerDisplayMinutes = 15;
-        return eventServerDisplayMinutes;
+    @NotNull
+    public List<String> getGroupNames() {
+        return groups.values().stream()
+                .map(Group::getName)
+                .toList();
+    }
+
+    @Nullable
+    public Group getGroupByName(@NotNull String name) {
+        return groups.values().stream()
+                .filter(group -> group.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void setEventServerDisplayMinutes(int eventServerDisplayMinutes) {
+        // Don't use Math.clamp to support older Java versions
+        this.eventServerDisplayMinutes = Math.max(MIN_EVENT_SERVER_DISPLAY_MINUTES, Math.min(MAX_EVENT_SERVER_DISPLAY_MINUTES, eventServerDisplayMinutes));
     }
 
     // Collections need to have methods to create new instances of the collection!
@@ -169,7 +186,7 @@ public class EventConfig extends FileLoader {
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
         @NotNull public static final Map<UUID, Group> DEFAULT_GROUPS = Map.of(UUID.randomUUID(), new Group().setName("Hide All Players"));
         public static final boolean DEVELOPER_MODE = false;
-        @NotNull public static final Level LOG_LEVEL = Level.INFO;
+        @NotNull public static final StandardLevel LOG_LEVEL = Level.INFO.getStandardLevel();
         @NotNull private static final List<EventType> EVENT_TYPES = List.of(EventType.values());
         @NotNull private static final List<EventType> EVENT_SERVER_TYPES = List.of(EventType.values());
         @NotNull private static final Map<EventType, NotificationSound> NOTIFICATION_SOUNDS = Arrays.stream(EventType.values())

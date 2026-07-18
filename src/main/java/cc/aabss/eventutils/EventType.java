@@ -151,7 +151,8 @@ public enum EventType {
     }
 
     @Nullable
-    public static EventType fromFamousEventType(@NotNull EAFamousEvent.Type famousEventType) {
+    public static EventType fromFamousEventType(@Nullable EAFamousEvent.Type famousEventType) {
+        if (famousEventType == null) return null;
         for (final EventType eventType : values()) if (eventType.famousEventType == famousEventType) return eventType;
         return null;
     }
