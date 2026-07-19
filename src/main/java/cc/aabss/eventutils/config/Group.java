@@ -1,6 +1,5 @@
 package cc.aabss.eventutils.config;
 
-import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityType;
@@ -14,9 +13,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-/**
- * A named group of players with optional nametag visibility
- */
 public class Group {
     public static final int MAX_RADIUS = 100;
 
@@ -149,6 +145,7 @@ public class Group {
 
     @NotNull
     public Group setRadius(@Nullable Integer radius) {
+        // Clamp
         if (radius != null) {
             if (radius <= 0) {
                 radius = null;
@@ -156,63 +153,41 @@ public class Group {
                 radius = Math.min(radius, MAX_RADIUS);
             }
         }
+
         this.radius = radius;
         return this;
     }
 
-    public boolean withinRadius(@Nullable Vec3d position) {
-        if (radius == null || position == null) return true;
+    public boolean outsideRadius(@Nullable Vec3d position) {
+        if (radius == null || position == null) return false;
         final MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null) return false;
+        if (client.player == null) return true;
         //? if >=1.21.11 {
-        /*final Vec3d clientPosition = client.player.getSyncedPos();
-        *///?} else {
+        //final Vec3d clientPosition = client.player.getSyncedPos();
+        //?} else {
         final Vec3d clientPosition = client.player.getPos();
          //?}
-        return clientPosition.distanceTo(position) <= radius;
+        return !(clientPosition.distanceTo(position) <= radius);
     }
 
-    public boolean isPlayerVisible(@NotNull VersionedGameProfile profile, @Nullable Vec3d position) {
-        // NPC
-        if (EventUtils.isNpc(profile.getId())) return isNpcVisible(position);
-
-        // Non-NPC
-        final boolean shouldShow = (playerMode == Mode.SHOW) == players.contains(profile.getName().toLowerCase());
-        return shouldShow && withinRadius(position);
-    }
-
-    public boolean isPlayerVisible(@Nullable String name, @Nullable Vec3d position) {
-        // NPC
-        if (EventUtils.isNpc(name)) return isNpcVisible(position);
-
-        // Non-NPC
-        final boolean shouldShow = (playerMode == Mode.SHOW) == players.contains(name.toLowerCase());
-        return shouldShow && withinRadius(position);
+    public boolean isPlayerVisible(@NotNull String name, @Nullable Vec3d position) {
+        return (playerMode == Mode.SHOW) == players.contains(name.toLowerCase()) || outsideRadius(position);
     }
 
     public boolean isEntityVisible(@NotNull EntityType<?> entityType, @Nullable Vec3d position) {
-        final boolean shouldShow = (entityMode == Mode.SHOW) == entities.contains(entityType.getName().getString().toLowerCase());
-        return shouldShow && withinRadius(position);
+        return (entityMode == Mode.SHOW) == entities.contains(entityType.getName().getString().toLowerCase()) || outsideRadius(position);
     }
 
     public boolean isNametagVisible(@NotNull VersionedGameProfile profile, @Nullable Vec3d position) {
-        // Show all nametags
-        if (nametagMode == Mode.SHOW) return true;
-
-        // Delegate to isPlayerVisible
-        return isPlayerVisible(profile, position);
+        return nametagMode == Mode.SHOW || isPlayerVisible(profile.getName(), position);
     }
 
     public boolean isNametagVisible(@NotNull String name, @Nullable Vec3d position) {
-        // Show all nametags
-        if (nametagMode == Mode.SHOW) return true;
-
-        // Delegate to isPlayerVisible
-        return isPlayerVisible(name, position);
+        return nametagMode == Mode.SHOW || isPlayerVisible(name, position);
     }
 
     public boolean isNpcVisible(@Nullable Vec3d position) {
-        return (npcMode == Mode.SHOW) && withinRadius(position);
+        return npcMode == Mode.SHOW || outsideRadius(position);
     }
 
     public enum Mode {

@@ -64,8 +64,11 @@ public class GroupManager {
         final VersionedGameProfile versionedProfile = new VersionedGameProfile(profile);
         if (isSelf(versionedProfile.getName())) return true;
 
+        // NPC
+        if (EventUtils.isNpc(versionedProfile.getId())) return group.isNpcVisible(position);
+
         // Delegate to Group
-        return group.isPlayerVisible(versionedProfile, position);
+        return group.isPlayerVisible(versionedProfile.getName(), position);
     }
 
     public boolean isPlayerVisible(@Nullable String name, @Nullable Vec3d position) {
@@ -75,6 +78,9 @@ public class GroupManager {
 
         // Always show self
         if (name != null && isSelf(name)) return true;
+
+        // NPC
+        if (EventUtils.isNpc(name)) return group.isNpcVisible(position);
 
         // Delegate to Group
         return group.isPlayerVisible(name, position);
