@@ -1,7 +1,7 @@
 package cc.aabss.eventutils;
 
 import cc.aabss.eventutils.commands.CommandRegister;
-import cc.aabss.eventutils.config.EventConfig;
+import cc.aabss.eventutils.config.EUConfig;
 import cc.aabss.eventutils.plustag.EventAlertsApi;
 import cc.aabss.eventutils.sdk.EventWrapper;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
@@ -68,7 +68,7 @@ public class EventUtils implements ClientModInitializer {
             .append(Text.literal("§r§4 »")
                     .fillStyle(Style.EMPTY.withBold(false)));
 
-    @NotNull public final EventConfig config = new EventConfig();
+    @NotNull public final EUConfig config = new EUConfig();
     public EAHTTP http;
     public EAWebSocket webSocket;
     @NotNull public final EventAlertsApi api = new EventAlertsApi(this);

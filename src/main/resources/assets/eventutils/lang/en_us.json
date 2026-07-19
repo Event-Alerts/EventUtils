@@ -81,6 +81,8 @@
   "eventutils.config.disconnect.description": "Whether a confirmation should pop up confirming you want to leave your server",
   "eventutils.config.famous.title": "Default Famous IP",
   "eventutils.config.famous.description": "The default IP for if a [potential] famous event is pinged with no IP inputted",
+  "eventutils.config.bee_icons.title": "Bee Icons",
+  "eventutils.config.bee_icons.description": "Toggle the bee icons for Event Alerts players in the player list",
   "eventutils.config.entity.title": "Hidden Entity Types",
   "eventutils.config.entity.description": "The types of entities that will be hidden",
   "eventutils.config.players.title": "Whitelisted Players",

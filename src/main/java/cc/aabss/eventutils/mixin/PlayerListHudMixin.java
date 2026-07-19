@@ -3,6 +3,7 @@ package cc.aabss.eventutils.mixin;
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.plustag.PlusTag;
 import cc.aabss.eventutils.plustag.PlusTagRenderer;
+import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.PlayerListHud;
@@ -51,14 +52,11 @@ public abstract class PlayerListHudMixin {
     private void eventutils$drawPlusTagNextToName(DrawContext context, int width, int x, int y, PlayerListEntry entry, CallbackInfo ci) {
         if (client.player == null) return;
 
-        // Get UUID and name
-        //? if >=1.21.11 {
-        /*final UUID uuid = entry.getProfile().id();
-        final String name = entry.getProfile().name();
-        *///?} else {
-        final UUID uuid = entry.getProfile().getId();
-        final String name = entry.getProfile().getName();
-        //?}
+        // Bee icons disabled
+        if (!EventUtils.MOD.config.beeIcons) return;
+
+        // Get UUID
+        final UUID uuid = new VersionedGameProfile(entry.getProfile()).getId();
 
         // Fetch if not cached
         if (!EventUtils.MOD.api.isCached(uuid)) {

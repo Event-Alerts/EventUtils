@@ -1,7 +1,7 @@
 package cc.aabss.eventutils;
 
+import cc.aabss.eventutils.config.EUConfig;
 import cc.aabss.eventutils.screen.ConfigScreen;
-import cc.aabss.eventutils.config.EventConfig;
 import cc.aabss.eventutils.config.NotificationSound;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
@@ -64,7 +64,7 @@ public enum EventType {
     }
 
     @NotNull
-    public Option<Boolean> getOption(@NotNull EventConfig config) {
+    public Option<Boolean> getOption(@NotNull EUConfig config) {
         return Option.<Boolean>createBuilder()
                 .name(displayName)
                 .description(OptionDescription.of(Text.of(EventUtils.translate("eventutils.config.event_description").replace("{event}", displayName.getString()))))
@@ -81,12 +81,12 @@ public enum EventType {
     }
 
     @NotNull
-    public Option<NotificationSound> getSoundOption(@NotNull EventConfig config) {
+    public Option<NotificationSound> getSoundOption(@NotNull EUConfig config) {
         return Option.<NotificationSound>createBuilder()
                 .name(displayName)
                 .description(OptionDescription.of(Text.of(EventUtils.translate("eventutils.config.sound_description").replace("{event}", displayName.getString()))))
                 .binding(
-                        EventConfig.Defaults.notificationSounds().get(this),
+                        EUConfig.Defaults.notificationSounds().get(this),
                         () -> config.notificationSounds.get(this),
                         newValue -> {
                             config.notificationSounds.put(this, newValue);
@@ -100,7 +100,7 @@ public enum EventType {
     }
 
     @NotNull
-    public Option<Boolean> getServerListOption(@NotNull EventConfig config) {
+    public Option<Boolean> getServerListOption(@NotNull EUConfig config) {
         return Option.<Boolean>createBuilder()
                 .name(displayName)
                 .description(OptionDescription.of(Text.of(EventUtils.translate("eventutils.config.server_list_event_description").replace("{event}", displayName.getString()))))

@@ -20,9 +20,10 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 
-public class EventConfig extends FileLoader {
+public class EUConfig extends FileLoader {
     public static final int MIN_EVENT_SERVER_DISPLAY_MINUTES = 1;
     public static final int MAX_EVENT_SERVER_DISPLAY_MINUTES = 15;
+
 
     public boolean discordRpc;
     public boolean autoTp;
@@ -30,17 +31,23 @@ public class EventConfig extends FileLoader {
     public boolean updateChecker;
     public boolean confirmWindowClose;
     public boolean confirmDisconnect;
-    public boolean eventServersEnabled;
-    @Range(from = MIN_EVENT_SERVER_DISPLAY_MINUTES, to = MAX_EVENT_SERVER_DISPLAY_MINUTES) public int eventServerDisplayMinutes;
     @NotNull public String defaultFamousIp;
-    @NotNull public Map<UUID, Group> groups;
+    public boolean beeIcons;
+
     public boolean developerMode;
     @NotNull public StandardLevel logLevel;
+
     @NotNull public final List<EventType> eventTypes;
-    @NotNull public final List<EventType> eventServerTypes;
     @NotNull public final Map<EventType, NotificationSound> notificationSounds;
 
-    public EventConfig() {
+    public boolean eventServersEnabled;
+    @Range(from = MIN_EVENT_SERVER_DISPLAY_MINUTES, to = MAX_EVENT_SERVER_DISPLAY_MINUTES) public int eventServerDisplayMinutes;
+    @NotNull public final List<EventType> eventServerTypes;
+
+    @NotNull public Map<UUID, Group> groups;
+
+
+    public EUConfig() {
         super(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
 
         // Create empty file if it doesn't exist
@@ -62,14 +69,15 @@ public class EventConfig extends FileLoader {
         confirmWindowClose = get("confirm_window_close", Defaults.CONFIRM_WINDOW_CLOSE);
         confirmDisconnect = get("confirm_disconnect", Defaults.CONFIRM_DISCONNECT);
         defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
-        eventServersEnabled = get("event_servers_enabled", Defaults.EVENT_SERVERS_ENABLED);
-        setEventServerDisplayMinutes(get("event_server_display_minutes", Defaults.EVENT_SERVER_DISPLAY_MINUTES));
-        groups = new LinkedHashMap<>(get("groups", Defaults.groups(), new TypeToken<Map<UUID, Group>>(){}.getType()));
+        beeIcons = get("bee_icons", Defaults.BEE_ICONS);
         developerMode = get("developer_mode", Defaults.DEVELOPER_MODE);
         logLevel = get("log_level", Defaults.LOG_LEVEL);
         eventTypes = get("notifications", Defaults.eventTypes(), new TypeToken<List<EventType>>(){}.getType());
-        eventServerTypes = get("event_server_types", Defaults.eventServerTypes(), new TypeToken<List<EventType>>(){}.getType());
         notificationSounds = get("notification_sounds", Defaults.notificationSounds(), new TypeToken<Map<EventType, NotificationSound>>(){}.getType());
+        eventServersEnabled = get("event_servers_enabled", Defaults.EVENT_SERVERS_ENABLED);
+        setEventServerDisplayMinutes(get("event_server_display_minutes", Defaults.EVENT_SERVER_DISPLAY_MINUTES));
+        eventServerTypes = get("event_server_types", Defaults.eventServerTypes(), new TypeToken<List<EventType>>(){}.getType());
+        groups = new LinkedHashMap<>(get("groups", Defaults.groups(), new TypeToken<Map<UUID, Group>>(){}.getType()));
 
         // Save if created (default values)
         if (created) save();
@@ -181,16 +189,17 @@ public class EventConfig extends FileLoader {
         public static final boolean UPDATE_CHECKER = true;
         public static final boolean CONFIRM_WINDOW_CLOSE = true;
         public static final boolean CONFIRM_DISCONNECT = true;
-        public static final boolean EVENT_SERVERS_ENABLED = true;
-        public static final int EVENT_SERVER_DISPLAY_MINUTES = 5;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
-        @NotNull public static final Map<UUID, Group> DEFAULT_GROUPS = Map.of(UUID.randomUUID(), new Group().setName("Hide All Players"));
+        public static final boolean BEE_ICONS = true;
         public static final boolean DEVELOPER_MODE = false;
         @NotNull public static final StandardLevel LOG_LEVEL = Level.INFO.getStandardLevel();
         @NotNull private static final List<EventType> EVENT_TYPES = List.of(EventType.values());
-        @NotNull private static final List<EventType> EVENT_SERVER_TYPES = List.of(EventType.values());
         @NotNull private static final Map<EventType, NotificationSound> NOTIFICATION_SOUNDS = Arrays.stream(EventType.values())
                 .collect(HashMap::new, (map, type) -> map.put(type, NotificationSound.ALERT), HashMap::putAll);
+        public static final boolean EVENT_SERVERS_ENABLED = true;
+        public static final int EVENT_SERVER_DISPLAY_MINUTES = 5;
+        @NotNull private static final List<EventType> EVENT_SERVER_TYPES = List.of(EventType.values());
+        @NotNull public static final Map<UUID, Group> DEFAULT_GROUPS = Map.of(UUID.randomUUID(), new Group().setName("Hide All Players"));
 
         @NotNull
         public static Map<UUID, Group> groups() {
