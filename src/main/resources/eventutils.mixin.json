@@ -11,7 +11,7 @@
     "ClientMixin",
     "EntityRenderDispatcherMixin",
     "EntryListWidgetAccessor",
-    "KeyBindingMixin",
+    "KeyBindingAccessor",
     "MultiplayerScreenMixin",
     "PlayerEntityRendererMixin",
     "PlayerListHudMixin"

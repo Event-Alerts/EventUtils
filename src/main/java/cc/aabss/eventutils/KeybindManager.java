@@ -1,7 +1,7 @@
 package cc.aabss.eventutils;
 
 import cc.aabss.eventutils.config.Group;
-import cc.aabss.eventutils.mixin.KeyBindingMixin;
+import cc.aabss.eventutils.mixin.KeyBindingAccessor;
 import cc.aabss.eventutils.screen.EventInfoScreen;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -58,7 +58,7 @@ public class KeybindManager {
 
             // Event info key TODO: prevent activating when in chat box or similar
             if (!eventInfoKey.isUnbound()) {
-                if (GLFW.glfwGetKey(windowHandle, ((KeyBindingMixin) eventInfoKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
+                if (GLFW.glfwGetKey(windowHandle, ((KeyBindingAccessor) eventInfoKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
                     if (canNotPress(eventInfoKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.debug("Event info key pressed");
                     if (mod.lastEvent != null) {
@@ -71,7 +71,7 @@ public class KeybindManager {
 
             // Developer Mode: simulate test event
             if (!testEventKey.isUnbound() && mod.config.developerMode) {
-                if (GLFW.glfwGetKey(windowHandle, ((KeyBindingMixin) testEventKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
+                if (GLFW.glfwGetKey(windowHandle, ((KeyBindingAccessor) testEventKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
                     if (canNotPress(testEventKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.debug("Test event key pressed");
                     mod.simulateTestEvent();
