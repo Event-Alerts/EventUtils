@@ -14,7 +14,8 @@
     "KeyBindingAccessor",
     "MultiplayerScreenMixin",
     "PlayerEntityRendererMixin",
-    "PlayerListHudMixin"
+    "PlayerListHudMixin",
+    "ServerListAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

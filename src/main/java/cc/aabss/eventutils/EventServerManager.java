@@ -1,5 +1,6 @@
 package cc.aabss.eventutils;
 
+import cc.aabss.eventutils.mixin.ServerListAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.ServerList;
@@ -35,17 +36,10 @@ public class EventServerManager {
         if (!mod.config.eventServersEnabled || !mod.config.eventServerTypes.contains(eventType)) return;
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
+        final ObjectId finalId = id != null ? id : new ObjectId();
 
-        // Finalize ID
-        if (id == null) id = new ObjectId();
-        final ObjectId finalId = id;
-
-        // Don't add if already exists (fast-path check)
-        if (activeEventServers.containsKey(id)) return;
-
-        // Finalize title
-        if (title == null) title = eventType.name();
-        final String finalTitle = title;
+        // Don't add if already exists
+        if (activeEventServers.containsKey(finalId)) return;
 
         // Get time in milliseconds
         final long timeMillis = time != null ? time.getTime() : System.currentTimeMillis();
@@ -57,20 +51,22 @@ public class EventServerManager {
             }
             if (serverList == null) return;
 
+            final String serverName = EVENT_SERVER_PREFIX + (title != null ? title : eventType.name());
+            final String ipLower = ip.toLowerCase();
+
+            // Check if server already exists in list
+            final ServerInfo existing = serverList.get(ipLower);
+            if (existing != null) {
+                EventUtils.LOGGER.debug("Event server already present in server list: '{}' -> '{}'", serverName, ipLower);
+                return;
+            }
+
             // Create server info
-            final String serverName = EVENT_SERVER_PREFIX + finalTitle;
-            final ServerInfo serverInfo = new ServerInfo(serverName, ip, ServerInfo.ServerType.OTHER);
+            final ServerInfo serverInfo = new ServerInfo(serverName, ipLower, ServerInfo.ServerType.OTHER);
             serverInfo.setResourcePackPolicy(ServerInfo.ResourcePackPolicy.PROMPT);
 
-            // Add the server to the list (avoid duplicates in the persistent list)
-            for (int i = 0; i < serverList.size(); i++) {
-                final ServerInfo existing = serverList.get(i);
-                if (existing.name.equals(serverName) && existing.address.equalsIgnoreCase(ip)) {
-                    EventUtils.LOGGER.debug("Event server already present in server list: '{}' -> '{}'", serverName, ip);
-                    return;
-                }
-            }
-            serverList.add(serverInfo, false);
+            // Mixin to add to top of list
+            ((ServerListAccessor) serverList).getServers().add(0, serverInfo); // don't use addFirst to keep older Java version support
 
             // Store event server info
             final EventServerInfo eventServerInfo = new EventServerInfo(finalId, serverInfo, timeMillis);
@@ -84,30 +80,30 @@ public class EventServerManager {
             if (timeUntilRemoval > 0) {
                 final ScheduledFuture<?> removalTask = MiscUtility.IO_SCHEDULER.schedule(() -> removeEventServer(finalId), timeUntilRemoval, TimeUnit.MILLISECONDS);
                 removalTasks.put(finalId, removalTask);
-                EventUtils.LOGGER.debug("Scheduled removal of event server '{}' in {} ms ({}m after start)", finalTitle, timeUntilRemoval, mod.config.eventServerDisplayMinutes);
+                EventUtils.LOGGER.debug("Scheduled removal of event server '{}' in {} ms ({}m after start)", serverName, timeUntilRemoval, mod.config.eventServerDisplayMinutes);
             } else {
                 // If within grace period after event start, keep it briefly; else do not add
                 if (currentTime - timeMillis <= graceMs) {
                     final long remaining = graceMs - (currentTime - timeMillis);
                     final ScheduledFuture<?> removalTask = MiscUtility.IO_SCHEDULER.schedule(() -> removeEventServer(finalId), remaining, TimeUnit.MILLISECONDS);
                     removalTasks.put(finalId, removalTask);
-                    EventUtils.LOGGER.debug("Event '{}' already started; keeping for {} ms ({}m grace)", finalTitle, remaining, mod.config.eventServerDisplayMinutes);
+                    EventUtils.LOGGER.debug("Event '{}' already started; keeping for {} ms ({}m grace)", serverName, remaining, mod.config.eventServerDisplayMinutes);
                 } else {
                     serverList.remove(serverInfo);
                     activeEventServers.remove(finalId);
-                    EventUtils.LOGGER.debug("Event '{}' started more than {} minutes ago; not adding", finalTitle, mod.config.eventServerDisplayMinutes);
+                    EventUtils.LOGGER.debug("Event '{}' started more than {} minutes ago; not adding", serverName, mod.config.eventServerDisplayMinutes);
                     return;
                 }
             }
 
-            // Persist changes to disk so they show up when user opens the Multiplayer screen later
+            // Persist changes to disk
             try {
                 serverList.saveFile();
             } catch (final Exception e) {
-                EventUtils.LOGGER.error("Failed to save server list after adding event server", e);
+                EventUtils.LOGGER.warn("Failed to save server list after adding event server", e);
             }
 
-            EventUtils.LOGGER.debug("Added event server '{}' with IP '{}' to server list", finalTitle, ip);
+            EventUtils.LOGGER.debug("Added event server '{}' with IP '{}' to server list", serverName, ipLower);
         });
     }
 
@@ -138,15 +134,13 @@ public class EventServerManager {
 
             // Cancel removal task
             final ScheduledFuture<?> removalTask = removalTasks.remove(eventId);
-            if (removalTask != null) {
-                removalTask.cancel(false);
-            }
+            if (removalTask != null) removalTask.cancel(false);
 
             // Persist removal
             try {
                 serverList.saveFile();
             } catch (final Exception e) {
-                EventUtils.LOGGER.error("Failed to save server list after removing event server", e);
+                EventUtils.LOGGER.warn("Failed to save server list after removing event server", e);
             }
 
             EventUtils.LOGGER.debug("Removed event server from server list: {}", eventServerInfo.serverInfo.name);
@@ -177,15 +171,5 @@ public class EventServerManager {
         return true;
     }
 
-    private static class EventServerInfo {
-        @NotNull public final ObjectId eventId;
-        @NotNull public final ServerInfo serverInfo;
-        public final long eventTime;
-
-        public EventServerInfo(@NotNull ObjectId eventId, @NotNull ServerInfo serverInfo, long eventTime) {
-            this.eventId = eventId;
-            this.serverInfo = serverInfo;
-            this.eventTime = eventTime;
-        }
-    }
+    private record EventServerInfo(@NotNull ObjectId eventId, @NotNull ServerInfo serverInfo, long eventTime) {}
 }
