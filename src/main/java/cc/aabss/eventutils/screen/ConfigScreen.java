@@ -82,6 +82,12 @@ public class ConfigScreen {
                                 config.setSave("bee_icons", config.beeIcons);
                             })
                             .controller(ConfigScreen::getBooleanBuilder).build())
+                    .option(ButtonOption.createBuilder()
+                            .name(translatable("eventutils.config.groups.manage.title"))
+                            .description(OptionDescription.of(translatable("eventutils.config.groups.manage.description")))
+                            .text(translatable("eventutils.config.groups.manage.button"))
+                            .action((yaclScreen, option) -> MinecraftClient.getInstance().setScreen(new GroupManagerScreen(yaclScreen, EventUtils.MOD)))
+                            .build())
                     // Advanced
                     .group(OptionGroup.createBuilder()
                             .name(translatable("eventutils.config.advanced"))
@@ -145,15 +151,6 @@ public class ConfigScreen {
         alertsCategory.group(serverListGroup.build());
         alertsCategory.group(soundsGroup.build());
         builder.category(alertsCategory.build());
-
-        // Groups
-        builder.category(ConfigCategory.createBuilder().name(translatable("eventutils.config.groups.category"))
-                .option(ButtonOption.createBuilder()
-                        .name(translatable("eventutils.config.groups.manage_title"))
-                        .description(OptionDescription.of(translatable("eventutils.config.groups.manage_description")))
-                        .action((yaclScreen, option) -> MinecraftClient.getInstance().setScreen(new GroupManagerScreen(yaclScreen, EventUtils.MOD)))
-                        .build())
-                .build());
 
         // Return
         return builder.build().generateScreen(parent);
