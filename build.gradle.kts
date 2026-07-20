@@ -59,12 +59,14 @@ dependencies {
     }
 
     // Library: Java Utilities
-    val javaUtilitiesVersion = property("deps.java_utilities").toString()
+    val javaUtilitiesVersion = property("library.java_utilities").toString()
     shadow("xyz.srnyx:java-utilities:$javaUtilitiesVersion")
     // Library: Event Alerts SDK
-    val sdkVersion = property("deps.sdk").toString()
+    val sdkVersion = property("library.sdk").toString()
     shadow("gg.eventalerts.sdk:http:$sdkVersion")
     shadow("gg.eventalerts.sdk:websocket:$sdkVersion")
+    // Library: JDiscordIPC (https://github.com/jagrosh/DiscordIPC/pull/24/changes)
+    shadow("io.github.cdagaming:DiscordIPC:${property("library.discord_ipc")}")
 
     // Fabric
     modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
@@ -113,12 +115,17 @@ tasks {
         // Java Utilities
         relocate("xyz.srnyx.javautilities", "$libsPackage.javautilities")
         // Event Alerts SDK
-        relocate("gg.eventalerts.sdk", "$libsPackage.sdk")
+        relocate("gg.eventalerts.sdk", "$libsPackage.eventalerts.sdk")
         relocate("com.google.errorprone", "$libsPackage.errorprone")
         relocate("com.google.gson", "$libsPackage.gson")
         relocate("org.bson", "$libsPackage.bson")
         relocate("org.java_websocket", "$libsPackage.java_websocket")
         relocate("org.slf4j", "$libsPackage.slf4j")
+        // JDiscordIPC
+        relocate("com.jagrosh.discordipc", "$libsPackage.discordipc")
+        relocate("net.lenni0451.reflect", "$libsPackage.lenni0451.reflect")
+        relocate("org.newsclub.lib.junixsocket", "$libsPackage.junixsocket")
+        relocate("org.newsclub.net.unix", "$libsPackage.newsclub.unix")
     }
 
     remapJar {

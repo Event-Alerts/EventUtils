@@ -7,8 +7,10 @@ loomx.loom_version = "1.17-SNAPSHOT"
 loomx.loom_remap_plugin = "fabric-loom"
 
 deps.loader = "0.16.9"
-deps.java_utilities = "3575647"
-deps.sdk = "c401d8d"
+
+library.java_utilities = "3575647"
+library.sdk = "c401d8d"
+library.discord_ipc = "0.11.3"
 
 
 ["1.21.11"]

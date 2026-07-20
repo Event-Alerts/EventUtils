@@ -3,6 +3,7 @@ package cc.aabss.eventutils;
 import cc.aabss.eventutils.commands.CommandRegister;
 import cc.aabss.eventutils.config.EUConfig;
 import cc.aabss.eventutils.config.EventType;
+import cc.aabss.eventutils.discordrpc.DiscordRPC;
 import cc.aabss.eventutils.plustag.EventAlertsApi;
 import cc.aabss.eventutils.sdk.EventWrapper;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
@@ -20,7 +21,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.VersionParsingException;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.text.MutableText;
@@ -39,9 +39,11 @@ import org.bson.types.ObjectId;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.srnyx.javautilities.MiscUtility;
 import xyz.srnyx.javautilities.objects.SemanticVersion;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 
@@ -73,6 +75,7 @@ public class EventUtils implements ClientModInitializer {
     public EAWebSocket webSocket;
     @NotNull public final EventAlertsApi api = new EventAlertsApi(this);
     @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
+    public DiscordRPC discordRPC;
     public KeybindManager keybindManager;
     @NotNull public final EventServerManager eventServerManager = new EventServerManager(this);
     @NotNull public final GroupManager groupManager = new GroupManager(this);
@@ -85,10 +88,8 @@ public class EventUtils implements ClientModInitializer {
 
     @Nullable
     public static SemanticVersion getSemantic(@Nullable String string) {
-        if (string != null) try {
-            return new SemanticVersion(string);
-        } catch (final NumberFormatException ignored) {}
-        return null;
+        if (string == null) return null;
+        return MiscUtility.handleException(() -> new SemanticVersion(string), NumberFormatException.class).orElse(null);
     }
 
     @Override
@@ -96,22 +97,36 @@ public class EventUtils implements ClientModInitializer {
         // Websocket
         setupSdk(null);
 
+        // Discord RPC
+        discordRPC = new DiscordRPC(this);
+
         // Command registration
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> CommandRegister.register(dispatcher));
 
         // Game closed
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             webSocket.shutdown("Game closed");
+            discordRPC.close();
             eventServerManager.removeAllEventServers();
         });
 
-        // Update checker
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> updateChecker.notifyUpdate());
+        // On join
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            // Update checker
+            updateChecker.notifyUpdate();
 
-        // Clear API cache on disconnect
+            // DiscordRPC
+            discordRPC.updatePresence();
+        });
+
+        // On leave
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            // Clear API cache
             LOGGER.debug("[EventUtils] DISCONNECT: clearing Event Alerts cache");
             api.clearCache();
+
+            // DiscordRPC (delay for status to update correctly)
+            MiscUtility.IO_SCHEDULER.schedule(() -> discordRPC.updatePresence(), 1, TimeUnit.SECONDS);
         });
 
         // Initialize keybind manager

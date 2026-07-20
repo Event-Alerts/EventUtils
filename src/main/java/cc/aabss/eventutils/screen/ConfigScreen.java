@@ -26,6 +26,16 @@ public class ConfigScreen {
             .title(translatable("eventutils.config.title"))
             .category(ConfigCategory.createBuilder().name(translatable("eventutils.config.general"))
                     .option(Option.<Boolean>createBuilder()
+                            .name(translatable("eventutils.config.discord.title"))
+                            .description(OptionDescription.of(translatable("eventutils.config.discord.description")))
+                            .binding(EUConfig.Defaults.DISCORD_RPC, () -> config.discordRpc, newValue -> {
+                                config.discordRpc = newValue;
+                                config.setSave("discord_rpc", config.discordRpc);
+                                EventUtils.MOD.discordRPC.refreshConnection();
+                            })
+                            .controller(ConfigScreen::getBooleanBuilder)
+                            .build())
+                    .option(Option.<Boolean>createBuilder()
                             .name(translatable("eventutils.config.queue.title"))
                             .description(OptionDescription.of(translatable("eventutils.config.queue.description")))
                             .binding(EUConfig.Defaults.SIMPLE_QUEUE_MESSAGE, () -> config.simpleQueueMessage, newValue -> {
@@ -86,9 +96,9 @@ public class ConfigScreen {
                                     .description(OptionDescription.of(translatable("eventutils.config.advanced.developer_mode.description")))
                                     .binding(EUConfig.Defaults.DEVELOPER_MODE, () -> config.developerMode, newValue -> {
                                         config.developerMode = newValue;
+                                        config.setSave("developer_mode", config.developerMode);
                                         EventUtils.MOD.updateLogLevel();
                                         EventUtils.MOD.setupSdk("Developer Mode enabled/disabled");
-                                        config.setSave("developer_mode", config.developerMode);
                                     })
                                     .controller(ConfigScreen::getBooleanBuilder)
                                     .build())
@@ -97,8 +107,8 @@ public class ConfigScreen {
                                     .description(OptionDescription.of(translatable("eventutils.config.advanced.log_level.description")))
                                     .binding(EUConfig.Defaults.LOG_LEVEL, () -> config.logLevel, newValue -> {
                                         config.logLevel = newValue;
-                                        EventUtils.MOD.updateLogLevel();
                                         config.setSave("log_level", config.logLevel);
+                                        EventUtils.MOD.updateLogLevel();
                                     })
                                     .controller(opt -> EnumControllerBuilder.create(opt).enumClass(StandardLevel.class))
                                     .build())
