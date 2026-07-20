@@ -79,9 +79,7 @@ public class DiscordRPC {
 
     private void sendPresence() {
         // Update status
-        final boolean statusChanged = updateStatus();
-        EventUtils.LOGGER.debug("[DISCORD RPC] sendPresence statusChanged={} status={}", statusChanged, status);
-        if (!statusChanged || status == null) return;
+        if (!updateStatus() || status == null) return;
 
         // Only send presence if status has changed
         client.sendRichPresence(new RichPresence.Builder()
