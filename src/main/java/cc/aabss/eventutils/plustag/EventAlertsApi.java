@@ -4,8 +4,8 @@ import cc.aabss.eventutils.EventUtils;
 import gg.eventalerts.sdk.object.EAPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.srnyx.javautilities.MiscUtility;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
  * Fetches player data from Event Alerts API to determine unlocked plus tags
  */
 public class EventAlertsApi {
+    @NotNull private static final Duration FAILED_ATTEMPT_DELAY = Duration.ofSeconds(30);
+
     @NotNull private final EventUtils mod;
     /**
      * UUIDs we've cached. This is used to represent a UUID cached that has no best tag (null in map).
@@ -28,6 +30,7 @@ public class EventAlertsApi {
      * UUIDs we've already scheduled a fetch for (avoid duplicate requests until cache clear)
      */
     @NotNull private final Set<UUID> fetchScheduled = ConcurrentHashMap.newKeySet();
+    @Nullable private Long lastFailedAttempt;
 
     public EventAlertsApi(@NotNull EventUtils mod) {
         this.mod = mod;
@@ -42,19 +45,26 @@ public class EventAlertsApi {
                 .collect(Collectors.toSet());
         if (uuidsToFetch.isEmpty()) return;
 
+        // Check lastFailedAttempt
+        if (lastFailedAttempt != null && System.currentTimeMillis() - lastFailedAttempt < FAILED_ATTEMPT_DELAY.toMillis()) return;
+
         EventUtils.LOGGER.debug("[API] Fetching tags for uuids={}", uuidsToFetch);
-        MiscUtility.IO_SCHEDULER.execute(() -> {
-            try {
-                // Retrieve players
-                final List<EAPlayer> players = mod.http.players.retrieveMany(uuidsToFetch.size(), Map.of("minecraft_uuid", uuidsToFetch)).complete();
+        try {
+            // Retrieve players
+            mod.http.players.retrieveMany(uuidsToFetch.size(), Map.of("minecraft_uuid", uuidsToFetch)).queue(players -> {
                 if (players == null) {
                     EventUtils.LOGGER.debug("[API] parse: players is null, returning empty set");
+                    fetchScheduled.removeAll(uuidsToFetch);
                     return;
                 }
                 EventUtils.LOGGER.debug("[API] parse: fetched players={}", players);
 
                 for (final EAPlayer player : players) {
-                    if (player.minecraft == null || player.minecraft.uuid == null) continue;
+                    if (player.minecraft == null || player.minecraft.uuid == null) {
+                        EventUtils.LOGGER.debug("[API] parse: player.minecraft.uuid is null, skipping");
+                        fetchScheduled.remove(player.minecraft.uuid);
+                        continue;
+                    }
 
                     // Get best unlocked tag
                     PlusTag bestTag = null;
@@ -72,10 +82,16 @@ public class EventAlertsApi {
                     if (bestTag != null) cache.put(player.minecraft.uuid, bestTag);
                     fetchScheduled.remove(player.minecraft.uuid);
                 }
-            } catch (final Exception e) {
-                EventUtils.LOGGER.warn("[API] Fetch failed", e);
-            }
-        });
+            }, t -> {
+                EventUtils.LOGGER.warn("[API] Fetch failed", t);
+                fetchScheduled.removeAll(uuidsToFetch);
+                lastFailedAttempt = System.currentTimeMillis();
+            });
+        } catch (final Exception e) {
+            EventUtils.LOGGER.warn("[API] Fetch failed", e);
+            fetchScheduled.removeAll(uuidsToFetch);
+            lastFailedAttempt = System.currentTimeMillis();
+        }
     }
 
     public void populateCachedBestTag(@NotNull UUID uuid) {

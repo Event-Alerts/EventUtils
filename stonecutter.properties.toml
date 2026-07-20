@@ -9,7 +9,7 @@ loomx.loom_remap_plugin = "fabric-loom"
 deps.loader = "0.16.9"
 
 library.java_utilities = "3575647"
-library.sdk = "c401d8d"
+library.sdk = "f71dcb9"
 library.discord_ipc = "0.11.3"
 
 
