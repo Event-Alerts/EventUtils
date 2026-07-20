@@ -159,7 +159,7 @@ public class Group {
     }
 
     public boolean outsideRadius(@Nullable Vec3d position) {
-        if (radius == null || position == null) return false;
+        if (radius == null || position == null) return true;
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return true;
         //? if >=1.21.11 {
@@ -167,7 +167,7 @@ public class Group {
         //?} else {
         final Vec3d clientPosition = client.player.getPos();
          //?}
-        return !(clientPosition.distanceTo(position) <= radius);
+        return clientPosition.distanceTo(position) > radius;
     }
 
     public boolean isPlayerVisible(@NotNull String name, @Nullable Vec3d position) {
