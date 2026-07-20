@@ -2,6 +2,7 @@ package cc.aabss.eventutils;
 
 import cc.aabss.eventutils.commands.CommandRegister;
 import cc.aabss.eventutils.config.EUConfig;
+import cc.aabss.eventutils.config.EventType;
 import cc.aabss.eventutils.plustag.EventAlertsApi;
 import cc.aabss.eventutils.sdk.EventWrapper;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
@@ -10,7 +11,6 @@ import cc.aabss.eventutils.websocket.listener.EventPostedListener;
 import cc.aabss.eventutils.websocket.listener.FamousEventPostedListener;
 import gg.eventalerts.sdk.http.EAHTTP;
 import gg.eventalerts.sdk.object.EAEvent;
-import gg.eventalerts.sdk.object.EAFamousEvent;
 import gg.eventalerts.sdk.websocket.EAWebSocket;
 import gg.eventalerts.sdk.websocket.SocketEventName;
 import gg.eventalerts.sdk.websocket.message.event.SocketEvent;
@@ -20,7 +20,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.VersionParsingException;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -40,6 +39,7 @@ import org.bson.types.ObjectId;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.srnyx.javautilities.objects.SemanticVersion;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -76,11 +76,7 @@ public class EventUtils implements ClientModInitializer {
     public KeybindManager keybindManager;
     @NotNull public final EventServerManager eventServerManager = new EventServerManager(this);
     @NotNull public final GroupManager groupManager = new GroupManager(this);
-    /**
-     * {@link EAEvent} or {@link EAFamousEvent}
-     */
-    @Nullable public EventWrapper lastEvent;
-    @NotNull public final Map<EventType, String> lastIps = new EnumMap<>(EventType.class);
+    @NotNull public final Map<EventType, EventWrapper> lastEvents = new EnumMap<>(EventType.class);
 
     public EventUtils() {
         MOD = this;
@@ -90,8 +86,8 @@ public class EventUtils implements ClientModInitializer {
     @Nullable
     public static SemanticVersion getSemantic(@Nullable String string) {
         if (string != null) try {
-            return SemanticVersion.parse(string);
-        } catch (final VersionParsingException ignored) {}
+            return new SemanticVersion(string);
+        } catch (final NumberFormatException ignored) {}
         return null;
     }
 
@@ -105,7 +101,7 @@ public class EventUtils implements ClientModInitializer {
 
         // Game closed
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            webSocket.close(1000, "Game closed");
+            webSocket.shutdown("Game closed");
             eventServerManager.removeAllEventServers();
         });
 
@@ -230,6 +226,6 @@ public class EventUtils implements ClientModInitializer {
         new EventPostedListener(this).onMessage(new SocketEvent<>(SocketEventName.EVENT_POSTED, 1L, testEvent));
 
         // Set as last event for event info screen
-        lastEvent = new EventWrapper(testEvent);
+        lastEvents.put(EventType.MONEY, new EventWrapper(this, testEvent));
     }
 }

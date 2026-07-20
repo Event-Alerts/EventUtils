@@ -153,9 +153,13 @@ public class EditGroupScreen extends Screen {
     }
 
     private void saveAndClose() {
-        // Special fields
+        // Check if group with NEW name already exists
+        final String newName = nameField.getText();
+        if (!newName.equals(groupCopy.getName()) && mod.config.getGroupByName(newName) != null) return;
+
+        // Text fields
         groupCopy
-                .setName(nameField.getText())
+                .setName(newName)
                 .setPlayers(stringToSet(playersField.getText()))
                 .setEntities(stringToSet(entitiesField.getText()));
 

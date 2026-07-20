@@ -16,6 +16,7 @@ import static net.minecraft.text.Text.translatable;
 
 
 public enum NotificationSound implements NameableEnum {
+    NONE,
     ALARM,
     ALERT,
     CALM,

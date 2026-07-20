@@ -1,6 +1,6 @@
 package cc.aabss.eventutils.config.adapters;
 
-import cc.aabss.eventutils.EventType;
+import cc.aabss.eventutils.config.EventType;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;

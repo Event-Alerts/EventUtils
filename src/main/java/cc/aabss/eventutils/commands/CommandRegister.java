@@ -1,6 +1,6 @@
 package cc.aabss.eventutils.commands;
 
-import cc.aabss.eventutils.EventType;
+import cc.aabss.eventutils.config.EventType;
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import com.mojang.brigadier.CommandDispatcher;

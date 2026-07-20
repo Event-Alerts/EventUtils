@@ -29,7 +29,7 @@ public class MultiplayerScreenMixin {
     @Inject(method = "init", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
         // Store reference to server list for EventServerManager
-        EventUtils.MOD.eventServerManager.setServerList(this.serverList);
+        EventUtils.MOD.eventServerManager.gotServerList = serverList;
 
         //? if >=1.21.11
         //ScreenEvents.afterRender((Screen) (Object) this).register((screen, context, mouseX, mouseY, delta) -> highlightEventRows(context));

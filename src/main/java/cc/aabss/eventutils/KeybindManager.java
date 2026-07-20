@@ -3,8 +3,10 @@ package cc.aabss.eventutils;
 import cc.aabss.eventutils.config.Group;
 import cc.aabss.eventutils.mixin.KeyBindingAccessor;
 import cc.aabss.eventutils.screen.EventInfoScreen;
+import cc.aabss.eventutils.sdk.EventWrapper;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.MutableText;
@@ -34,6 +36,7 @@ public class KeybindManager {
     @Nullable private Long windowHandle;
     @NotNull public KeyBinding eventInfoKey;
     @NotNull private final Map<String, Long> lastKeyPresses = new HashMap<>();
+    @Nullable public EventWrapper lastEventForInfoScreen;
 
     public KeybindManager(@NotNull EventUtils mod) {
         // Keybindings
@@ -54,17 +57,31 @@ public class KeybindManager {
                 CATEGORY));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            // Only allow if no screen or TitleScreen
+            if (client.currentScreen != null && (!(client.currentScreen instanceof TitleScreen))) return;
+
+            // Store Minecraft's window
             if (windowHandle == null) windowHandle = client.getWindow().getHandle();
 
-            // Event info key TODO: prevent activating when in chat box or similar
+            // Event info key
             if (!eventInfoKey.isUnbound()) {
                 if (GLFW.glfwGetKey(windowHandle, ((KeyBindingAccessor) eventInfoKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
                     if (canNotPress(eventInfoKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.debug("Event info key pressed");
-                    if (mod.lastEvent != null) {
-                        client.setScreen(new EventInfoScreen(mod.lastEvent));
+
+                    // If screen already open, close it
+                    if (client.currentScreen instanceof EventInfoScreen) {
+                        client.setScreen(null);
                         return;
                     }
+
+                    // Open screen
+                    if (lastEventForInfoScreen != null) {
+                        client.setScreen(new EventInfoScreen(lastEventForInfoScreen));
+                        return;
+                    }
+
+                    // Action bar
                     if (client.player != null) client.player.sendMessage(Text.translatable("eventutils.no_recent_event.message").formatted(Formatting.RED), true);
                 }
             }
@@ -74,11 +91,15 @@ public class KeybindManager {
                 if (GLFW.glfwGetKey(windowHandle, ((KeyBindingAccessor) testEventKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
                     if (canNotPress(testEventKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.debug("Test event key pressed");
+
+                    // Simulate test event
                     mod.simulateTestEvent();
                     if (client.player == null) {
                         EventUtils.LOGGER.debug("Test event simulated from main menu");
                         return;
                     }
+
+                    // Action bar
                     client.player.sendMessage(Text.literal("Test event simulated! Check your server list and you should see a toast notification.").formatted(Formatting.GREEN), true);
                 }
             }
@@ -94,7 +115,7 @@ public class KeybindManager {
                 // Cycle groups
                 mod.groupManager.cycle();
 
-                // Send action bar
+                // Action bar
                 final MutableText message;
                 final Group group = mod.groupManager.getSelectedGroup();
                 if (group != null) {

@@ -1,6 +1,5 @@
 package cc.aabss.eventutils.config;
 
-import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.config.adapters.EntityTypeAdapter;
 import cc.aabss.eventutils.config.adapters.EntityTypeListAdapter;
 import cc.aabss.eventutils.config.adapters.EventTypeSetAdapter;
@@ -98,8 +97,15 @@ public abstract class FileLoader {
         save();
     }
 
-    public void remove(@NotNull String key) {
-        json.remove(key);
+    @Nullable
+    public JsonElement remove(@NotNull String key) {
+        return json.remove(key);
+    }
+
+    @Nullable
+    public <T> T remove(@NotNull String key, @NotNull Type type) {
+        final JsonElement element = remove(key);
+        return element == null ? null : GSON.fromJson(element, type);
     }
 
     public void save() {

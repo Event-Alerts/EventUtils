@@ -1,11 +1,11 @@
 package cc.aabss.eventutils.commands;
 
+import cc.aabss.eventutils.sdk.EventWrapper;
 import cc.aabss.eventutils.utility.ConnectUtility;
-import cc.aabss.eventutils.EventType;
+import cc.aabss.eventutils.config.EventType;
 import cc.aabss.eventutils.EventUtils;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,16 +20,15 @@ public class TeleportCmd {
             return;
         }
 
-        // Get lastIp
-        final String lastIp = EventUtils.MOD.lastIps.get(type);
-        if (lastIp == null) {
-            source.sendError(translatable("eventutils.command.no_event_found").append(Text.literal(type.displayNameString.toLowerCase() + "!")));
+        // Get last event of type
+        final EventWrapper lastEvent = EventUtils.MOD.lastEvents.get(type);
+        if (lastEvent == null || lastEvent.ip == null) {
+            source.sendError(translatable("eventutils.command.no_event_found", type.name().toLowerCase()));
             return;
         }
 
-        System.out.println("Connecting to " + lastIp + " for event " + type.name().toLowerCase());
-
         // Connect
-        ConnectUtility.connect(lastIp);
+        EventUtils.LOGGER.debug("Connecting to {} for event {}", lastEvent.ip, lastEvent);
+        ConnectUtility.connect(lastEvent.ip);
     }
 }

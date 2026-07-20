@@ -1,23 +1,21 @@
 package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.BuildProperties;
-import cc.aabss.eventutils.EventType;
 import cc.aabss.eventutils.EventUtils;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonObject;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.SemanticVersion;
-import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.impl.util.version.SemanticVersionImpl;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.spi.StandardLevel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
+import xyz.srnyx.javautilities.objects.SemanticVersion;
 
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class EUConfig extends FileLoader {
@@ -26,25 +24,19 @@ public class EUConfig extends FileLoader {
 
 
     public boolean discordRpc;
-    public boolean autoTp;
     public boolean simpleQueueMessage;
     public boolean updateChecker;
     public boolean confirmWindowClose;
     public boolean confirmDisconnect;
     @NotNull public String defaultFamousIp;
     public boolean beeIcons;
+    @Range(from = MIN_EVENT_SERVER_DISPLAY_MINUTES, to = MAX_EVENT_SERVER_DISPLAY_MINUTES) public int eventServerDisplayMinutes;
+    @NotNull public final Map<UUID, Group> groups;
+
+    @NotNull public final Map<EventType, EventSettings> eventSettings;
 
     public boolean developerMode;
     @NotNull public StandardLevel logLevel;
-
-    @NotNull public final List<EventType> eventTypes;
-    @NotNull public final Map<EventType, NotificationSound> notificationSounds;
-
-    public boolean eventServersEnabled;
-    @Range(from = MIN_EVENT_SERVER_DISPLAY_MINUTES, to = MAX_EVENT_SERVER_DISPLAY_MINUTES) public int eventServerDisplayMinutes;
-    @NotNull public final List<EventType> eventServerTypes;
-
-    @NotNull public Map<UUID, Group> groups;
 
 
     public EUConfig() {
@@ -53,44 +45,50 @@ public class EUConfig extends FileLoader {
         // Create empty file if it doesn't exist
         boolean created = false;
         if (!file.exists()) {
+            // File doesn't exist, create it
             json = new JsonObject();
             if (EventUtils.getSemantic(BuildProperties.MOD_VERSION) != null) json.addProperty("version", BuildProperties.MOD_VERSION);
             created = true;
         } else {
+            // File already exists
             load();
-            update();
+            migrate();
         }
 
         // Get values
         discordRpc = get("discord_rpc", Defaults.DISCORD_RPC);
-        autoTp = get("auto_tp", Defaults.AUTO_TP);
         simpleQueueMessage = get("simple_queue_message", Defaults.SIMPLE_QUEUE_MESSAGE);
         updateChecker = get("update_checker", Defaults.UPDATE_CHECKER);
         confirmWindowClose = get("confirm_window_close", Defaults.CONFIRM_WINDOW_CLOSE);
         confirmDisconnect = get("confirm_disconnect", Defaults.CONFIRM_DISCONNECT);
         defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
         beeIcons = get("bee_icons", Defaults.BEE_ICONS);
+        setEventServerDisplayMinutes(get("event_server_display_minutes", Defaults.EVENT_SERVER_DISPLAY_MINUTES));
+        groups = get("groups", Defaults.groups(), new TypeToken<Map<UUID, Group>>(){}.getType());
+        eventSettings = get("event_settings", Defaults.eventSettings(), new TypeToken<Map<EventType, EventSettings>>(){}.getType());
         developerMode = get("developer_mode", Defaults.DEVELOPER_MODE);
         logLevel = get("log_level", Defaults.LOG_LEVEL);
-        eventTypes = get("notifications", Defaults.eventTypes(), new TypeToken<List<EventType>>(){}.getType());
-        notificationSounds = get("notification_sounds", Defaults.notificationSounds(), new TypeToken<Map<EventType, NotificationSound>>(){}.getType());
-        eventServersEnabled = get("event_servers_enabled", Defaults.EVENT_SERVERS_ENABLED);
-        setEventServerDisplayMinutes(get("event_server_display_minutes", Defaults.EVENT_SERVER_DISPLAY_MINUTES));
-        eventServerTypes = get("event_server_types", Defaults.eventServerTypes(), new TypeToken<List<EventType>>(){}.getType());
-        groups = new LinkedHashMap<>(get("groups", Defaults.groups(), new TypeToken<Map<UUID, Group>>(){}.getType()));
+
+        // Validate groups (unique names)
+        final Set<String> groupNames = new HashSet<>();
+        for (final Group group : new HashSet<>(groups.values())) {
+            if (groupNames.add(group.getName().toLowerCase())) continue;
+            EventUtils.LOGGER.error("Removing duplicate group: {}", group.getName());
+            groups.values().remove(group);
+        }
 
         // Save if created (default values)
         if (created) save();
     }
 
-    private void update() {
+    private void migrate() {
         // Get old version
         final String oldVersionString = get("version", "1.4.0");
         final SemanticVersion oldVersion = EventUtils.getSemantic(oldVersionString);
         if (oldVersion == null) return;
 
         // Older than 2.0.0
-        if (oldVersion.compareTo((Version) new SemanticVersionImpl(new int[]{2, 0, 0}, null, null)) < 0) {
+        if (oldVersion.compareTo(new SemanticVersion(2, 0, 0)) < 0) {
             update("discord-rpc", "discord_rpc", Boolean.class);
             update("auto-tp", "auto_tp", Boolean.class);
             update("simple-queue-msg", "simple_queue_message", Boolean.class);
@@ -100,10 +98,10 @@ public class EUConfig extends FileLoader {
             update("default-famous-ip", "default_famous_ip", String.class);
 
             // whitelisted_players
-            set("whitelisted_players", get("whitelisted-players", List.<String>of(), new TypeToken<List<String>>(){}.getType()).stream()
+            final List<String> whitelistedPlayers = remove("whitelisted_players", new TypeToken<List<String>>(){}.getType());
+            if (whitelistedPlayers != null) set("whitelisted-players", whitelistedPlayers.stream()
                     .map(String::toLowerCase)
                     .toList());
-            remove("whitelisted-players");
 
             // notifications
             final Set<EventType> types = new HashSet<>();
@@ -116,29 +114,53 @@ public class EUConfig extends FileLoader {
         }
 
         // 2.0.7 or older
-        if (oldVersion.compareTo((Version) new SemanticVersionImpl(new int[]{2, 0, 7}, null, null)) <= 0) {
+        if (oldVersion.compareTo(new SemanticVersion(2, 0, 7)) <= 0) {
             final Integer radius = get("hide_players_radius", TypeToken.of(Integer.class).getType());
             if (radius != null && radius == 1) set("hide_players_radius", 0);
         }
 
         // 2.3.0 or older
-        if (oldVersion.compareTo((Version) new SemanticVersionImpl(new int[]{2, 3, 0}, null, null)) <= 0) {
-            // use_testing_api -> developer_mode
-            update("use_testing_api", "developer_mode", Boolean.class);
+        if (oldVersion.compareTo(new SemanticVersion(2, 3, 0)) <= 0) {
+            // Flat alerts -> EventSettings
+            final Map<EventType, EventSettings> newEventSettings = new HashMap<>();
+            final Boolean autoTp = remove("auto_tp", Boolean.class);
+            final Set<EventType> notificationsEnabled = remove("notifications", new TypeToken<Set<EventType>>(){}.getType());
+            final Map<EventType, NotificationSound> notificationSounds = remove("notification_sounds", new TypeToken<Map<EventType, NotificationSound>>(){}.getType());
+            final Boolean eventServersEnabledGlobal = remove("event_servers_enabled", Boolean.class);
+            final Set<EventType> eventServersEnabled = remove("event_server_types", new TypeToken<Set<EventType>>(){}.getType());
+            for (final EventType type : EventType.values()) {
+                final EventSettings settings = new EventSettings();
+                if (autoTp != null) settings.autoTp = autoTp;
+                if (notificationsEnabled != null) settings.toasts = notificationsEnabled.contains(type);
+                if (notificationSounds != null) settings.sound = notificationSounds.getOrDefault(type, NotificationSound.ALERT);
+                if (eventServersEnabledGlobal != null && !eventServersEnabledGlobal) {
+                    // Global disabled -> all disabled
+                    settings.serverList = false;
+                } else if (eventServersEnabled != null) {
+                    // Individual setting
+                    settings.serverList = eventServersEnabled.contains(type);
+                }
+                newEventSettings.put(type, settings);
+            }
+            set("event_settings", newEventSettings);
 
-            // Flat hide values -> default group
+            // Flat hide values -> Group
             final Group group = new Group()
                     .setName("Legacy Group")
-                    .setPlayers(get("whitelisted_players", List.of(), new TypeToken<List<String>>(){}.getType()))
-                    .setEntities(get("hidden_entity_types", List.of(), new TypeToken<List<String>>(){}.getType()))
                     .setPlayerMode(Group.Mode.SHOW)
-                    .setEntityMode(Group.Mode.HIDE)
-                    .setRadius(get("hide_players_radius", Integer.class));
+                    .setEntityMode(Group.Mode.HIDE);
+            final List<String> whitelistedPlayers = remove("whitelisted_players", new TypeToken<List<String>>(){}.getType());
+            if (whitelistedPlayers != null) group.setPlayers(whitelistedPlayers);
+            final List<String> hiddenEntityTypes = remove("hidden_entity_types", new TypeToken<List<String>>(){}.getType());
+            if (hiddenEntityTypes != null) group.setEntities(hiddenEntityTypes);
+            final Integer hidePlayersRadius = remove("hide_players_radius", Integer.class);
+            if (hidePlayersRadius != null) group.setRadius(hidePlayersRadius);
+            final Boolean hideNpcs = remove("hide_npcs", Boolean.class);
+            if (hideNpcs != null) group.setNpcMode(hideNpcs ? Group.Mode.HIDE : Group.Mode.SHOW);
             set("groups", Map.of(UUID.randomUUID(), group));
-            remove("whitelisted_players");
-            remove("hidden_entity_types");
-            remove("hide_players_radius");
-            remove("hide_npcs");
+
+            // use_testing_api -> developer_mode
+            update("use_testing_api", "developer_mode", Boolean.class);
         }
 
         // --- ADD NEW MIGRATIONS ABOVE THIS LINE ---
@@ -152,13 +174,7 @@ public class EUConfig extends FileLoader {
     }
 
     private void update(@NotNull String oldKey, @NotNull String newKey, @NotNull Type type) {
-        set(newKey, get(oldKey, type));
-        remove(oldKey);
-    }
-
-    @NotNull
-    public NotificationSound getNotificationSound(@NotNull EventType type) {
-        return notificationSounds.getOrDefault(type, NotificationSound.ALERT);
+        set(newKey, remove(oldKey, type));
     }
 
     @NotNull
@@ -176,46 +192,41 @@ public class EUConfig extends FileLoader {
                 .orElse(null);
     }
 
+    @NotNull
+    public EventSettings getEventSettings(@NotNull EventType type) {
+        return eventSettings.getOrDefault(type, new EventSettings());
+    }
+
     public void setEventServerDisplayMinutes(int eventServerDisplayMinutes) {
         // Don't use Math.clamp to support older Java versions
         this.eventServerDisplayMinutes = Math.max(MIN_EVENT_SERVER_DISPLAY_MINUTES, Math.min(MAX_EVENT_SERVER_DISPLAY_MINUTES, eventServerDisplayMinutes));
     }
 
-    // Collections need to have methods to create new instances of the collection!
+    // Collections/Maps need to have methods to create new instances of the collection!
     public static class Defaults {
         public static final boolean DISCORD_RPC = true;
-        public static final boolean AUTO_TP = false;
         public static final boolean SIMPLE_QUEUE_MESSAGE = false;
         public static final boolean UPDATE_CHECKER = true;
         public static final boolean CONFIRM_WINDOW_CLOSE = true;
         public static final boolean CONFIRM_DISCONNECT = true;
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
         public static final boolean BEE_ICONS = true;
+        public static final int EVENT_SERVER_DISPLAY_MINUTES = 5;
+        @NotNull private static final Map<UUID, Group> GROUPS = Map.of(UUID.randomUUID(), new Group().setName("Hide All Players"));
+
+        @NotNull private static final Map<EventType, EventSettings> EVENT_SETTINGS = Arrays.stream(EventType.values())
+                .collect(Collectors.toMap(type -> type, type -> new EventSettings(), (a, b) -> a, () -> new EnumMap<>(EventType.class)));
+
         public static final boolean DEVELOPER_MODE = false;
         @NotNull public static final StandardLevel LOG_LEVEL = Level.INFO.getStandardLevel();
-        @NotNull private static final List<EventType> EVENT_TYPES = List.of(EventType.values());
-        @NotNull private static final Map<EventType, NotificationSound> NOTIFICATION_SOUNDS = Arrays.stream(EventType.values())
-                .collect(HashMap::new, (map, type) -> map.put(type, NotificationSound.ALERT), HashMap::putAll);
-        public static final boolean EVENT_SERVERS_ENABLED = true;
-        public static final int EVENT_SERVER_DISPLAY_MINUTES = 5;
-        @NotNull private static final List<EventType> EVENT_SERVER_TYPES = List.of(EventType.values());
-        @NotNull public static final Map<UUID, Group> DEFAULT_GROUPS = Map.of(UUID.randomUUID(), new Group().setName("Hide All Players"));
 
         @NotNull
         public static Map<UUID, Group> groups() {
-            return new HashMap<>(DEFAULT_GROUPS);
+            return new HashMap<>(GROUPS);
         }
         @NotNull
-        public static List<EventType> eventTypes() {
-            return new ArrayList<>(EVENT_TYPES);
-        }
-        @NotNull
-        public static List<EventType> eventServerTypes() {
-            return new ArrayList<>(EVENT_SERVER_TYPES);
-        }
-        @NotNull
-        public static Map<EventType, NotificationSound> notificationSounds() {
-            return new HashMap<>(NOTIFICATION_SOUNDS);
+        public static Map<EventType, EventSettings> eventSettings() {
+            return new HashMap<>(EVENT_SETTINGS);
         }
     }
 }
