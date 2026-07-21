@@ -15,6 +15,9 @@ plugins {
     id("xyz.srnyx.gradle-galaxy") version "3.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.1.1"
     id("com.gradleup.shadow") version "9.6.0"
+    id("dev.kikugie.fletching-table.fabric") version "0.1.0-alpha.22"
+    kotlin("jvm") version "2.4.10" // For Fletching Table
+    id("com.google.devtools.ksp") version "2.3.10" // For Fletching Table
     id("net.kyori.blossom") version "2.2.0"
 //    id("org.jetbrains.gradle.plugin.idea-ext") version "1.4.1" // For Blossom to auto-run generateTemplates
 }
@@ -82,6 +85,18 @@ base.archivesName = modName
 
 stonecutter {
     dependencies["java"] = java.majorVersion
+}
+
+fletchingTable {
+    fabric {
+        entrypointMappings.put("modmenu", "com.terraformersmc.modmenu.api.ModMenuApi")
+    }
+
+    mixins.create("main") {
+        mixin("default", "eventutils.mixins.json") {
+            env("client")
+        }
+    }
 }
 
 // Replacements for fabric.mod.json

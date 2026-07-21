@@ -12,17 +12,6 @@
   "license": "MIT",
   "icon": "assets/eventutils/textures/icon.png",
   "environment": "client",
-  "mixins": [
-    "${mixins}"
-  ],
-  "entrypoints": {
-    "client": [
-      "${group}.eventutils.EventUtils"
-    ],
-    "modmenu":  [
-      "${group}.eventutils.ModMenuImpl"
-    ]
-  },
   "depends": {
     "minecraft": ">=${deps_minecraft}",
     "fabricloader": ">=${deps_loader}",

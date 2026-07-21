@@ -1,6 +1,7 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -16,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.UUID;
 
 
-@Mixin(Entity.class)
+@Mixin(Entity.class) @MixinEnvironment(type = MixinEnvironment.Env.MAIN)
 public abstract class EntityMixin {
     @Shadow public abstract UUID getUuid();
     @Shadow public abstract Text getName();

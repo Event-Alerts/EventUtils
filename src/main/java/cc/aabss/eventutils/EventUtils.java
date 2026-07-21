@@ -11,6 +11,7 @@ import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import cc.aabss.eventutils.websocket.listener.EventCancelledListener;
 import cc.aabss.eventutils.websocket.listener.EventPostedListener;
 import cc.aabss.eventutils.websocket.listener.FamousEventPostedListener;
+import dev.kikugie.fletching_table.annotation.fabric.Entrypoint;
 import gg.eventalerts.sdk.http.EAHTTP;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.websocket.EAWebSocket;
@@ -50,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 
+@Entrypoint("client")
 public class EventUtils implements ClientModInitializer {
     @NotNull private static final Duration IN_EVENT_TIME = Duration.ofHours(12);
     @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
