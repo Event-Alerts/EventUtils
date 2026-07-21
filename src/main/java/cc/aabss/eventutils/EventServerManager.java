@@ -84,13 +84,6 @@ public class EventServerManager {
 
             // Schedule removal task
             removalTasks.put(wrapper.id, MiscUtility.IO_SCHEDULER.schedule(() -> removeEventServer(wrapper.id), removalDelay, TimeUnit.MILLISECONDS));
-
-            // Persist changes to disk
-            try {
-                serverList.saveFile();
-            } catch (final Exception e) {
-                EventUtils.LOGGER.warn("Failed to save server list after adding event server", e);
-            }
             EventUtils.LOGGER.debug("Added event server '{}' with IP '{}' to server list, will be removed in {} ms", serverName, wrapper.ip, removalDelay);
         });
     }
@@ -115,13 +108,6 @@ public class EventServerManager {
 
             // Remove from server list
             serverList.remove(eventServerInfo.serverInfo);
-
-            // Persist removal
-            try {
-                serverList.saveFile();
-            } catch (final Exception e) {
-                EventUtils.LOGGER.warn("Failed to save server list after removing event server", e);
-            }
             EventUtils.LOGGER.debug("Removed event server from server list: {}", eventServerInfo.serverInfo.name);
         });
     }
