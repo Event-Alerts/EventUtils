@@ -188,7 +188,7 @@ public class EventWrapper {
                     final Text description = ip != null ? Text.translatable("eventutils.event.teleport", Text.translatable("eventutils.event.teleport.command", eventType.name().toLowerCase()).formatted(Formatting.YELLOW)) : null;
 
                     // Send toast
-                    client.getToastManager().add(new NotificationToast(title, description, ip != null));
+                    client.execute(() -> client.getToastManager().add(new NotificationToast(title, description, ip != null)));
                     toastSent = true;
                 }
             }
