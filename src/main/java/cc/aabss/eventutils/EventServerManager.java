@@ -34,6 +34,11 @@ public class EventServerManager {
         this.mod = mod;
     }
 
+    public boolean isActiveEventServer(@NotNull String ip) {
+        final String ipLower = ip.toLowerCase();
+        return activeEventServers.values().stream().anyMatch(info -> info.serverInfo.address.toLowerCase().equals(ipLower));
+    }
+
     public void addEventServer(@NotNull EventWrapper wrapper) {
         if (wrapper.ip == null) {
             EventUtils.LOGGER.debug("Cannot add event server because IP is null: {}", wrapper);
@@ -84,6 +89,9 @@ public class EventServerManager {
 
             // Schedule removal task
             removalTasks.put(wrapper.id, MiscUtility.IO_SCHEDULER.schedule(() -> removeEventServer(wrapper.id), removalDelay, TimeUnit.MILLISECONDS));
+
+            // Persist changes to disk
+            serverList.saveFile();
             EventUtils.LOGGER.debug("Added event server '{}' with IP '{}' to server list, will be removed in {} ms", serverName, wrapper.ip, removalDelay);
         });
     }
@@ -108,6 +116,9 @@ public class EventServerManager {
 
             // Remove from server list
             serverList.remove(eventServerInfo.serverInfo);
+
+            // Persist removal
+            serverList.saveFile();
             EventUtils.LOGGER.debug("Removed event server from server list: {}", eventServerInfo.serverInfo.name);
         });
     }

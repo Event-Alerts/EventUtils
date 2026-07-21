@@ -15,7 +15,8 @@
     "MultiplayerScreenMixin",
     "PlayerEntityRendererMixin",
     "PlayerListHudMixin",
-    "ServerListAccessor"
+    "ServerListAccessor",
+    "ServerListMixin"
   ],
   "injectors": {
     "defaultRequire": 1

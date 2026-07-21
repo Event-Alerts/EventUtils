@@ -13,6 +13,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.option.ServerList;
+import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -47,8 +48,8 @@ public class MultiplayerScreenMixin {
         final int right = left + serverListWidget.getRowWidth();
         final int servers = serverListWidget.children().size();
         for (int i = 0; i < servers; i++) {
-            final var entry = serverListWidget.children().get(i);
-            final var narration = entry.getNarration();
+            final MultiplayerServerListWidget.Entry entry = serverListWidget.children().get(i);
+            final Text narration = entry.getNarration();
             if (narration == null) continue;
             final String label = narration.getString();
             final String normalized = label.replaceAll("§.", "");
