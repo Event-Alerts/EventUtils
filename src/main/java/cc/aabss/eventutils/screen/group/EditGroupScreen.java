@@ -171,7 +171,7 @@ public class EditGroupScreen extends Screen {
 
     @NotNull
     private static Set<String> stringToSet(@NotNull String text) {
-        text = text.trim();
+        text = text.trim().toLowerCase();
         if (text.isEmpty()) return Set.of();
         return Arrays.stream(text.split(","))
                 .map(String::trim)

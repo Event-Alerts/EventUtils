@@ -159,23 +159,25 @@ public class Group {
     }
 
     public boolean outsideRadius(@Nullable Vec3d position) {
-        if (radius == null || position == null) return true;
+        if (radius == null || position == null) return false;
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return true;
         //? if >=1.21.11 {
-        //final Vec3d clientPosition = client.player.getSyncedPos();
-        //?} else {
+        /*final Vec3d clientPosition = client.player.getSyncedPos();
+        *///?} else {
         final Vec3d clientPosition = client.player.getPos();
          //?}
         return clientPosition.distanceTo(position) > radius;
     }
 
     public boolean isPlayerVisible(@NotNull String name, @Nullable Vec3d position) {
-        return (playerMode == Mode.SHOW) == players.contains(name.toLowerCase()) || outsideRadius(position);
+        final boolean show = (playerMode == Mode.SHOW) == players.contains(name.toLowerCase());
+        return show || outsideRadius(position);
     }
 
     public boolean isEntityVisible(@NotNull EntityType<?> entityType, @Nullable Vec3d position) {
-        return (entityMode == Mode.SHOW) == entities.contains(entityType.getName().getString().toLowerCase()) || outsideRadius(position);
+        final boolean show = (entityMode == Mode.SHOW) == entities.contains(entityType.getName().getString().toLowerCase());
+        return show || outsideRadius(position);
     }
 
     public boolean isNametagVisible(@NotNull VersionedGameProfile profile, @Nullable Vec3d position) {
