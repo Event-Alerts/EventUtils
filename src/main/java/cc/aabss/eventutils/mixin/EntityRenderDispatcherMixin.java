@@ -2,9 +2,11 @@ package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
 //? if >=1.21.11 {
-/*import net.minecraft.client.render.command.OrderedRenderCommandQueue;
+/*import cc.aabss.eventutils.accessor.PlayerEntityRenderStateAccessor;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.EntityRenderManager;
 import net.minecraft.client.render.entity.state.EntityRenderState;
+import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.entity.EntityType;
 *///?} else {
@@ -43,8 +45,8 @@ public class EntityRenderDispatcherMixin {
 
         // Player
         //? if >=1.21.11 {
-        /*if (renderState.entityType == EntityType.PLAYER) {
-            final String name = renderState.displayName != null ? renderState.displayName.getString() : null;
+        /*if (renderState instanceof PlayerEntityRenderState playerRenderState) {
+            final String name = ((PlayerEntityRenderStateAccessor) playerRenderState).eventutils$getRawName();
         *///?} else {
         if (entity instanceof PlayerEntity player) {
             final String name = player.getName().getString();

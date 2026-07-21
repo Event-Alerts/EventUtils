@@ -29,7 +29,7 @@ val modMenuVersion = property("deps.modmenu").toString()
 val placeholderApiVersion = if (hasProperty("deps.placeholder_api")) property("deps.placeholder_api").toString() else null
 
 // Java version
-val is261Plus: Boolean = sc.eval(sc.current.version, ">=26.1")
+val is261Plus: Boolean = sc.current.parsed >= "26.1"
 val java = when {
     is261Plus -> JavaVersion.VERSION_25
     sc.current.parsed >= "1.20.5" -> JavaVersion.VERSION_21
@@ -93,7 +93,8 @@ addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "deps_loader" to loaderVersion,
     "deps_fabric_api" to fabricApiVersion,
     "deps_yacl" to yaclVersion,
-    "deps_modmenu" to modMenuVersion))
+    "deps_modmenu" to modMenuVersion,
+    "mixins" to property("mixins").toString()))
 
 // In-code "replacements" (Blossom)
 sourceSets { main { blossom { javaSources {

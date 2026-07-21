@@ -1,20 +1,25 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.accessor.PlayerEntityRenderStateAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 //? if >=1.21.11 {
-/*import net.minecraft.client.render.command.OrderedRenderCommandQueue;
+/*import cc.aabss.eventutils.versioning.VersionedGameProfile;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.state.CameraRenderState;
-*///?}
+import net.minecraft.entity.PlayerLikeEntity;
+*///?} else {
+import net.minecraft.text.Text;
+//?}
 //? if >=1.21.3 {
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 //?} else {
 //import net.minecraft.client.network.AbstractClientPlayerEntity;
 //?}
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,6 +29,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerEntityRenderer.class)
 public class PlayerEntityRendererMixin {
+    //? if >=1.21.11 {
+    /*@Inject(method = "updateRenderState(Lnet/minecraft/entity/PlayerLikeEntity;Lnet/minecraft/client/render/entity/state/PlayerEntityRenderState;F)V", at = @At("TAIL"))
+    private void updateRenderState(PlayerLikeEntity entity, PlayerEntityRenderState renderState, float tickDelta, CallbackInfo ci) {
+        if (!(entity instanceof AbstractClientPlayerEntity player)) return;
+        ((PlayerEntityRenderStateAccessor) renderState).eventutils$setRawName(new VersionedGameProfile(player.getGameProfile()).getName());
+    }
+    *///?}
+
     @Inject(at = {@At("HEAD")}, method = "renderLabelIfPresent*", cancellable = true)
     //? if >=1.21.11 {
     /*public void renderLabelIfPresent(PlayerEntityRenderState player, MatrixStack matrixStack, OrderedRenderCommandQueue orderedRenderCommandQueue, CameraRenderState cameraRenderState, CallbackInfo ci) {
@@ -38,10 +51,9 @@ public class PlayerEntityRendererMixin {
 
         // Get player name
         //? if >=1.21.4 {
-        final Text nameText = player.playerName;
-        if (nameText == null) return;
+        final String name = ((PlayerEntityRenderStateAccessor) player).eventutils$getRawName();
         //?} else {
-        //final Text nameText = player.getName();
+        //final String name = player.getName().getString();
         //?}
 
         // Get player position
@@ -52,6 +64,6 @@ public class PlayerEntityRendererMixin {
         //?}
 
         // Check if nametag is visible
-        if (!EventUtils.MOD.groupManager.isNametagVisible(nameText.getString(), position)) ci.cancel();
+        if (!EventUtils.MOD.groupManager.isNametagVisible(name, position)) ci.cancel();
     }
 }

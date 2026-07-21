@@ -7,6 +7,7 @@ loomx.loom_version = "1.17-SNAPSHOT"
 loomx.loom_remap_plugin = "fabric-loom"
 
 deps.loader = "0.16.9"
+mixins = "eventutils.mixin.json"
 
 library.java_utilities = "3575647"
 library.sdk = "27cc6e0"
@@ -14,6 +15,7 @@ library.discord_ipc = "0.11.3"
 
 
 ["1.21.11"]
+mixins = "eventutils-1.21.11.mixin.json"
 deps.yarn_mappings="1.21.11+build.1"
 deps.fabric_api="0.141.0+1.21.11"
 deps.yacl="3.8.1+1.21.11-fabric"
