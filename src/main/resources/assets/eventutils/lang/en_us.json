@@ -30,6 +30,7 @@
   "eventutils.event.toast": "New %s Event!%s",
   "eventutils.event.toast.prize": " (%s)",
   "eventutils.event.toast.prize.none": "",
+  "eventutils.event.toast.info_screen_button": "Click %s to view info",
 
   "eventutils.event.teleport": "Type '%s' to teleport!",
   "eventutils.event.teleport.command": "/eventutils teleport %s",

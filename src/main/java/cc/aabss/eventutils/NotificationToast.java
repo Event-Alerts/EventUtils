@@ -35,10 +35,7 @@ public class NotificationToast implements Toast {
 
         lines = new ArrayList<>();
         if (description != null) lines.add(description.asOrderedText());
-        final OrderedText eventInfoInstructions = !displayEventInfoInstructions ? null : Text.literal("Click ")
-                .append(EventUtils.MOD.keybindManager.eventInfoKey.getBoundKeyLocalizedText())
-                .append(Text.literal(" to view info"))
-                .asOrderedText();
+        final OrderedText eventInfoInstructions = displayEventInfoInstructions ? Text.translatable("eventutils.event.toast.info_screen_button", EventUtils.MOD.keybindManager.eventInfoKey.getBoundKeyLocalizedText()).asOrderedText() : null;
         if (eventInfoInstructions != null) lines.add(eventInfoInstructions);
 
         final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;

@@ -182,10 +182,10 @@ public class EventWrapper {
                 if (client != null) {
                     // Get title
                     final String prizeTranslation = prize != null ? "eventutils.event.toast.prize" : "eventutils.event.toast.prize.none";
-                    final Text title = Text.translatable("eventutils.event.toast", eventType.translatable, Text.translatable(prizeTranslation, prize));
+                    final Text title = Text.translatable("eventutils.event.toast", eventType.translatable, Text.translatable(prizeTranslation, prize)).formatted(eventType.color);
 
                     // Get description
-                    final Text description = ip != null ? Text.translatable("eventutils.event.teleport", Text.translatable("eventutils.event.teleport.command", eventType.name().toLowerCase()).formatted(Formatting.YELLOW)) : null;
+                    final Text description = ip != null ? Text.translatable("eventutils.event.teleport", Text.translatable("eventutils.event.teleport.command", eventType.name().toLowerCase()).formatted(eventType.color)) : null;
 
                     // Send toast
                     client.execute(() -> client.getToastManager().add(new NotificationToast(title, description, ip != null)));
