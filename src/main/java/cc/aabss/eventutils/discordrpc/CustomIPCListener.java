@@ -22,7 +22,7 @@ public class CustomIPCListener implements IPCListener {
     @Override
     public void onReady(@NotNull IPCClient client) {
         EventUtils.LOGGER.debug("[DISCORD RPC] onReady");
-        MiscUtility.IO_SCHEDULER.scheduleAtFixedRate(rpc::updatePresence, 0, DiscordRPC.REFRESH_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
+        MiscUtility.IO_SCHEDULER.scheduleAtFixedRate(rpc::refresh, 0, DiscordRPC.REFRESH_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override

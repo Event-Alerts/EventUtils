@@ -7,29 +7,48 @@ import com.jagrosh.discordipc.entities.RichPresence;
 import com.jagrosh.discordipc.entities.pipe.PipeStatus;
 import gg.eventalerts.sdk.http.action.EAAction;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.session.Session;
 import net.minecraft.server.integrated.IntegratedServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.srnyx.javautilities.MiscUtility;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 
 public class DiscordRPC {
     @NotNull public static final Duration REFRESH_INTERVAL = Duration.ofSeconds(30);
+    @NotNull private static final List<String> SINGLEPLAYER_TEXTS = List.of(
+            "Punching trees 🌳", "Looking for diamonds 💎", "Digging straight down", "Definitely not cheating",
+            "Just one more block...", "Escaping creepers", "Losing track of time", "Causing villager inflation",
+            "Speedrunning disappointment", "Organizing chests (again)", "Getting lost underground", "Building questionable houses",
+            "Hoarding cobblestone", "Chasing achievements", "Taming the wilderness", "Living the block life", "Touching grass blocks",
+            "Trying not to fall in lava", "Fighting the urge to dig down", "Defying Minecraft logic", "Respawning soon™", "Punch first, ask later",
+            "Crafting bad decisions", "Collecting shiny rocks", "Searching for the perfect spot", "Pretending this is temporary",
+            "I'll stop after this project", "Accidentally starting a megabase", "Making the world slightly weirder", "Convincing pigs to cooperate",
+            "One block at a time", "Busy being square", "Breaking and placing blocks", "Leaving floating trees behind 🌲", "Mining \"responsibly\"");
+
     private static final long START = System.currentTimeMillis();
 
     @NotNull private final EventUtils mod;
     @NotNull private final IPCClient client = new IPCClient(1351016544779374735L);
     @Nullable private Status status;
-    @Nullable private String url;
+    @Nullable private Presence presence;
+    @Nullable private String playerUrl;
 
     public DiscordRPC(@NotNull EventUtils mod) {
         this.mod = mod;
         this.client.setListener(new CustomIPCListener(this));
         refreshConnection();
+    }
+
+    @NotNull
+    private String getDefaultPlayerUrl() {
+        return "https://namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuidOrNull();
     }
 
     public void refreshConnection() {
@@ -63,76 +82,215 @@ public class DiscordRPC {
         client.close();
     }
 
-    public void updatePresence() {
-        // Retrieve URL then send presence
-        if (url == null) {
-            retrieveUrl(MinecraftClient.getInstance().getSession().getUuidOrNull()).queue(url -> {
-                this.url = url;
-                sendPresence();
-            });
-            return;
+    public void refresh() {
+        EAAction<?> action = EAAction.completed();
+
+        // Retrieve player URL before sending presence
+        if (playerUrl == null) {
+            final UUID uuid = MinecraftClient.getInstance().getSession().getUuidOrNull();
+            action = mod.http.players.retrieveOneByMinecraftUuid(uuid)
+                    .filter(player -> player != null && player.discord != null)
+                    .map(player -> "https://eventalerts.gg/players/" + Objects.requireNonNull(player.discord).id)
+                    .onErrorMap(t -> getDefaultPlayerUrl())
+                    .onSuccess(url -> {
+                        this.playerUrl = url;
+                        EventUtils.LOGGER.debug("[DISCORD RPC] playerUrl={}", url);
+                    });
         }
 
-        // Send presence immediately with existing URL
-        sendPresence();
-    }
+        action
+                .flatMap(ignored -> getNewPresence())
+                .onSuccess(newPresence -> {
+                    if (Objects.equals(presence, newPresence)) return;
+                    presence = newPresence;
 
-    private void sendPresence() {
-        // Update status
-        if (!updateStatus() || status == null) return;
+                    // Build presence
+                    final RichPresence.Builder builder = new RichPresence.Builder().setStartTimestamp(START);
+                    presence.apply(builder);
 
-        // Only send presence if status has changed
-        client.sendRichPresence(new RichPresence.Builder()
-                .setDetails("Playing as " + MinecraftClient.getInstance().getSession().getUsername())
-                .setDetailsUrl(url)
-                .setState("Currently in " + status.text)
-                .setStateUrl("https://eventalerts.gg")
-                .setLargeImage(status.asset.get(), "Minecraft " + EventUtils.MC_VERSION, "https://eventalerts.gg")
-                .setSmallImage("logo", "EventUtils " + BuildProperties.MOD_VERSION, "https://eventalerts.gg/eventutils")
-                .setStartTimestamp(START)
-                .build());
-    }
-
-    /**
-     * @return  true if the status has changed, false if it remained the same
-     */
-    private boolean updateStatus() {
-        final Status oldStatus = status;
-        final MinecraftClient client = MinecraftClient.getInstance();
-        final IntegratedServer server = client.getServer();
-        if (server != null && server.isRunning()) {
-            status = Status.SINGLEPLAYER;
-        } else if (client.getCurrentServerEntry() != null) {
-            status = Status.MULTIPLAYER;
-        } else {
-            status = Status.MAIN_MENU;
-        }
-        return oldStatus != status;
+                    // Send presence
+                    client.sendRichPresence(builder.build());
+                })
+                .queue();
     }
 
     @NotNull
-    private EAAction<String> retrieveUrl(@NotNull UUID uuid) {
-        return mod.http.players.retrieveOneByMinecraftUuid(uuid)
-                .filter(player -> player != null && player.discord != null)
-                .map(player -> "https://eventalerts.gg/players/" + Objects.requireNonNull(player.discord).id)
-                .onErrorMap(t -> "https://namemc.com/profile/" + uuid);
+    private EAAction<Presence> getNewPresence() {
+        final Presence newPresence = new Presence();
+
+        final MinecraftClient client = MinecraftClient.getInstance();
+        final IntegratedServer clientServer = client.getServer();
+        final ServerInfo multiplayerServer = client.getCurrentServerEntry();
+
+        if (clientServer != null && clientServer.isRunning()) {
+            // Singleplayer
+            if (status == Status.SINGLEPLAYER) return EAAction.completed(presence);
+            status = Status.SINGLEPLAYER;
+            newPresence.details(SINGLEPLAYER_TEXTS.get(MiscUtility.RANDOM.nextInt(SINGLEPLAYER_TEXTS.size())));
+
+        } else if (multiplayerServer != null) {
+            // Multiplayer + Event
+            newPresence
+                    .largeImage("https://api.mcstatus.io/v2/icon/" + multiplayerServer.address)
+                    .largeImageUrl("https://eventalerts.gg");
+
+            if (mod.inEvent != null) {
+                // Event
+                if (status == Status.EVENT) return EAAction.completed(presence);
+                status = Status.EVENT;
+
+                // Event info (details)
+                final String eventUrl = "https://eventalerts.gg/events/" + (mod.inEvent.event.id != null ? mod.inEvent.event.id : "");
+                newPresence
+                        .details("Playing in " + Objects.requireNonNullElse(mod.inEvent.event.title, "an event"))
+                        .detailsUrl(eventUrl)
+                        .largeImageUrl(eventUrl);
+
+                // Host info (state)
+                EventUtils.LOGGER.debug("[DISCORD RPC] Retrieving host event={}", mod.inEvent.event);
+                return mod.inEvent.getHost()
+                        .onSuccess(host -> {
+                            if (host == null) return;
+                            EventUtils.LOGGER.debug("[DISCORD RPC] host={}", host);
+
+                            // Minecraft username -> Discord username
+                            String hostName = host.minecraft != null ? host.minecraft.username : null;
+                            if (hostName == null && host.discord != null) hostName = host.discord.username;
+
+                            // EA players URL (Discord ID) -> NameMC Minecraft UUID -> event URL
+                            String hostUrl = host.discord != null && host.discord.id != null ? "https://eventalerts.gg/players/" + host.discord.id : null;
+                            if (hostUrl == null && host.minecraft != null && host.minecraft.uuid != null) hostUrl = "https://namemc.com/profile/" + host.minecraft.uuid;
+                            if (hostUrl == null) hostUrl = eventUrl;
+
+                            // Only set state if host name found
+                            EventUtils.LOGGER.debug("[DISCORD RPC] hostName={} hostUrl={}", hostName, hostUrl);
+                            if (hostName != null) newPresence
+                                    .state("Hosted by " + hostName)
+                                    .stateUrl(hostUrl);
+                        })
+                        .map(ignored -> newPresence);
+            } else {
+                // Multiplayer
+                if (status == Status.MULTIPLAYER) return EAAction.completed(presence);
+                status = Status.MULTIPLAYER;
+                newPresence.details("Playing on " + multiplayerServer.name);
+            }
+
+        } else {
+            // Other
+            if (status == Status.OTHER) return EAAction.completed(presence);
+            status = Status.OTHER;
+        }
+
+        return EAAction.completed(newPresence);
     }
 
     private enum Status {
-        SINGLEPLAYER("Singleplayer", "dirt"),
-        MULTIPLAYER("Multiplayer", () -> "https://api.mcstatus.io/v2/icon/" + Objects.requireNonNull(MinecraftClient.getInstance().getCurrentServerEntry()).address),
-        MAIN_MENU("the Main Menu", "grass");
+        SINGLEPLAYER,
+        MULTIPLAYER,
+        EVENT,
+        OTHER
+    }
 
-        @NotNull private final String text;
-        @NotNull private final Supplier<String> asset;
+    /**
+     * Much easier to use and store than {@link RichPresence.Builder} (doesn't allow only modifying image texts/URLs)
+     */
+    private class Presence {
+        @NotNull public String details = "Waiting for an event...";
+        @NotNull public String detailsUrl = "https://eventalerts.gg";
+        @NotNull public String state;
+        @NotNull public String stateUrl = Objects.requireNonNullElse(playerUrl, getDefaultPlayerUrl());
+        @NotNull public String largeImage;
+        @NotNull public String largeImageText = "Minecraft " + EventUtils.MC_VERSION;
+        @NotNull public String largeImageUrl = stateUrl;
+        @NotNull public String smallImage = "logo";
+        @NotNull public String smallImageText = "EventUtils " + BuildProperties.MOD_VERSION;
+        @NotNull public String smallImageUrl = "https://eventalerts.gg/eventutils";
 
-        Status(@NotNull String text, @NotNull Supplier<String> asset) {
-            this.text = text;
-            this.asset = asset;
+        public Presence() {
+            final Session session = MinecraftClient.getInstance().getSession();
+            this.state = "Playing as " + session.getUsername();
+            this.largeImage = "https://mc-heads.net/avatar/" + session.getUuidOrNull();
         }
 
-        Status(@NotNull String text, @NotNull String asset) {
-            this(text, () -> asset);
+        public void apply(@NotNull RichPresence.Builder builder) {
+            builder
+                    .setDetails(details)
+                    .setDetailsUrl(detailsUrl)
+                    .setState(state)
+                    .setStateUrl(stateUrl)
+                    .setLargeImage(largeImage, largeImageText, largeImageUrl)
+                    .setSmallImage(smallImage, smallImageText, smallImageUrl);
+        }
+
+        @Override
+        public boolean equals(@Nullable Object o) {
+            if (this == o) return true;
+            if ((!(o instanceof Presence other))) return false;
+            return details.equals(other.details) && detailsUrl.equals(other.detailsUrl)
+                    && state.equals(other.state) && stateUrl.equals(other.stateUrl)
+                    && largeImage.equals(other.largeImage) && largeImageText.equals(other.largeImageText) && largeImageUrl.equals(other.largeImageUrl)
+                    && smallImage.equals(other.smallImage) && smallImageText.equals(other.smallImageText) && smallImageUrl.equals(other.smallImageUrl);
+        }
+
+        @NotNull
+        public DiscordRPC.Presence details(@NotNull String details) {
+            this.details = details;
+            return this;
+        }
+
+        @NotNull
+        public DiscordRPC.Presence detailsUrl(@NotNull String detailsUrl) {
+            this.detailsUrl = detailsUrl;
+            return this;
+        }
+
+        @NotNull
+        public DiscordRPC.Presence state(@NotNull String state) {
+            this.state = state;
+            return this;
+        }
+
+        @NotNull
+        public DiscordRPC.Presence stateUrl(@NotNull String stateUrl) {
+            this.stateUrl = stateUrl;
+            return this;
+        }
+
+        @NotNull
+        public DiscordRPC.Presence largeImage(@NotNull String largeImage) {
+            this.largeImage = largeImage;
+            return this;
+        }
+
+        @NotNull
+        public DiscordRPC.Presence largeImageText(@NotNull String largeImageText) {
+            this.largeImageText = largeImageText;
+            return this;
+        }
+
+        @NotNull
+        public DiscordRPC.Presence largeImageUrl(@NotNull String largeImageUrl) {
+            this.largeImageUrl = largeImageUrl;
+            return this;
+        }
+
+        @NotNull
+        public DiscordRPC.Presence smallImage(@NotNull String smallImage) {
+            this.smallImage = smallImage;
+            return this;
+        }
+
+        @NotNull
+        public DiscordRPC.Presence smallImageText(@NotNull String smallImageText) {
+            this.smallImageText = smallImageText;
+            return this;
+        }
+
+        @NotNull
+        public DiscordRPC.Presence smallImageUrl(@NotNull String smallImageUrl) {
+            this.smallImageUrl = smallImageUrl;
+            return this;
         }
     }
 }

@@ -5,6 +5,7 @@ import cc.aabss.eventutils.config.EUConfig;
 import cc.aabss.eventutils.config.EventType;
 import cc.aabss.eventutils.discordrpc.DiscordRPC;
 import cc.aabss.eventutils.plustag.EventAlertsApi;
+import cc.aabss.eventutils.sdk.EnrichedEvent;
 import cc.aabss.eventutils.sdk.EventWrapper;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import cc.aabss.eventutils.websocket.listener.EventCancelledListener;
@@ -23,6 +24,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -42,22 +44,14 @@ import org.jetbrains.annotations.Nullable;
 import xyz.srnyx.javautilities.MiscUtility;
 import xyz.srnyx.javautilities.objects.SemanticVersion;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 
 public class EventUtils implements ClientModInitializer {
-    /**
-     * Only use if it is absolutely impossible to access the mod instance through other (safer) means
-     * <br>This is usually only necessary for mixins!
-     */
-    public static EventUtils MOD;
-    @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
-    @Nullable public static final String MC_VERSION = FabricLoader.getInstance().getModContainer("minecraft")
-            .map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString())
-            .orElse(null);
-    @NotNull public static final String USER_AGENT = BuildProperties.MOD_NAME + "/" + BuildProperties.MOD_VERSION + " (MC/" + MC_VERSION + ")";
+    @NotNull private static final Duration IN_EVENT_TIME = Duration.ofHours(12);
     @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
     @NotNull public static final MutableText MESSAGE_PREFIX = Text.literal(BuildProperties.MOD_NAME)
             .formatted(Formatting.BOLD)
@@ -70,6 +64,17 @@ public class EventUtils implements ClientModInitializer {
             .append(Text.literal("§r§4 »")
                     .fillStyle(Style.EMPTY.withBold(false)));
 
+    /**
+     * Only use if it is absolutely impossible to access the mod instance through other (safer) means
+     * <br>This is usually only necessary for mixins!
+     */
+    public static EventUtils MOD;
+    @NotNull public static final Logger LOGGER = LogManager.getLogger(EventUtils.class, new PrefixMessageFactory());
+    @Nullable public static final String MC_VERSION = FabricLoader.getInstance().getModContainer("minecraft")
+            .map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString())
+            .orElse(null);
+    @NotNull public static final String USER_AGENT = BuildProperties.MOD_NAME + "/" + BuildProperties.MOD_VERSION + " (MC/" + MC_VERSION + ")";
+
     @NotNull public final EUConfig config = new EUConfig();
     public EAHTTP http;
     public EAWebSocket webSocket;
@@ -80,6 +85,7 @@ public class EventUtils implements ClientModInitializer {
     @NotNull public final EventServerManager eventServerManager = new EventServerManager(this);
     @NotNull public final GroupManager groupManager = new GroupManager(this);
     @NotNull public final Map<EventType, EventWrapper> lastEvents = new EnumMap<>(EventType.class);
+    @Nullable public EnrichedEvent inEvent;
 
     public EventUtils() {
         MOD = this;
@@ -115,8 +121,42 @@ public class EventUtils implements ClientModInitializer {
             // Update checker
             updateChecker.notifyUpdate();
 
-            // DiscordRPC
-            discordRPC.updatePresence();
+            // Delay some stuff to wait for server info to be fully loaded
+            MiscUtility.IO_SCHEDULER.schedule(() -> {
+                // inEvent
+                final ServerInfo server = client.getCurrentServerEntry();
+                EventUtils.LOGGER.debug("[JOIN] server={}", server);
+                if (server != null) {
+                    final String ip = server.address.toLowerCase();
+                    LOGGER.debug("[JOIN] retrieving event ip={}", ip);
+                    http.events.retrieveMany(1, Map.of(
+                                    "match", "any",
+                                    "sort", "-created",
+                                    "ip", ip,
+                                    "description", ip,
+                                    "title", ip,
+                                    "prize", ip))
+                            .onErrorReturnEmptyList()
+                            .queue(events -> {
+                                // Check event time
+                                final EAEvent event = events != null && !events.isEmpty() ? events.get(0) : null;
+                                if (event != null && event.time != null && System.currentTimeMillis() - event.time.getTime() > IN_EVENT_TIME.toMillis()) {
+                                    LOGGER.debug("[JOIN] event too old, ignoring: {}", event);
+                                    inEvent = null;
+                                } else {
+                                    inEvent = event != null ? new EnrichedEvent(this, event) : null;
+                                }
+                                LOGGER.debug("[JOIN] inEvent={}", inEvent);
+
+                                // Then update presence
+                                discordRPC.refresh();
+                            });
+                    return;
+                }
+
+                // Not in multiplayer server: Update Discord presence immediately
+                discordRPC.refresh();
+            }, 1, TimeUnit.SECONDS);
         });
 
         // On leave
@@ -125,8 +165,11 @@ public class EventUtils implements ClientModInitializer {
             LOGGER.debug("[EventUtils] DISCONNECT: clearing Event Alerts cache");
             api.clearCache();
 
+            // inEvent
+            inEvent = null;
+
             // DiscordRPC (delay for status to update correctly)
-            MiscUtility.IO_SCHEDULER.schedule(() -> discordRPC.updatePresence(), 1, TimeUnit.SECONDS);
+            MiscUtility.IO_SCHEDULER.schedule(() -> discordRPC.refresh(), 1, TimeUnit.SECONDS);
         });
 
         // Initialize keybind manager

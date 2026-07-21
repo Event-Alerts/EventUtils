@@ -41,8 +41,8 @@ public class MultiplayerScreenMixin {
     @Inject(method = "render", at = @At("TAIL"))
     private void highlightEventRows(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
     //?}
-        if (serverListWidget == null) return;
         // Row-by-row highlight for event servers
+        if (serverListWidget == null) return;
         final int left = serverListWidget.getRowLeft();
         final int right = left + serverListWidget.getRowWidth();
         final int servers = serverListWidget.children().size();
