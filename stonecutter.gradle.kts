@@ -1,4 +1,7 @@
 plugins {
     id("dev.kikugie.stonecutter")
 }
-stonecutter active "1.21.4"
+
+// Safety for swaps
+val ci: String? = System.getenv("CI")
+if (ci != null) sc active null else stonecutter active "1.21.4"

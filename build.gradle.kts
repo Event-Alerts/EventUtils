@@ -18,8 +18,6 @@ plugins {
     id("dev.kikugie.fletching-table.fabric") version "0.1.0-alpha.22"
     kotlin("jvm") version "2.4.10" // For Fletching Table
     id("com.google.devtools.ksp") version "2.3.10" // For Fletching Table
-    id("net.kyori.blossom") version "2.2.0"
-//    id("org.jetbrains.gradle.plugin.idea-ext") version "1.4.1" // For Blossom to auto-run generateTemplates
 }
 
 // Properties
@@ -85,6 +83,12 @@ base.archivesName = modName
 
 stonecutter {
     dependencies["java"] = java.majorVersion
+
+    // Swaps
+    swaps["mod_id"] = "\"$modId\""
+    swaps["mod_name"] = "\"$modName\""
+    swaps["mod_version"] = "\"$modVersion\""
+    swaps["mod_version_full"] = "\"$version\""
 }
 
 fletchingTable {
@@ -108,16 +112,7 @@ addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
     "deps_loader" to loaderVersion,
     "deps_fabric_api" to fabricApiVersion,
     "deps_yacl" to yaclVersion,
-    "deps_modmenu" to modMenuVersion,
-    "mixins" to property("mixins").toString()))
-
-// In-code "replacements" (Blossom)
-sourceSets { main { blossom { javaSources {
-    property("mod_id", modId)
-    property("mod_name", modName)
-    property("mod_version", modVersion)
-    property("mod_version_full", version.toString())
-} } } }
+    "deps_modmenu" to modMenuVersion))
 
 tasks {
     jar { archiveClassifier.set("") }
