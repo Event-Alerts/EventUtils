@@ -1,8 +1,8 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.plustag.IconRenderer;
 import cc.aabss.eventutils.plustag.PlusTag;
-import cc.aabss.eventutils.plustag.PlusTagRenderer;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -11,9 +11,11 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -34,14 +36,8 @@ public abstract class PlayerListHudMixin {
         if (client.player == null) return;
         final ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
         if (networkHandler == null) return;
-        EventUtils.MOD.api.populateCachedBestTag(networkHandler.getListedPlayerListEntries().stream()
-                .map(entry -> {
-                    //? if >=1.21.11 {
-                    /*return entry.getProfile().id();
-                    *///?} else {
-                    return entry.getProfile().getId();
-                    //?}
-                })
+        EventUtils.MOD.cacheManager.players().get(networkHandler.getListedPlayerListEntries().stream()
+                .map(entry -> new VersionedGameProfile(entry.getProfile()).getId())
                 .collect(Collectors.toSet()));
     }
 
@@ -58,19 +54,22 @@ public abstract class PlayerListHudMixin {
         // Get UUID
         final UUID uuid = new VersionedGameProfile(entry.getProfile()).getId();
 
-        // Fetch if not cached
-        if (!EventUtils.MOD.api.isCached(uuid)) {
-            EventUtils.MOD.api.populateCachedBestTag(uuid);
+        // Self
+        if (client.player.getUuid().equals(uuid)) {
+            if (EventUtils.MOD.authManager.player != null) drawIcon(context, x, y, EventUtils.MOD.authManager.player.getPlusTag(), true);
             return;
         }
 
-        // Get best tag from cache
-        final PlusTag cached = EventUtils.MOD.api.getCached(uuid);
-        if (cached == null) return; // no tags
+        EventUtils.MOD.cacheManager.players().get(uuid).queue(cached -> {
+            if (cached != null) drawIcon(context, x, y, cached.getPlusTag(), cached.isOnline());
+        });
+    }
 
-        // Draw tag
+    @Unique
+    private static void drawIcon(DrawContext context, int x, int y, @Nullable PlusTag tag, boolean online) {
         final int iconSize = 10;
         final int iconX = x - 10;
-        PlusTagRenderer.draw(context, cached, iconX, y, iconSize);
+        IconRenderer.draw(context, online ? PlusTag.BEE_GREEN : PlusTag.BEE, iconX, y, iconSize);
+        if (tag != null) IconRenderer.draw(context, tag.textureId, iconX, y, iconSize);
     }
 }

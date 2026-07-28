@@ -29,6 +29,9 @@ public class ConnectUtility {
         final ServerInfo currentServer = client.getCurrentServerEntry();
         if (currentServer != null && currentServer.address.equalsIgnoreCase(ip)) return;
 
+        // Update metric
+        EventUtils.MOD.stats.eventsJoined.incrementAndGet();
+
         final TitleScreen screen = new TitleScreen();
         final ServerAddress address = ServerAddress.parse(ip);
         client.execute(() -> {

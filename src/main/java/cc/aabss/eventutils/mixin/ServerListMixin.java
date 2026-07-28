@@ -1,6 +1,6 @@
 package cc.aabss.eventutils.mixin;
 
-import cc.aabss.eventutils.EventServerManager;
+import cc.aabss.eventutils.manager.EventServerManager;
 import cc.aabss.eventutils.EventUtils;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.ServerList;

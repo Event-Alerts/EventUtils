@@ -82,13 +82,15 @@ public class EUConfig extends FileLoader {
     }
 
     private void migrate() {
-        // Get old version
+        // Get old version (ignore before 1.0.0 [dev])
         final String oldVersionString = get("version", "1.4.0");
         final SemanticVersion oldVersion = EventUtils.getSemantic(oldVersionString);
-        if (oldVersion == null) return;
+        if (oldVersion == null || oldVersion.compareTo(new SemanticVersion(1, 0, 0)) < 0) return;
 
         // Older than 2.0.0
         if (oldVersion.compareTo(new SemanticVersion(2, 0, 0)) < 0) {
+            EventUtils.LOGGER.warn("EventUtils config ({}) is older than 2.0.0, migrating to new format", oldVersionString);
+
             update("discord-rpc", "discord_rpc", Boolean.class);
             update("auto-tp", "auto_tp", Boolean.class);
             update("simple-queue-msg", "simple_queue_message", Boolean.class);
@@ -115,12 +117,16 @@ public class EUConfig extends FileLoader {
 
         // 2.0.7 or older
         if (oldVersion.compareTo(new SemanticVersion(2, 0, 7)) <= 0) {
+             EventUtils.LOGGER.warn("EventUtils config ({}) is 2.0.7 or older, migrating to new format", oldVersionString);
+
             final Integer radius = get("hide_players_radius", TypeToken.of(Integer.class).getType());
             if (radius != null && radius == 1) set("hide_players_radius", 0);
         }
 
         // 2.3.0 or older
         if (oldVersion.compareTo(new SemanticVersion(2, 3, 0)) <= 0) {
+            EventUtils.LOGGER.warn("EventUtils config ({}) is 2.3.0 or older, migrating to new format", oldVersionString);
+
             // Flat alerts -> EventSettings
             final Map<EventType, EventSettings> newEventSettings = new HashMap<>();
             final Boolean autoTp = remove("auto_tp", Boolean.class);

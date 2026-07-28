@@ -17,7 +17,6 @@ import xyz.srnyx.javautilities.MiscUtility;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 
 public class DiscordRPC {
@@ -38,17 +37,15 @@ public class DiscordRPC {
     @NotNull private final IPCClient client = new IPCClient(1351016544779374735L);
     @Nullable private Status status;
     @Nullable private Presence presence;
-    @Nullable private String playerUrl;
+    @NotNull private final String playerUrl;
 
     public DiscordRPC(@NotNull EventUtils mod) {
         this.mod = mod;
         this.client.setListener(new CustomIPCListener(this));
+        this.playerUrl = mod.authManager.player != null && mod.authManager.player.player.discord != null && mod.authManager.player.player.discord.id != null
+                ? "https://eventalerts.gg/players/" + mod.authManager.player.player.discord.id
+                : "https://namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuidOrNull();
         refreshConnection();
-    }
-
-    @NotNull
-    private String getDefaultPlayerUrl() {
-        return "https://namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuidOrNull();
     }
 
     public void refreshConnection() {
@@ -83,35 +80,17 @@ public class DiscordRPC {
     }
 
     public void refresh() {
-        EAAction<?> action = EAAction.completed();
+        getNewPresence().queue(newPresence -> {
+            if (Objects.equals(presence, newPresence)) return;
+            presence = newPresence;
 
-        // Retrieve player URL before sending presence
-        if (playerUrl == null) {
-            final UUID uuid = MinecraftClient.getInstance().getSession().getUuidOrNull();
-            action = mod.http.players.retrieveOneByMinecraftUuid(uuid)
-                    .filter(player -> player != null && player.discord != null)
-                    .map(player -> "https://eventalerts.gg/players/" + Objects.requireNonNull(player.discord).id)
-                    .onErrorMap(t -> getDefaultPlayerUrl())
-                    .onSuccess(url -> {
-                        this.playerUrl = url;
-                        EventUtils.LOGGER.debug("[DISCORD RPC] playerUrl={}", url);
-                    });
-        }
+            // Build presence
+            final RichPresence.Builder builder = new RichPresence.Builder().setStartTimestamp(START);
+            presence.apply(builder);
 
-        action
-                .flatMap(ignored -> getNewPresence())
-                .onSuccess(newPresence -> {
-                    if (Objects.equals(presence, newPresence)) return;
-                    presence = newPresence;
-
-                    // Build presence
-                    final RichPresence.Builder builder = new RichPresence.Builder().setStartTimestamp(START);
-                    presence.apply(builder);
-
-                    // Send presence
-                    client.sendRichPresence(builder.build());
-                })
-                .queue();
+            // Send presence
+            client.sendRichPresence(builder.build());
+        });
     }
 
     @NotNull
@@ -199,7 +178,7 @@ public class DiscordRPC {
         @NotNull public String details = "Waiting for an event...";
         @NotNull public String detailsUrl = "https://eventalerts.gg";
         @NotNull public String state;
-        @NotNull public String stateUrl = Objects.requireNonNullElse(playerUrl, getDefaultPlayerUrl());
+        @NotNull public String stateUrl = playerUrl;
         @NotNull public String largeImage;
         @NotNull public String largeImageText = "Minecraft " + EventUtils.MC_VERSION;
         @NotNull public String largeImageUrl = stateUrl;

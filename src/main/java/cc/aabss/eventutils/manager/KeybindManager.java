@@ -1,5 +1,6 @@
-package cc.aabss.eventutils;
+package cc.aabss.eventutils.manager;
 
+import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.Group;
 import cc.aabss.eventutils.mixin.KeyBindingAccessor;
 import cc.aabss.eventutils.screen.EventInfoScreen;
@@ -12,11 +13,13 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-//? if >=1.21.11
-//import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+//? if >=1.21.11 {
+/*import cc.aabss.eventutils.BuildProperties;
+import net.minecraft.util.Identifier;
+*///?}
 
 import java.util.HashMap;
 import java.util.Map;

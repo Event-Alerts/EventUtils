@@ -4,7 +4,11 @@ import cc.aabss.eventutils.commands.CommandRegister;
 import cc.aabss.eventutils.config.EUConfig;
 import cc.aabss.eventutils.config.EventType;
 import cc.aabss.eventutils.discordrpc.DiscordRPC;
-import cc.aabss.eventutils.plustag.EventAlertsApi;
+import cc.aabss.eventutils.manager.AuthManager;
+import cc.aabss.eventutils.cache.CacheManager;
+import cc.aabss.eventutils.manager.EventServerManager;
+import cc.aabss.eventutils.manager.GroupManager;
+import cc.aabss.eventutils.manager.KeybindManager;
 import cc.aabss.eventutils.sdk.EnrichedEvent;
 import cc.aabss.eventutils.sdk.EventWrapper;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
@@ -80,12 +84,14 @@ public class EventUtils implements ClientModInitializer {
     @NotNull public final EUConfig config = new EUConfig();
     public EAHTTP http;
     public EAWebSocket webSocket;
-    @NotNull public final EventAlertsApi api = new EventAlertsApi(this);
+    @NotNull public final CacheManager cacheManager = new CacheManager(this);
+    @NotNull public final AuthManager authManager = new AuthManager(this);
     @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
+    @NotNull public final Stats stats = new Stats(this);
     public DiscordRPC discordRPC;
     public KeybindManager keybindManager;
-    @NotNull public final EventServerManager eventServerManager = new EventServerManager(this);
     @NotNull public final GroupManager groupManager = new GroupManager(this);
+    @NotNull public final EventServerManager eventServerManager = new EventServerManager(this);
     @NotNull public final Map<EventType, EventWrapper> lastEvents = new EnumMap<>(EventType.class);
     @Nullable public EnrichedEvent inEvent;
 
@@ -102,20 +108,30 @@ public class EventUtils implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        // Websocket
+        // SDK
         setupSdk(null);
 
-        // Discord RPC
-        discordRPC = new DiscordRPC(this);
+        // Authenticate
+        authManager.authenticate().queue(
+                response -> {
+                    // Discord RPC
+                    discordRPC = new DiscordRPC(this);
+                },
+                t -> {
+                    // Discord RPC
+                    discordRPC = new DiscordRPC(this);
+                    LOGGER.error("Failed to authenticate with Event Alerts: {}", t.getMessage());
+                });
 
         // Command registration
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> CommandRegister.register(dispatcher));
 
         // Game closed
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            webSocket.shutdown("Game closed");
+            authManager.shutdown();
             discordRPC.close();
             eventServerManager.removeAllEventServers();
+            webSocket.shutdown("Game closed");
         });
 
         // On join
@@ -127,11 +143,11 @@ public class EventUtils implements ClientModInitializer {
             MiscUtility.IO_SCHEDULER.schedule(() -> {
                 // inEvent
                 final ServerInfo server = client.getCurrentServerEntry();
-                EventUtils.LOGGER.debug("[JOIN] server={}", server);
+                EventUtils.LOGGER.debug("[JOIN] server={}", server != null ? server.address : "null");
                 if (server != null) {
                     final String ip = server.address.toLowerCase();
                     LOGGER.debug("[JOIN] retrieving event ip={}", ip);
-                    http.events.retrieveMany(1, Map.of(
+                    http.events.retrieveMany(1, null, Map.of(
                                     "match", "any",
                                     "sort", "-created",
                                     "ip", ip,
@@ -140,7 +156,7 @@ public class EventUtils implements ClientModInitializer {
                                     "prize", ip))
                             .onErrorReturnEmptyList()
                             .queue(events -> {
-                                // Check event time
+                                // Check event time (don't use getFirst to support older Java versions)
                                 final EAEvent event = events != null && !events.isEmpty() ? events.get(0) : null;
                                 if (event != null && event.time != null && System.currentTimeMillis() - event.time.getTime() > IN_EVENT_TIME.toMillis()) {
                                     LOGGER.debug("[JOIN] event too old, ignoring: {}", event);
@@ -150,7 +166,7 @@ public class EventUtils implements ClientModInitializer {
                                 }
                                 LOGGER.debug("[JOIN] inEvent={}", inEvent);
 
-                                // Then update presence
+                                // Then update Discord presence
                                 discordRPC.refresh();
                             });
                     return;
@@ -163,9 +179,9 @@ public class EventUtils implements ClientModInitializer {
 
         // On leave
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            // Clear API cache
-            LOGGER.debug("[EventUtils] DISCONNECT: clearing Event Alerts cache");
-            api.clearCache();
+            // Clear cache
+            LOGGER.debug("[EventUtils] DISCONNECT: clearing cache");
+            cacheManager.clearAll();
 
             // inEvent
             inEvent = null;

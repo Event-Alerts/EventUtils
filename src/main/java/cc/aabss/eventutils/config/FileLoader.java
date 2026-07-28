@@ -53,6 +53,11 @@ public abstract class FileLoader {
         load(file);
     }
 
+    @NotNull
+    public JsonObject getJson() {
+        return json;
+    }
+
     @Nullable
     public JsonElement get(@NotNull String key) {
         return json.get(key);

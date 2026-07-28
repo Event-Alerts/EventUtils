@@ -145,7 +145,7 @@ public class EditGroupScreen extends Screen {
         final Text radiusText = radius == null
                 ? Text.translatable("eventutils.config.groups.radius.infinite")
                 : Text.literal(String.valueOf(radius));
-        return Text.translatable("eventutils.config.groups.radius", radiusText);
+        return Text.translatable("eventutils.config.groups.radius.label", radiusText);
     }
 
     private static int getRadiusFromSliderValue(double value) {

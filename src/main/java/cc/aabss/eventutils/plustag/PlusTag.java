@@ -1,9 +1,11 @@
 package cc.aabss.eventutils.plustag;
 
 import cc.aabss.eventutils.BuildProperties;
+import cc.aabss.eventutils.EventUtils;
 import gg.eventalerts.sdk.object.EAPlayer;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
 
@@ -14,24 +16,42 @@ import java.util.function.Predicate;
  * <br><b>Order of this enum matters for priority!</b>
  */
 public enum PlusTag {
-    RED("red", player -> player.discord != null && player.discord.roles != null && player.discord.roles.contains(EAPlayer.Discord.Role.ADMIN)),
+    RED(player -> player.discord != null && player.discord.roles != null && player.discord.roles.contains(EAPlayer.Discord.Role.ADMIN)),
 
-    LIGHT_RED("light_red", player -> player.discord != null && player.discord.roles != null && player.discord.roles.contains(EAPlayer.Discord.Role.STAFF)),
+    LIGHT_RED(player -> player.discord != null && player.discord.roles != null && player.discord.roles.contains(EAPlayer.Discord.Role.STAFF)),
 
-    BLUE("blue", player -> player.discord != null && player.discord.roles != null && player.discord.roles.contains(EAPlayer.Discord.Role.CONTRIBUTOR)),
+    BLUE(player -> player.discord != null && player.discord.roles != null && player.discord.roles.contains(EAPlayer.Discord.Role.CONTRIBUTOR)),
 
-    GOLD("gold", player -> player.subscription != null),
+    AQUA(player -> player.subscription != null && player.subscription.tier == EAPlayer.Subscription.Tier.HORNET),
 
-    EMPTY("empty", player -> player.discord != null && player.minecraft != null);
+    GREEN(player -> player.subscription != null && player.subscription.tier == EAPlayer.Subscription.Tier.WASP),
 
+    GOLD(player -> player.subscription != null && player.subscription.tier == EAPlayer.Subscription.Tier.BEE),
 
-    @NotNull public final String key;
+    WHITE(player -> player.discord != null && player.minecraft != null);
+
+    @NotNull public static final Identifier BEE = Identifier.of(BuildProperties.MOD_ID, "textures/bee/bee.png");
+    @NotNull public static final Identifier BEE_GREEN = Identifier.of(BuildProperties.MOD_ID, "textures/bee/bee_green.png");
+
     @NotNull public final Identifier textureId;
     @NotNull public final Predicate<EAPlayer> isUnlocked;
 
-    PlusTag(@NotNull String key, @NotNull Predicate<EAPlayer> isUnlocked) {
-        this.key = key;
-        this.textureId = Identifier.of(BuildProperties.MOD_ID, "textures/bee/" + key + ".png");
+    PlusTag(@NotNull Predicate<EAPlayer> isUnlocked) {
+        this.textureId = Identifier.of(BuildProperties.MOD_ID, "textures/bee/plus/" + name().toLowerCase() + ".png");
         this.isUnlocked = isUnlocked;
+    }
+
+    @Nullable
+    public static PlusTag getBestUnlocked(@Nullable EAPlayer player) {
+        if (player == null) return null;
+        PlusTag bestTag = null;
+        for (final PlusTag tag : PlusTag.values()) {
+            if (tag.isUnlocked.test(player)) {
+                bestTag = tag;
+                break;
+            }
+        }
+        EventUtils.LOGGER.debug("[API] Fetched best tag={} uuid={}", bestTag, player.minecraft != null ? player.minecraft.uuid : "(player.minecraft=null)");
+        return bestTag;
     }
 }

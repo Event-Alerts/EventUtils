@@ -43,7 +43,7 @@ public enum EventType {
         this.pingRole = pingRole;
         this.famousEventType = famousEventType;
         this.color = color;
-        this.translatable = Text.translatable("eventutils.event." + name());
+        this.translatable = Text.translatable("eventutils.event.type." + name());
     }
 
     EventType(@NotNull EAEvent.PingRole pingRole, @NotNull Formatting color) {
@@ -60,7 +60,7 @@ public enum EventType {
                 .name(Text.translatable("eventutils.config.event_settings.title", translatable).formatted(color))
                 .collapsed(true)
                 .option(Option.<Boolean>createBuilder()
-                        .name(Text.translatable("eventutils.config.event_settings.toasts"))
+                        .name(Text.translatable("eventutils.config.event_settings.toasts.label"))
                         .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.toasts.description")))
                         .binding(EventSettings.Defaults.TOASTS, () -> config.getEventSettings(this).toasts, newValue -> {
                             config.getEventSettings(this).toasts = newValue;
@@ -69,7 +69,7 @@ public enum EventType {
                         .controller(ConfigScreen::getBooleanBuilder)
                         .build())
                 .option(Option.<NotificationSound>createBuilder()
-                        .name(Text.translatable("eventutils.config.event_settings.sound"))
+                        .name(Text.translatable("eventutils.config.event_settings.sound.label"))
                         .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.sound.description")))
                         .binding(EventSettings.Defaults.SOUND, () -> config.getEventSettings(this).sound, newValue -> {
                             config.getEventSettings(this).sound = newValue;
@@ -80,7 +80,7 @@ public enum EventType {
                                 .formatValue(NotificationSound::getDisplayName))
                         .build())
                 .option(Option.<Boolean>createBuilder()
-                        .name(Text.translatable("eventutils.config.event_settings.info_screen"))
+                        .name(Text.translatable("eventutils.config.event_settings.info_screen.label"))
                         .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.info_screen.description")))
                         .binding(EventSettings.Defaults.INFO_SCREEN, () -> config.getEventSettings(this).infoScreen, newValue -> {
                             config.getEventSettings(this).infoScreen = newValue;
@@ -89,7 +89,7 @@ public enum EventType {
                         .controller(ConfigScreen::getBooleanBuilder)
                         .build())
                 .option(Option.<Boolean>createBuilder()
-                        .name(Text.translatable("eventutils.config.event_settings.auto_tp"))
+                        .name(Text.translatable("eventutils.config.event_settings.auto_tp.label"))
                         .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.auto_tp.description")))
                         .binding(EventSettings.Defaults.AUTO_TP, () -> config.getEventSettings(this).autoTp, newValue -> {
                             config.getEventSettings(this).autoTp = newValue;
@@ -98,7 +98,7 @@ public enum EventType {
                         .controller(ConfigScreen::getBooleanBuilder)
                         .build())
                 .option(Option.<Boolean>createBuilder()
-                        .name(Text.translatable("eventutils.config.event_settings.server_list"))
+                        .name(Text.translatable("eventutils.config.event_settings.server_list.label"))
                         .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.server_list.description")))
                         .binding(EventSettings.Defaults.SERVER_LIST, () -> config.getEventSettings(this).serverList, newValue -> {
                             config.getEventSettings(this).serverList = newValue;

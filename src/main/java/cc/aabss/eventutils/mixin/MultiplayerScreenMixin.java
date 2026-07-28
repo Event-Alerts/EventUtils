@@ -1,7 +1,7 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
-import cc.aabss.eventutils.EventServerManager;
+import cc.aabss.eventutils.manager.EventServerManager;
 //? if >=1.21.11 {
 /*import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.gui.DrawContext;

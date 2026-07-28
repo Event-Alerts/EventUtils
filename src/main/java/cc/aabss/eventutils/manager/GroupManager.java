@@ -1,5 +1,6 @@
-package cc.aabss.eventutils;
+package cc.aabss.eventutils.manager;
 
+import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.Group;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import com.mojang.authlib.GameProfile;

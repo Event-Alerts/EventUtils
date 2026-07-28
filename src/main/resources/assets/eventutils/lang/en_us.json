@@ -1,168 +1,250 @@
 {
-  "key.category.eventutils": "EventUtils",
-  "key.category.eventutils.eventutils": "EventUtils",
-  "key.eventutils.screen": "Open Screen",
-  "subtitles.eventutils.alert": "Event alert",
+  "key": {
+    "category": {
+      "eventutils": "EventUtils"
+    },
 
-  "eventutils.skeppy.display": "Skeppy Events",
-  "eventutils.potential_famous.display": "Potential Skeppy Events",
-  "eventutils.sighting.display": "Skeppy Sightings",
-  "eventutils.famous.display": "Creator Events",
-  "eventutils.partner.display": "Partner Events",
-  "eventutils.community.display": "Community Events",
-  "eventutils.money.display": "Money Events",
-  "eventutils.fun.display": "Fun Events",
-  "eventutils.housing.display": "Housing Events",
-  "eventutils.civilization.display": "Civilization Events",
+    "eventutils": {
+      "screen": "Open Screen",
+      "hideplayers": "Hide Players",
+      "eventinfo": "Event Info",
+      "testevent": "Test Event (Dev Mode)"
+    }
+  },
 
-  "eventutils.event.SKEPPY": "Skeppy",
-  "eventutils.event.POTENTIAL_FAMOUS": "Potential Skeppy",
-  "eventutils.event.SIGHTING": "Skeppy Sighting",
-  "eventutils.event.FAMOUS": "Creator",
-  "eventutils.event.PARTNER": "Partner",
-  "eventutils.event.COMMUNITY": "Community",
-  "eventutils.event.BIG_MONEY": "Big Money",
-  "eventutils.event.MONEY": "Money",
-  "eventutils.event.CIVILIZATION": "Civilization",
-  "eventutils.event.HOUSING": "Housing",
-  "eventutils.event.FUN": "Fun",
+  "subtitles": {
+    "eventutils": {
+      "alert": "Event alert"
+    }
+  },
 
-  "eventutils.event.toast": "New %s Event!%s",
-  "eventutils.event.toast.prize": " (%s)",
-  "eventutils.event.toast.prize.none": "",
-  "eventutils.event.toast.info_screen_button": "Click %s to view info",
+  "eventutils": {
+    "word": {
+      "plural": "s"
+    },
 
-  "eventutils.event.teleport": "Type '%s' to teleport!",
-  "eventutils.event.teleport.command": "/eventutils teleport %s",
+    "screen": {
+      "settings": "Settings"
+    },
 
-  "key.eventutils.hideplayers": "Hide Players",
-  "key.eventutils.eventinfo": "Event Info",
-  "key.eventutils.testevent": "Test Event (Dev Mode)",
+    "event": {
+      "type" : {
+        "SKEPPY": "Skeppy",
+        "POTENTIAL_FAMOUS": "Potential Skeppy",
+        "SIGHTING": "Skeppy Sighting",
+        "FAMOUS": "Creator",
+        "PARTNER": "Partner",
+        "COMMUNITY": "Community",
+        "BIG_MONEY": "Big Money",
+        "MONEY": "Money",
+        "CIVILIZATION": "Civilization",
+        "HOUSING": "Housing",
+        "FUN": "Fun"
+      },
 
-  "eventutils.hideplayers.enabled": "Enabled hide players!",
-  "eventutils.hideplayers.disabled": "Disabled hide players!",
-  "eventutils.hideplayers.view_prefix": "View: ",
-  "eventutils.hideplayers.view_revealed": "None",
+      "toast": {
+        "title": "New %s Event!%s",
+        "prize": {
+          "text": " (%s)",
+          "none": ""
+        },
+        "info_screen_button": "Click %s to view info"
+      },
 
-  "eventutils.updatechecker.new": "There is a new update available!",
-  "eventutils.updatechecker.hover": "Click to open download",
-  "eventutils.updatechecker.config": "You can disable this message in the config",
+      "teleport": {
+        "text": "Type '%s' to teleport!",
+        "command": "/eventutils teleport %s"
+      }
+    },
 
-  "eventutils.command.no_event_specified": "No event type specified!",
-  "eventutils.command.no_event_found": "No event/IP found for ",
-  "eventutils.command.config": "Opens EventUtils' config screen",
-  "eventutils.command.teleport": "Teleports to the last posted event of that type",
+    "no_recent_event": {
+      "message": "No event has happened recently!"
+    },
 
-  "eventutils.confirm_exit.title": "Confirm Exit",
-  "eventutils.confirm_exit.message": "Are you sure you want to exit the game?",
+    "hideplayers": {
+      "enabled": "Enabled hide players!",
+      "disabled": "Disabled hide players!",
+      "view_prefix": "View: ",
+      "view_revealed": "None"
+    },
 
-  "eventutils.confirm_disconnect.title": "Confirm Disconnect",
-  "eventutils.confirm_disconnect.message": "Are you sure you want to disconnect?",
+    "updatechecker": {
+      "new": "There is a new update available!",
+      "hover": "Click to open download",
+      "config": "You can disable this message in the config"
+    },
 
-  "eventutils.no_recent_event.message": "No event has happened recently!",
+    "confirm_exit": {
+      "title": "Confirm Exit",
+      "message": "Are you sure you want to exit the game?"
+    },
 
-  "eventutils.config.title": "EventUtils Mod Config",
-  "eventutils.config.general": "General",
-  "eventutils.config.server_list_minutes.title": "Event server display time",
-  "eventutils.config.server_list_minutes.description": "How long event servers stay in the multiplayer list after start in minutes (1-15)",
-  "eventutils.config.queue.title": "Simple queue message",
-  "eventutils.config.queue.description": "Simplifies the queue message for InvadedLands",
-  "eventutils.config.discord.title": "Discord RPC",
-  "eventutils.config.discord.description": "Whether the Discord rich presence should be shown",
-  "eventutils.config.update.title": "Mod update checker",
-  "eventutils.config.update.description": "Whether the mod should check and notify for updates",
-  "eventutils.config.window.title": "Confirm window close",
-  "eventutils.config.window.description": "Whether a confirmation should pop up confirming you want to close your game window",
-  "eventutils.config.disconnect.title": "Confirm disconnect",
-  "eventutils.config.disconnect.description": "Whether a confirmation should pop up confirming you want to leave your server",
-  "eventutils.config.famous.title": "Default Creator IP",
-  "eventutils.config.famous.description": "The default IP for if a (potential) Creator event is pinged with no IP inputted",
-  "eventutils.config.bee_icons.title": "Bee icons",
-  "eventutils.config.bee_icons.description": "Toggle the bee icons for Event Alerts players in the player list",
-  "eventutils.config.groups.category": "Groups",
-  "eventutils.config.groups.manage.title": "Manage groups",
-  "eventutils.config.groups.manage.description": "Create and edit groups for player visibility and group chat. Use the Hide Players key to cycle!",
-  "eventutils.config.groups.manage.button": "Open groups manager",
-  "eventutils.config.groups.add": "Add Group",
-  "eventutils.config.groups.edit_title": "Edit Group",
-  "eventutils.config.groups.name.label": "Name:",
-  "eventutils.config.groups.name.hint": "Group name",
-  "eventutils.config.groups.players.label": "Players:",
-  "eventutils.config.groups.players.hint": "player1, player2, ...",
-  "eventutils.config.groups.entities.label": "Entities:",
-  "eventutils.config.groups.entities.hint": "entity_type1, entity_type2, ...",
-  "eventutils.config.groups.radius": "Hide radius: %s",
-  "eventutils.config.groups.radius.infinite": "Infinite",
-  "eventutils.config.groups.mode.SHOW": "Show",
-  "eventutils.config.groups.mode.HIDE": "Hide",
-  "eventutils.config.groups.player_mode": "Listed players: %s",
-  "eventutils.config.groups.entity_mode": "Listed entities: %s",
-  "eventutils.config.groups.nametag_mode": "All nametags: %s",
-  "eventutils.config.groups.npc_mode": "NPCs: %s",
+    "confirm_disconnect": {
+      "title": "Confirm Disconnect",
+      "message": "Are you sure you want to disconnect?"
+    },
 
-  "eventutils.config.event_settings": "Events",
-  "eventutils.config.event_settings.title": "%s",
-  "eventutils.config.event_settings.toasts": "Send toasts",
-  "eventutils.config.event_settings.toasts.description": "Whether to send a toast when an event starts",
-  "eventutils.config.event_settings.sound": "Sound",
-  "eventutils.config.event_settings.sound.description": "The sound to play when an event starts",
-  "eventutils.config.event_settings.info_screen": "Info screen",
-  "eventutils.config.event_settings.info_screen.description": "Whether to count this event for the event info screen keybind",
-  "eventutils.config.event_settings.auto_tp": "Auto teleport",
-  "eventutils.config.event_settings.auto_tp.description": "Whether to automatically teleport to the event server when an event starts",
-  "eventutils.config.event_settings.server_list": "Server list",
-  "eventutils.config.event_settings.server_list.description": "Whether to add the event server to the multiplayer list when an event starts",
+    "sound": {
+      "none": "None",
+      "alarm": "Alarm",
+      "alert": "Alert",
+      "calm": "Calm",
+      "cat": "Cat",
+      "chime": "Chime",
+      "goofy": "Goofy",
+      "pluck": "Pluck",
+      "reverb": "Reverb",
+      "shakey": "Shakey",
+      "time_of_war": "Time of War"
+    },
 
-  "eventutils.config.advanced": "Advanced",
-  "eventutils.config.advanced.developer_mode.title": "Developer mode",
-  "eventutils.config.advanced.developer_mode.description": "Whether to enable special developer features (testing API, simulate events, etc.)",
-  "eventutils.config.advanced.log_level.title": "Log level",
-  "eventutils.config.advanced.log_level.description": "The level of logging to use",
+    "command": {
+      "no_event_specified": "No event type specified!",
+      "no_event_found": "No event/IP found for ",
+      "config": "Opens EventUtils' config screen",
+      "teleport": "Teleports to the last posted event of that type",
 
-  "eventutils.sound.none": "NONE",
-  "eventutils.sound.alarm": "Alarm",
-  "eventutils.sound.alert": "Alert",
-  "eventutils.sound.calm": "Calm",
-  "eventutils.sound.cat": "Cat",
-  "eventutils.sound.chime": "Chime",
-  "eventutils.sound.goofy": "Goofy",
-  "eventutils.sound.pluck": "Pluck",
-  "eventutils.sound.reverb": "Reverb",
-  "eventutils.sound.shakey": "Shakey",
-  "eventutils.sound.time_of_war": "Time of War",
+      "priority": {
+        "self": "%s§e You have pickup priority %s §ebased on the people around you.",
+        "player": "%s§e %s§e has pickup priority %s §ebased on the people around you.",
+        "noplayer": "%s§c Player not found!"
+      },
 
-  "eventutils.screen.settings": "Settings",
+      "prioritytop": {
+        "page": "%s§e Page %s §eof %s\n\n",
+        "emptypage": "%s§c No players found!",
+        "notapage": "%s§c That page wasn't found! (Highest page is Page %s§c)",
+        "nextpage": "§6[§7>%s§6 Next Page] ",
+        "lastpage": "§6[§7%s<§6 Last Page] ",
+        "pagebutton": "%s§e %s%s§7(Click)"
+      },
 
-  "eventutils.command.priority.self": "%s§e You have pickup priority %s §ebased on the people around you.",
-  "eventutils.command.priority.player": "%s§e %s§e has pickup priority %s §ebased on the people around you.",
-  "eventutils.command.priority.noplayer": "%s§c Player not found!",
+      "countname": {
+        "noplayers": "%s§c No players found with '%s§c' in their name!",
+        "count": "%s§e Found %s §eplayer%s §ewith '%s§e' in their name.",
+        "list": "%s§e Found %s §eplayer%s §ewith '%s§e' in their name§e: %s"
+      },
 
-  "eventutils.command.prioritytop.page": "%s§e Page %s §eof %s\n\n",
-  "eventutils.command.prioritytop.emptypage": "%s§c No players found!",
-  "eventutils.command.prioritytop.notapage": "%s§c That page wasn't found! (Highest page is Page %s§c)",
-  "eventutils.command.prioritytop.nextpage": "§6[§7>%s§6 Next Page] ",
-  "eventutils.command.prioritytop.lastpage": "§6[§7%s<§6 Last Page] ",
-  "eventutils.command.prioritytop.pagebutton": "%s§e %s%s§7(Click)",
+      "groupmsg": {
+        "no_group": "%s§c No group named '%s§c' found."
+      }
+    },
 
-  "eventutils.command.countname.noplayers": "%s§c No players found with '%s§c' in their name!",
-  "eventutils.command.countname.count": "%s§e Found %s §eplayer%s §ewith '%s§e' in their name.",
-  "eventutils.command.countname.list": "%s§e Found %s §eplayer%s §ewith '%s§e' in their name§e: %s",
-  "eventutils.command.groupmsg.no_group": "%s§c No group named '%s§c' found.",
+    "config": {
+      "title": "EventUtils Mod Config",
+      "general": "General",
 
-  "eventutils.plustag.title": "Plus Tag",
-  "eventutils.plustag.subtitle": "Choose which + to show next to your name",
-  "eventutils.plustag.none": "[Linked]",
-  "eventutils.plustag.white": "[White]",
-  "eventutils.plustag.red": "[Red]",
-  "eventutils.plustag.blue": "[Blue]",
-  "eventutils.plustag.orange": "[Orange]",
-  "eventutils.plustag.pink": "[Pink]",
-  "eventutils.plustag.unlock.linked": "Unlocked by linking your Discord account (Event Alerts)",
-  "eventutils.plustag.unlock.none": "—",
-  "eventutils.plustag.unlock.admin": "Unlocked by being an Admin.",
-  "eventutils.plustag.unlock.contributor": "Unlocked by being a developer/contributor.",
-  "eventutils.plustag.unlock.bee": "Unlocked with Bee (subscription).",
-  "eventutils.plustag.unlock.booster": "Unlocked by boosting the Event Alerts Discord server.",
+      "server_list_minutes": {
+        "label": "Event server display time",
+        "description": "How long event servers stay in the multiplayer list after start in minutes (1-15)"
+      },
+      "queue": {
+        "label": "Simple queue message",
+        "description": "Simplifies the queue message for InvadedLands"
+      },
+      "discord": {
+        "label": "Discord RPC",
+        "description": "Whether the Discord rich presence should be shown"
+      },
+      "update": {
+        "label": "Mod update checker",
+        "description": "Whether the mod should check and notify for updates"
+      },
+      "window": {
+        "label": "Confirm window close",
+        "description": "Whether a confirmation should pop up confirming you want to close your game window"
+      },
+      "disconnect": {
+        "label": "Confirm disconnect",
+        "description": "Whether a confirmation should pop up confirming you want to leave your server"
+      },
+      "famous": {
+        "label": "Default Creator IP",
+        "description": "The default IP for if a (potential) Creator event is pinged with no IP inputted"
+      },
+      "bee_icons": {
+        "label": "Bee icons",
+        "description": "Toggle the bee icons for Event Alerts players in the player list"
+      },
 
-  "eventutils.word.plural": "s"
+      "groups": {
+        "category": "Groups",
+        "manage": {
+          "title": "Manage groups",
+          "description": "Create and edit groups for player visibility and group chat. Use the Hide Players key to cycle!",
+          "button": "Open groups manager"
+        },
+        "add": "Add Group",
+        "edit_title": "Edit Group",
+
+        "name": {
+          "label": "Name:",
+          "hint": "Group name"
+        },
+        "players": {
+          "label": "Players:",
+          "hint": "player1, player2, ..."
+        },
+        "entities": {
+          "label": "Entities:",
+          "hint": "entity_type1, entity_type2, ..."
+        },
+
+        "radius": {
+          "label": "Hide radius: %s",
+          "infinite": "Infinite"
+        },
+
+        "mode": {
+          "SHOW": "Show",
+          "HIDE": "Hide"
+        },
+
+        "player_mode": "Listed players: %s",
+        "entity_mode": "Listed entities: %s",
+        "nametag_mode": "All nametags: %s",
+        "npc_mode": "NPCs: %s"
+      },
+
+      "event_settings": {
+        "category": "Events",
+
+        "title": "%s",
+
+        "toasts": {
+          "label": "Send toasts",
+          "description": "Whether to send a toast when an event starts"
+        },
+        "sound": {
+          "label": "Sound",
+          "description": "The sound to play when an event starts"
+        },
+        "info_screen": {
+          "label": "Info screen",
+          "description": "Whether to count this event for the event info screen keybind"
+        },
+        "auto_tp": {
+          "label": "Auto teleport",
+          "description": "Whether to automatically teleport to the event server when an event starts"
+        },
+        "server_list": {
+          "label": "Server list",
+          "description": "Whether to add the event server to the multiplayer list when an event starts"
+        }
+      },
+
+      "advanced": {
+        "category": "Advanced",
+
+        "developer_mode": {
+          "label": "Developer mode",
+          "description": "Whether to enable special developer features (testing API, simulate events, etc.)"
+        },
+        "log_level": {
+          "label": "Log level",
+          "description": "The level of logging to use"
+        }
+      }
+    }
+  }
 }

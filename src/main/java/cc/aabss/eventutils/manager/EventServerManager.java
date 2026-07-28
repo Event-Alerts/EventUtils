@@ -1,5 +1,6 @@
-package cc.aabss.eventutils;
+package cc.aabss.eventutils.manager;
 
+import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.mixin.ServerListAccessor;
 import cc.aabss.eventutils.sdk.EventWrapper;
 import gg.eventalerts.sdk.object.EAEvent;

@@ -6,6 +6,8 @@ import xyz.srnyx.gradlegalaxy.enums.Repository
 import xyz.srnyx.gradlegalaxy.enums.repository
 import xyz.srnyx.gradlegalaxy.utility.addReplacementsTask
 import xyz.srnyx.gradlegalaxy.utility.getDefaultReplacements
+import xyz.srnyx.gradlegalaxy.utility.inGitHubPublish
+import xyz.srnyx.gradlegalaxy.utility.inGitHubWorkflow
 import xyz.srnyx.gradlegalaxy.utility.setupJava
 import xyz.srnyx.gradlegalaxy.utility.setupPublishingPlatforms
 
@@ -14,7 +16,7 @@ plugins {
     id("dev.kikugie.loom-back-compat")
     id("xyz.srnyx.gradle-galaxy") version "3.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.1.1"
-    id("com.gradleup.shadow") version "9.6.0"
+    id("com.gradleup.shadow") version "9.6.1"
     id("dev.kikugie.fletching-table.fabric") version "0.1.0-alpha.22"
     kotlin("jvm") version "2.4.10" // For Fletching Table
     id("com.google.devtools.ksp") version "2.3.10" // For Fletching Table
@@ -24,10 +26,15 @@ plugins {
 val modId = property("mod.id").toString()
 val modName = property("mod.name").toString()
 val loaderVersion = property("deps.loader").toString()
+val javaUtilitiesVersion = property("library.java_utilities").toString()
+val sdkVersion = property("library.sdk").toString()
 val fabricApiVersion = property("deps.fabric_api").toString()
 val yaclVersion = property("deps.yacl").toString()
 val modMenuVersion = property("deps.modmenu").toString()
 val placeholderApiVersion = if (hasProperty("deps.placeholder_api")) property("deps.placeholder_api").toString() else null
+
+// Add local repository if using dev version
+if (javaUtilitiesVersion == "dev" || sdkVersion == "dev") repository(Repository.MAVEN_LOCAL)
 
 // Java version
 val is261Plus: Boolean = sc.current.parsed >= "26.1"
@@ -43,11 +50,19 @@ setupJava(JavaSetupConfig(
     javaVersion = java))
 
 // We need to let setupJava process version first then prefix with Minecraft version
-val modVersion = version.toString() // ex: 1.0.0, dev, 25fsf52
-version = "${sc.current.version}-$modVersion" // ex: 1.21.6-1.0.0, 1.21.4-dev, 1.21.11-25fsf52
+val modVersion = when {
+    !inGitHubWorkflow -> "0.0.0-dev"
+    !inGitHubPublish -> "0.0.0-dev+$version"
+    else -> version.toString()
+}
+version = "${sc.current.version}-$modVersion" // ex: 1.21.6-1.0.0, 1.21.4-0.0.0-dev, 1.21.11-0.0.0-dev+25fsf52
 
 repository("https://maven.gnomecraft.net/releases/", "https://maven.nucleoid.xyz/")
-repository(Repository.SRNYX_RELEASES, Repository.SRNYX_SNAPSHOTS, Repository.FABRIC, Repository.SHEDANIEL, Repository.ISXANDER, Repository.MAVEN_CENTRAL, Repository.JITPACK)
+repository(
+    Repository.SRNYX_RELEASES, Repository.SRNYX_SNAPSHOTS,
+    Repository.FABRIC, Repository.SHEDANIEL, Repository.ISXANDER,
+    Repository.FASTSTATS_RELEASES, Repository.FASTSTATS_SNAPSHOTS,
+    Repository.MAVEN_CENTRAL, Repository.JITPACK)
 
 dependencies {
     minecraft("com.mojang:minecraft:${sc.current.version}")
@@ -60,12 +75,22 @@ dependencies {
     }
 
     // Library: Java Utilities
-    val javaUtilitiesVersion = property("library.java_utilities").toString()
     shadow("xyz.srnyx:java-utilities:$javaUtilitiesVersion")
     // Library: Event Alerts SDK
-    val sdkVersion = property("library.sdk").toString()
     shadow("gg.eventalerts.sdk:http:$sdkVersion")
     shadow("gg.eventalerts.sdk:websocket:$sdkVersion")
+    // Library: FastStats (1.16.1-1.17.1, 1.18-1.21.8, 1.21.9-1.21.11, 26.1-26.3)
+    when {
+        sc.current.version >= "1.16.1" && sc.current.version <= "1.17.1" -> "1.16.1-1.17.1"
+        sc.current.version >= "1.18" && sc.current.version <= "1.21.8" -> "1.18-1.21.8"
+        sc.current.version >= "1.21.9" && sc.current.version <= "1.21.11" -> "1.21.9-1.21.11"
+        sc.current.version >= "26.1" && sc.current.version <= "26.3" -> "26.1-26.3"
+        else -> null
+    }?.let {
+        val fastStats = "dev.faststats.metrics:fabric:${property("library.faststats")}+mc$it"
+        implementation(fastStats)
+        include(fastStats)
+    }
     // Library: JDiscordIPC (https://github.com/jagrosh/DiscordIPC/pull/24/changes)
     shadow("io.github.cdagaming:DiscordIPC:${property("library.discord_ipc")}")
 
@@ -100,6 +125,10 @@ fletchingTable {
         mixin("default", "eventutils.mixins.json") {
             env("client")
         }
+    }
+
+    lang.create("main") {
+        patterns.add("assets/$modId/lang/**")
     }
 }
 

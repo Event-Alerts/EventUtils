@@ -12,6 +12,8 @@ import xyz.srnyx.javautilities.parents.Stringable;
 public class EnrichedEvent {
     @NotNull private final EventUtils mod;
     @NotNull public final EAEvent event;
+
+    // --- Enrichment ---
     @Nullable private EAPlayer host;
 
     public EnrichedEvent(@NotNull EventUtils mod, @NotNull EAEvent event, @Nullable EAPlayer host) {
