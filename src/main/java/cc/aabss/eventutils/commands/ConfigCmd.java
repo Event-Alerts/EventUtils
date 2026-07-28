@@ -1,6 +1,6 @@
 package cc.aabss.eventutils.commands;
 
-import cc.aabss.eventutils.screen.ConfigScreen;
+import cc.aabss.eventutils.screen.config.ConfigScreen;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;

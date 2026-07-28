@@ -170,7 +170,7 @@
       "groups": {
         "category": "Groups",
         "manage": {
-          "title": "Manage groups",
+          "label": "Manage groups",
           "description": "Create and edit groups for player visibility and group chat. Use the Hide Players key to cycle!",
           "button": "Open groups manager"
         },
@@ -178,32 +178,36 @@
         "edit_title": "Edit Group",
 
         "name": {
-          "label": "Name:",
-          "hint": "Group name"
+          "label": "Name"
         },
         "players": {
-          "label": "Players:",
-          "hint": "player1, player2, ..."
+          "label": "Players"
         },
         "entities": {
-          "label": "Entities:",
-          "hint": "entity_type1, entity_type2, ..."
+          "label": "Entities"
         },
-
         "radius": {
-          "label": "Hide radius: %s",
+          "label": "Hide radius",
+          "value": "%s blocks",
           "infinite": "Infinite"
+        },
+        "player_mode": {
+          "label": "Listed players"
+        },
+        "entity_mode": {
+          "label": "Listed entities"
+        },
+        "nametag_mode": {
+          "label": "All nametags"
+        },
+        "npc_mode": {
+          "label": "NPCs"
         },
 
         "mode": {
           "SHOW": "Show",
           "HIDE": "Hide"
-        },
-
-        "player_mode": "Listed players: %s",
-        "entity_mode": "Listed entities: %s",
-        "nametag_mode": "All nametags: %s",
-        "npc_mode": "NPCs: %s"
+        }
       },
 
       "event_settings": {

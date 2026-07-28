@@ -1,7 +1,7 @@
 package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.EventUtils;
-import cc.aabss.eventutils.screen.ConfigScreen;
+import cc.aabss.eventutils.screen.config.ConfigScreen;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
 import dev.isxander.yacl3.api.OptionGroup;

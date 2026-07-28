@@ -1,9 +1,9 @@
-package cc.aabss.eventutils.screen;
+package cc.aabss.eventutils.screen.config;
 
 import cc.aabss.eventutils.config.EventType;
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.EUConfig;
-import cc.aabss.eventutils.screen.group.GroupManagerScreen;
+import cc.aabss.eventutils.screen.config.group.GroupManagerScreen;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import dev.isxander.yacl3.api.controller.EnumControllerBuilder;
@@ -30,7 +30,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(translatable("eventutils.config.discord.description")))
                             .binding(EUConfig.Defaults.DISCORD_RPC, () -> config.discordRpc, newValue -> {
                                 config.discordRpc = newValue;
-                                config.setSave("discord_rpc", config.discordRpc);
+                                config.setSave(EUConfig.Keys.DISCORD_RPC, config.discordRpc);
                                 EventUtils.MOD.discordRPC.refreshConnection();
                             })
                             .controller(ConfigScreen::getBooleanBuilder)
@@ -40,7 +40,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(translatable("eventutils.config.queue.description")))
                             .binding(EUConfig.Defaults.SIMPLE_QUEUE_MESSAGE, () -> config.simpleQueueMessage, newValue -> {
                                 config.simpleQueueMessage = newValue;
-                                config.setSave("simple_queue_message", config.simpleQueueMessage);
+                                config.setSave(EUConfig.Keys.SIMPLE_QUEUE_MESSAGE, config.simpleQueueMessage);
                             })
                             .controller(ConfigScreen::getBooleanBuilder)
                             .build())
@@ -49,7 +49,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(translatable("eventutils.config.update.description")))
                             .binding(EUConfig.Defaults.UPDATE_CHECKER, () -> config.updateChecker, newValue -> {
                                 config.updateChecker = newValue;
-                                config.setSave("update_checker", config.updateChecker);
+                                config.setSave(EUConfig.Keys.UPDATE_CHECKER, config.updateChecker);
                                 EventUtils.MOD.updateChecker.notifyUpdate();
                             })
                             .controller(ConfigScreen::getBooleanBuilder)
@@ -59,7 +59,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(translatable("eventutils.config.window.description")))
                             .binding(EUConfig.Defaults.CONFIRM_WINDOW_CLOSE, () -> config.confirmWindowClose, newValue -> {
                                 config.confirmWindowClose = newValue;
-                                config.setSave("confirm_window_close", config.confirmWindowClose);
+                                config.setSave(EUConfig.Keys.CONFIRM_WINDOW_CLOSE, config.confirmWindowClose);
                             })
                             .controller(ConfigScreen::getBooleanBuilder)
                             .build())
@@ -68,7 +68,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(translatable("eventutils.config.disconnect.description")))
                             .binding(EUConfig.Defaults.CONFIRM_DISCONNECT, () -> config.confirmDisconnect, newValue -> {
                                 config.confirmDisconnect = newValue;
-                                config.setSave("confirm_disconnect", config.confirmDisconnect);
+                                config.setSave(EUConfig.Keys.CONFIRM_DISCONNECT, config.confirmDisconnect);
                             })
                             .controller(ConfigScreen::getBooleanBuilder)
                             .build())
@@ -77,7 +77,7 @@ public class ConfigScreen {
                             .description(OptionDescription.of(translatable("eventutils.config.bee_icons.description")))
                             .binding(EUConfig.Defaults.BEE_ICONS, () -> config.beeIcons, newValue -> {
                                 config.beeIcons = newValue;
-                                config.setSave("bee_icons", config.beeIcons);
+                                config.setSave(EUConfig.Keys.BEE_ICONS, config.beeIcons);
                             })
                             .controller(ConfigScreen::getBooleanBuilder)
                             .build())
@@ -85,7 +85,7 @@ public class ConfigScreen {
                             .name(translatable("eventutils.config.groups.manage.label"))
                             .description(OptionDescription.of(translatable("eventutils.config.groups.manage.description")))
                             .text(translatable("eventutils.config.groups.manage.button"))
-                            .action((yaclScreen, option) -> MinecraftClient.getInstance().setScreen(new GroupManagerScreen(yaclScreen, EventUtils.MOD)))
+                            .action((yaclScreen, option) -> MinecraftClient.getInstance().setScreen(new GroupManagerScreen(EventUtils.MOD, yaclScreen)))
                             .build())
                     // Advanced
                     .group(OptionGroup.createBuilder()
@@ -96,7 +96,7 @@ public class ConfigScreen {
                                     .description(OptionDescription.of(translatable("eventutils.config.advanced.developer_mode.description")))
                                     .binding(EUConfig.Defaults.DEVELOPER_MODE, () -> config.developerMode, newValue -> {
                                         config.developerMode = newValue;
-                                        config.setSave("developer_mode", config.developerMode);
+                                        config.setSave(EUConfig.Keys.DEVELOPER_MODE, config.developerMode);
                                         EventUtils.MOD.updateLogLevel();
                                         EventUtils.MOD.setupSdk("Developer Mode enabled/disabled");
                                         EventUtils.MOD.cacheManager.clearAll();
@@ -109,7 +109,7 @@ public class ConfigScreen {
                                     .description(OptionDescription.of(translatable("eventutils.config.advanced.log_level.description")))
                                     .binding(EUConfig.Defaults.LOG_LEVEL, () -> config.logLevel, newValue -> {
                                         config.logLevel = newValue;
-                                        config.setSave("log_level", config.logLevel);
+                                        config.setSave(EUConfig.Keys.LOG_LEVEL, config.logLevel);
                                         EventUtils.MOD.updateLogLevel();
                                     })
                                     .controller(opt -> EnumControllerBuilder.create(opt).enumClass(StandardLevel.class))
@@ -125,7 +125,7 @@ public class ConfigScreen {
                         .description(OptionDescription.of(translatable("eventutils.config.famous.description")))
                         .binding(EUConfig.Defaults.DEFAULT_FAMOUS_IP, () -> config.defaultFamousIp, newValue -> {
                             config.defaultFamousIp = newValue;
-                            config.setSave("default_famous_ip", config.defaultFamousIp);
+                            config.setSave(EUConfig.Keys.DEFAULT_FAMOUS_IP, config.defaultFamousIp);
                         })
                         .controller(StringControllerBuilder::create)
                         .build())
@@ -134,7 +134,7 @@ public class ConfigScreen {
                         .description(OptionDescription.of(translatable("eventutils.config.server_list_minutes.description")))
                         .binding(EUConfig.Defaults.EVENT_SERVER_DISPLAY_MINUTES, () -> config.eventServerDisplayMinutes, newValue -> {
                             config.setEventServerDisplayMinutes(newValue);
-                            config.setSave("event_server_display_minutes", config.eventServerDisplayMinutes);
+                            config.setSave(EUConfig.Keys.EVENT_SERVER_DISPLAY_MINUTES, config.eventServerDisplayMinutes);
                         })
                         .controller(option -> IntegerFieldControllerBuilder.create(option)
                                 .range(EUConfig.MIN_EVENT_SERVER_DISPLAY_MINUTES, EUConfig.MAX_EVENT_SERVER_DISPLAY_MINUTES))

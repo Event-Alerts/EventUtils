@@ -1,6 +1,6 @@
 package cc.aabss.eventutils;
 
-import cc.aabss.eventutils.screen.ConfigScreen;
+import cc.aabss.eventutils.screen.config.ConfigScreen;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import dev.kikugie.fletching_table.annotation.fabric.Entrypoint;

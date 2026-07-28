@@ -2,40 +2,61 @@ package cc.aabss.eventutils.config;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityType;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
+import xyz.srnyx.javautilities.parents.Stringable;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 
-public class Group {
+public class Group extends Stringable {
     public static final int MAX_RADIUS = 100;
 
-    @NotNull private String name = "New Group";
-    @NotNull private Set<String> players = new HashSet<>();
-    @NotNull private Set<String> entities = new HashSet<>();
-    @NotNull private Mode playerMode = Mode.SHOW;
-    @NotNull private Mode entityMode = Mode.HIDE;
-    @NotNull private Mode npcMode = Mode.HIDE;
+    @NotNull private transient UUID uuid;
+    @NotNull private String name;
+    @NotNull private List<String> players = Defaults.players();
+    @NotNull private List<EntityType<?>> entities = Defaults.entities();
+    @NotNull private Mode playerMode = Defaults.PLAYER_MODE;
+    @NotNull private Mode entityMode = Defaults.ENTITY_MODE;
+    @NotNull private Mode npcMode = Defaults.NPC_MODE;
     /**
      * {@code null} = infinite
      */
-    @Nullable @Range(from = 1, to = MAX_RADIUS) private Integer radius = null;
+    @Nullable @Range(from = 1, to = MAX_RADIUS) private Integer radius = Defaults.RADIUS;
 
-    public Group() {}
+    public Group() {
+        this.uuid = UUID.randomUUID();
+        this.name = uuid.toString();
+    }
 
     public Group(@NotNull Group group) {
+        this.uuid = group.uuid;
         this.name = group.name;
-        this.players = new HashSet<>(group.players);
-        this.entities = new HashSet<>(group.entities);
+        this.players = new ArrayList<>(group.players);
+        this.entities = new ArrayList<>(group.entities);
         this.playerMode = group.playerMode;
         this.entityMode = group.entityMode;
         this.npcMode = group.npcMode;
         this.radius = group.radius;
+    }
+
+    @NotNull
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    @NotNull
+    public Group setUuid(@NotNull UUID uuid) {
+        this.uuid = uuid;
+        return this;
     }
 
     @NotNull
@@ -50,25 +71,42 @@ public class Group {
     }
 
     @NotNull
-    public Set<String> getPlayers() {
+    public List<String> getPlayers() {
         return players;
     }
 
     @NotNull
     public Group setPlayers(@NotNull Collection<String> players) {
-        this.players = new HashSet<>(players);
+        this.players = players.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
         return this;
     }
 
     @NotNull
-    public Set<String> getEntities() {
+    public List<EntityType<?>> getEntities() {
         return entities;
     }
 
     @NotNull
-    public Group setEntities(@NotNull Collection<String> entities) {
-        this.entities = new HashSet<>(entities);
+    public List<String> getEntityIds() {
+        return entities.stream()
+                .map(entityType -> EntityType.getId(entityType).toString())
+                .toList();
+    }
+
+    @NotNull
+    public Group setEntities(@NotNull Collection<EntityType<?>> entities) {
+        this.entities = new ArrayList<>(entities);
         return this;
+    }
+
+    @NotNull
+    public Group setEntitiesByIds(@NotNull Collection<String> entities) {
+        return setEntities(entities.stream()
+                .map(name -> EntityType.get(name).orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()));
     }
 
     @NotNull
@@ -166,7 +204,38 @@ public class Group {
     }
 
     public enum Mode {
-        SHOW,
-        HIDE
+        SHOW(Formatting.GREEN),
+        HIDE(Formatting.RED);
+
+        @NotNull public final Formatting formatting;
+
+        Mode(@NotNull Formatting formatting) {
+            this.formatting = formatting;
+        }
+    }
+
+    // Collections/Maps need to have methods to create new instances of the collection!
+    public static class Defaults {
+        @NotNull private static final List<String> PLAYERS = List.of();
+        @NotNull private static final List<EntityType<?>> ENTITIES = List.of();
+        @NotNull public static final Mode PLAYER_MODE = Mode.SHOW;
+        @NotNull public static final Mode ENTITY_MODE = Mode.HIDE;
+        @NotNull public static final Mode NPC_MODE = Mode.HIDE;
+        @Nullable public static final Integer RADIUS = null;
+
+        @NotNull
+        public static List<String> players() {
+            return new ArrayList<>(PLAYERS);
+        }
+        @NotNull
+        public static List<EntityType<?>> entities() {
+            return new ArrayList<>(ENTITIES);
+        }
+        @NotNull
+        public static List<String> entityIds() {
+            return ENTITIES.stream()
+                    .map(entityType -> EntityType.getId(entityType).toString())
+                    .toList();
+        }
     }
 }

@@ -5,6 +5,7 @@ import cc.aabss.eventutils.EventUtils;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonObject;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.EntityType;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.spi.StandardLevel;
 import org.jetbrains.annotations.NotNull;
@@ -56,34 +57,42 @@ public class EUConfig extends FileLoader {
         }
 
         // Get values
-        discordRpc = get("discord_rpc", Defaults.DISCORD_RPC);
-        simpleQueueMessage = get("simple_queue_message", Defaults.SIMPLE_QUEUE_MESSAGE);
-        updateChecker = get("update_checker", Defaults.UPDATE_CHECKER);
-        confirmWindowClose = get("confirm_window_close", Defaults.CONFIRM_WINDOW_CLOSE);
-        confirmDisconnect = get("confirm_disconnect", Defaults.CONFIRM_DISCONNECT);
-        defaultFamousIp = get("default_famous_ip", Defaults.DEFAULT_FAMOUS_IP);
-        beeIcons = get("bee_icons", Defaults.BEE_ICONS);
-        setEventServerDisplayMinutes(get("event_server_display_minutes", Defaults.EVENT_SERVER_DISPLAY_MINUTES));
-        groups = get("groups", Defaults.groups(), new TypeToken<Map<UUID, Group>>(){}.getType());
-        eventSettings = get("event_settings", Defaults.eventSettings(), new TypeToken<Map<EventType, EventSettings>>(){}.getType());
-        developerMode = get("developer_mode", Defaults.DEVELOPER_MODE);
-        logLevel = get("log_level", Defaults.LOG_LEVEL);
+        discordRpc = get(Keys.DISCORD_RPC, Defaults.DISCORD_RPC);
+        simpleQueueMessage = get(Keys.SIMPLE_QUEUE_MESSAGE, Defaults.SIMPLE_QUEUE_MESSAGE);
+        updateChecker = get(Keys.UPDATE_CHECKER, Defaults.UPDATE_CHECKER);
+        confirmWindowClose = get(Keys.CONFIRM_WINDOW_CLOSE, Defaults.CONFIRM_WINDOW_CLOSE);
+        confirmDisconnect = get(Keys.CONFIRM_DISCONNECT, Defaults.CONFIRM_DISCONNECT);
+        defaultFamousIp = get(Keys.DEFAULT_FAMOUS_IP, Defaults.DEFAULT_FAMOUS_IP);
+        beeIcons = get(Keys.BEE_ICONS, Defaults.BEE_ICONS);
+        setEventServerDisplayMinutes(get(Keys.EVENT_SERVER_DISPLAY_MINUTES, Defaults.EVENT_SERVER_DISPLAY_MINUTES));
+        groups = get(Keys.GROUPS, Defaults.groups(), new TypeToken<Map<UUID, Group>>(){}.getType());
+        eventSettings = get(Keys.EVENT_SETTINGS, Defaults.eventSettings(), new TypeToken<Map<EventType, EventSettings>>(){}.getType());
+        developerMode = get(Keys.DEVELOPER_MODE, Defaults.DEVELOPER_MODE);
+        logLevel = get(Keys.LOG_LEVEL, Defaults.LOG_LEVEL);
 
-        // Validate groups (unique names)
-        final Set<String> groupNames = new HashSet<>();
-        for (final Group group : new HashSet<>(groups.values())) {
-            if (groupNames.add(group.getName().toLowerCase())) continue;
-            EventUtils.LOGGER.error("Removing duplicate group: {}", group.getName());
-            groups.values().remove(group);
+        // Add group UUIDs to Groups
+        for (final Map.Entry<UUID, Group> entry : groups.entrySet()) entry.getValue().setUuid(entry.getKey());
+
+        if (created) {
+            // Save if created (default values)
+            save();
+        } else {
+            // Validate groups (unique names)
+            boolean updated = false;
+            final Set<String> groupNames = new HashSet<>();
+            for (final Group group : new HashSet<>(groups.values())) {
+                if (groupNames.add(group.getName().toLowerCase())) continue;
+                EventUtils.LOGGER.error("Removing duplicate group: {}", group);
+                groups.remove(group.getUuid());
+                updated = true;
+            }
+            if (updated) setSave(Keys.GROUPS, groups); // Save if a group was removed
         }
-
-        // Save if created (default values)
-        if (created) save();
     }
 
     private void migrate() {
         // Get old version (ignore before 1.0.0 [dev])
-        final String oldVersionString = get("version", "1.4.0");
+        final String oldVersionString = get(Keys.VERSION, "1.4.0");
         final SemanticVersion oldVersion = EventUtils.getSemantic(oldVersionString);
         if (oldVersion == null || oldVersion.compareTo(new SemanticVersion(1, 0, 0)) < 0) return;
 
@@ -91,13 +100,13 @@ public class EUConfig extends FileLoader {
         if (oldVersion.compareTo(new SemanticVersion(2, 0, 0)) < 0) {
             EventUtils.LOGGER.warn("EventUtils config ({}) is older than 2.0.0, migrating to new format", oldVersionString);
 
-            update("discord-rpc", "discord_rpc", Boolean.class);
+            update("discord-rpc", Keys.DISCORD_RPC, Boolean.class);
             update("auto-tp", "auto_tp", Boolean.class);
-            update("simple-queue-msg", "simple_queue_message", Boolean.class);
-            update("update-checker", "update_checker", Boolean.class);
-            update("confirm-window-close", "confirm_window_close", Boolean.class);
-            update("confirm-disconnect", "confirm_disconnect", Boolean.class);
-            update("default-famous-ip", "default_famous_ip", String.class);
+            update("simple-queue-msg", Keys.SIMPLE_QUEUE_MESSAGE, Boolean.class);
+            update("update-checker", Keys.UPDATE_CHECKER, Boolean.class);
+            update("confirm-window-close", Keys.CONFIRM_WINDOW_CLOSE, Boolean.class);
+            update("confirm-disconnect", Keys.CONFIRM_DISCONNECT, Boolean.class);
+            update("default-famous-ip", Keys.DEFAULT_FAMOUS_IP, String.class);
 
             // whitelisted_players
             final List<String> whitelistedPlayers = remove("whitelisted_players", new TypeToken<List<String>>(){}.getType());
@@ -148,7 +157,7 @@ public class EUConfig extends FileLoader {
                 }
                 newEventSettings.put(type, settings);
             }
-            set("event_settings", newEventSettings);
+            set(Keys.EVENT_SETTINGS, newEventSettings);
 
             // Flat hide values -> Group
             final Group group = new Group()
@@ -157,16 +166,16 @@ public class EUConfig extends FileLoader {
                     .setEntityMode(Group.Mode.HIDE);
             final List<String> whitelistedPlayers = remove("whitelisted_players", new TypeToken<List<String>>(){}.getType());
             if (whitelistedPlayers != null) group.setPlayers(whitelistedPlayers);
-            final List<String> hiddenEntityTypes = remove("hidden_entity_types", new TypeToken<List<String>>(){}.getType());
+            final List<EntityType<?>> hiddenEntityTypes = remove("hidden_entity_types", new TypeToken<List<EntityType<?>>>(){}.getType());
             if (hiddenEntityTypes != null) group.setEntities(hiddenEntityTypes);
             final Integer hidePlayersRadius = remove("hide_players_radius", Integer.class);
             if (hidePlayersRadius != null) group.setRadius(hidePlayersRadius);
             final Boolean hideNpcs = remove("hide_npcs", Boolean.class);
             if (hideNpcs != null) group.setNpcMode(hideNpcs ? Group.Mode.HIDE : Group.Mode.SHOW);
-            set("groups", Map.of(UUID.randomUUID(), group));
+            set(Keys.GROUPS, Map.of(group.getUuid(), group));
 
             // use_testing_api -> developer_mode
-            update("use_testing_api", "developer_mode", Boolean.class);
+            update("use_testing_api", Keys.DEVELOPER_MODE, Boolean.class);
         }
 
         // --- ADD NEW MIGRATIONS ABOVE THIS LINE ---
@@ -175,7 +184,7 @@ public class EUConfig extends FileLoader {
         // We need this fallback version to prevent semantic parsing issues when using "dev" version.
 
         // Update version
-        set("version", EventUtils.getSemantic(BuildProperties.MOD_VERSION) != null ? BuildProperties.MOD_VERSION : "2.3.1");
+        set(Keys.VERSION, EventUtils.getSemantic(BuildProperties.MOD_VERSION) != null ? BuildProperties.MOD_VERSION : "2.3.1");
         save();
     }
 
@@ -198,6 +207,14 @@ public class EUConfig extends FileLoader {
                 .orElse(null);
     }
 
+    /**
+     * If a group with the same UUID already exists, it will be replaced
+     */
+    public void upsertGroup(@NotNull Group group) {
+        groups.put(group.getUuid(), group);
+        setSave(Keys.GROUPS, groups);
+    }
+
     @NotNull
     public EventSettings getEventSettings(@NotNull EventType type) {
         return eventSettings.getOrDefault(type, new EventSettings());
@@ -206,6 +223,22 @@ public class EUConfig extends FileLoader {
     public void setEventServerDisplayMinutes(int eventServerDisplayMinutes) {
         // Don't use Math.clamp to support older Java versions
         this.eventServerDisplayMinutes = Math.max(MIN_EVENT_SERVER_DISPLAY_MINUTES, Math.min(MAX_EVENT_SERVER_DISPLAY_MINUTES, eventServerDisplayMinutes));
+    }
+    
+    public static class Keys {
+        @NotNull public static final String VERSION = "version";
+        @NotNull public static final String DISCORD_RPC = "discord_rpc";
+        @NotNull public static final String SIMPLE_QUEUE_MESSAGE = "simple_queue_message";
+        @NotNull public static final String UPDATE_CHECKER = "update_checker";
+        @NotNull public static final String CONFIRM_WINDOW_CLOSE = "confirm_window_close";
+        @NotNull public static final String CONFIRM_DISCONNECT = "confirm_disconnect";
+        @NotNull public static final String DEFAULT_FAMOUS_IP = "default_famous_ip";
+        @NotNull public static final String BEE_ICONS = "bee_icons";
+        @NotNull public static final String EVENT_SERVER_DISPLAY_MINUTES = "event_server_display_minutes";
+        @NotNull public static final String GROUPS = "groups";
+        @NotNull public static final String EVENT_SETTINGS = "event_settings";
+        @NotNull public static final String DEVELOPER_MODE = "developer_mode";
+        @NotNull public static final String LOG_LEVEL = "log_level";
     }
 
     // Collections/Maps need to have methods to create new instances of the collection!
