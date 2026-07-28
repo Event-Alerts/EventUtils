@@ -87,31 +87,6 @@ public class GroupManager {
         return group.isPlayerVisible(name, position);
     }
 
-    public boolean isNametagVisible(@NotNull GameProfile profile, @Nullable Vec3d position) {
-        // All visible
-        final Group group = getSelectedGroup();
-        if (group == null) return true;
-
-        // Always show self
-        final VersionedGameProfile versionedProfile = new VersionedGameProfile(profile);
-        if (isSelf(versionedProfile.getName())) return true;
-
-        // Delegate to Group
-        return group.isNametagVisible(versionedProfile, position);
-    }
-
-    public boolean isNametagVisible(@NotNull String name, @Nullable Vec3d position) {
-        // All visible
-        final Group group = getSelectedGroup();
-        if (group == null) return true;
-
-        // Always show self
-        if (isSelf(name)) return true;
-
-        // Delegate to Group
-        return group.isNametagVisible(name, position);
-    }
-
     public boolean isEntityVisible(@NotNull EntityType<?> entityType, @Nullable Vec3d position) {
         // All visible
         final Group group = getSelectedGroup();

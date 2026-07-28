@@ -23,7 +23,6 @@ public class EditGroupScreen extends Screen {
     private static final int PADDING = 20;
     private static final int ROW = 24;
     private static final int FIELD_HEIGHT = 20;
-    private static final int SECTION_GAP = 12;
 
     @Nullable private final Screen parent;
     @NotNull private final EventUtils mod;
@@ -101,13 +100,6 @@ public class EditGroupScreen extends Screen {
         addDrawableChild(ButtonWidget.builder(translatable("eventutils.config.groups.entity_mode", translatable("eventutils.config.groups.mode." + groupCopy.getEntityMode())), button -> {
             groupCopy.toggleEntityMode();
             button.setMessage(translatable("eventutils.config.groups.entity_mode", translatable("eventutils.config.groups.mode." + groupCopy.getEntityMode())));
-        }).dimensions(centerX - 100, y, 200, 20).build());
-
-        // Nametag mode (button)
-        y += ROW;
-        addDrawableChild(ButtonWidget.builder(translatable("eventutils.config.groups.nametag_mode", translatable("eventutils.config.groups.mode." + groupCopy.getNametagMode())), button -> {
-            groupCopy.toggleNametagMode();
-            button.setMessage(translatable("eventutils.config.groups.nametag_mode", translatable("eventutils.config.groups.mode." + groupCopy.getNametagMode())));
         }).dimensions(centerX - 100, y, 200, 20).build());
 
         // NPC mode (button)

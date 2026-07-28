@@ -1,6 +1,5 @@
 package cc.aabss.eventutils.config;
 
-import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.Vec3d;
@@ -21,7 +20,6 @@ public class Group {
     @NotNull private Set<String> entities = new HashSet<>();
     @NotNull private Mode playerMode = Mode.SHOW;
     @NotNull private Mode entityMode = Mode.HIDE;
-    @NotNull private Mode nametagMode = Mode.SHOW;
     @NotNull private Mode npcMode = Mode.HIDE;
     /**
      * {@code null} = infinite
@@ -36,7 +34,6 @@ public class Group {
         this.entities = new HashSet<>(group.entities);
         this.playerMode = group.playerMode;
         this.entityMode = group.entityMode;
-        this.nametagMode = group.nametagMode;
         this.npcMode = group.npcMode;
         this.radius = group.radius;
     }
@@ -107,22 +104,6 @@ public class Group {
     }
 
     @NotNull
-    public Mode getNametagMode() {
-        return nametagMode;
-    }
-
-    @NotNull
-    public Group setNametagMode(@NotNull Mode nametagMode) {
-        this.nametagMode = nametagMode;
-        return this;
-    }
-
-    @NotNull
-    public Group toggleNametagMode() {
-        return setNametagMode(nametagMode == Mode.SHOW ? Mode.HIDE : Mode.SHOW);
-    }
-
-    @NotNull
     public Mode getNpcMode() {
         return npcMode;
     }
@@ -178,14 +159,6 @@ public class Group {
     public boolean isEntityVisible(@NotNull EntityType<?> entityType, @Nullable Vec3d position) {
         final boolean show = (entityMode == Mode.SHOW) == entities.contains(entityType.getName().getString().toLowerCase());
         return show || outsideRadius(position);
-    }
-
-    public boolean isNametagVisible(@NotNull VersionedGameProfile profile, @Nullable Vec3d position) {
-        return nametagMode == Mode.SHOW || isPlayerVisible(profile.getName(), position);
-    }
-
-    public boolean isNametagVisible(@NotNull String name, @Nullable Vec3d position) {
-        return nametagMode == Mode.SHOW || isPlayerVisible(name, position);
     }
 
     public boolean isNpcVisible(@Nullable Vec3d position) {
