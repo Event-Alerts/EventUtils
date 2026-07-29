@@ -31,7 +31,7 @@ public class PlayerCache extends Cache<UUID, EnrichedPlayer> {
 
     @Override @NotNull
     protected EAAction<EnrichedPlayer> fetchImpl(@NotNull UUID uuid) {
-        return mod.http.players.retrieveOneByMinecraftUuid(uuid).map(EnrichedPlayer::new);
+        return mod.http.players.retrieveOneByMinecraftUuid(uuid).map(player -> player != null ? new EnrichedPlayer(player) : null);
     }
 
     @Override @NotNull
