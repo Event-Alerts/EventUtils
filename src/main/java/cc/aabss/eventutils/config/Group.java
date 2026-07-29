@@ -9,11 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 import xyz.srnyx.javautilities.parents.Stringable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -22,8 +18,8 @@ public class Group extends Stringable {
 
     @NotNull private transient UUID uuid;
     @NotNull private String name;
-    @NotNull private List<String> players = Defaults.players();
-    @NotNull private List<EntityType<?>> entities = Defaults.entities();
+    @NotNull private Set<String> players = Defaults.players();
+    @NotNull private Set<EntityType<?>> entities = Defaults.entities();
     @NotNull private Mode playerMode = Defaults.PLAYER_MODE;
     @NotNull private Mode entityMode = Defaults.ENTITY_MODE;
     @NotNull private Mode npcMode = Defaults.NPC_MODE;
@@ -35,17 +31,6 @@ public class Group extends Stringable {
     public Group() {
         this.uuid = UUID.randomUUID();
         this.name = uuid.toString();
-    }
-
-    public Group(@NotNull Group group) {
-        this.uuid = group.uuid;
-        this.name = group.name;
-        this.players = new ArrayList<>(group.players);
-        this.entities = new ArrayList<>(group.entities);
-        this.playerMode = group.playerMode;
-        this.entityMode = group.entityMode;
-        this.npcMode = group.npcMode;
-        this.radius = group.radius;
     }
 
     @NotNull
@@ -71,7 +56,7 @@ public class Group extends Stringable {
     }
 
     @NotNull
-    public List<String> getPlayers() {
+    public Set<String> getPlayers() {
         return players;
     }
 
@@ -79,25 +64,25 @@ public class Group extends Stringable {
     public Group setPlayers(@NotNull Collection<String> players) {
         this.players = players.stream()
                 .map(String::toLowerCase)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         return this;
     }
 
     @NotNull
-    public List<EntityType<?>> getEntities() {
+    public Set<EntityType<?>> getEntities() {
         return entities;
     }
 
     @NotNull
-    public List<String> getEntityIds() {
+    public Set<String> getEntityIds() {
         return entities.stream()
                 .map(entityType -> EntityType.getId(entityType).toString())
-                .toList();
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @NotNull
     public Group setEntities(@NotNull Collection<EntityType<?>> entities) {
-        this.entities = new ArrayList<>(entities);
+        this.entities = new LinkedHashSet<>(entities);
         return this;
     }
 
@@ -121,11 +106,6 @@ public class Group extends Stringable {
     }
 
     @NotNull
-    public Group togglePlayerMode() {
-        return setPlayerMode(playerMode == Mode.SHOW ? Mode.HIDE : Mode.SHOW);
-    }
-
-    @NotNull
     public Mode getEntityMode() {
         return entityMode;
     }
@@ -137,11 +117,6 @@ public class Group extends Stringable {
     }
 
     @NotNull
-    public Group toggleEntityMode() {
-        return setEntityMode(entityMode == Mode.SHOW ? Mode.HIDE : Mode.SHOW);
-    }
-
-    @NotNull
     public Mode getNpcMode() {
         return npcMode;
     }
@@ -150,11 +125,6 @@ public class Group extends Stringable {
     public Group setNpcMode(@NotNull Mode npcMode) {
         this.npcMode = npcMode;
         return this;
-    }
-
-    @NotNull
-    public Group toggleNpcMode() {
-        return setNpcMode(npcMode == Mode.SHOW ? Mode.HIDE : Mode.SHOW);
     }
 
     @Nullable
@@ -224,18 +194,18 @@ public class Group extends Stringable {
         @Nullable public static final Integer RADIUS = null;
 
         @NotNull
-        public static List<String> players() {
-            return new ArrayList<>(PLAYERS);
+        public static Set<String> players() {
+            return new LinkedHashSet<>(PLAYERS);
         }
         @NotNull
-        public static List<EntityType<?>> entities() {
-            return new ArrayList<>(ENTITIES);
+        public static Set<EntityType<?>> entities() {
+            return new LinkedHashSet<>(ENTITIES);
         }
         @NotNull
-        public static List<String> entityIds() {
+        public static Set<String> entityIds() {
             return ENTITIES.stream()
                     .map(entityType -> EntityType.getId(entityType).toString())
-                    .toList();
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }
 }

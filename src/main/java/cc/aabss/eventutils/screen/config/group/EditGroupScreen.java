@@ -18,6 +18,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -92,7 +93,7 @@ public class EditGroupScreen {
                                 .build())
                         .group(ListOption.<String>createBuilder()
                                 .name(translatable("eventutils.config.groups.players.label"))
-                                .binding(Group.Defaults.players(), group::getPlayers, newValue -> {
+                                .binding(new ArrayList<>(Group.Defaults.players()), () -> new ArrayList<>(group.getPlayers()), newValue -> {
                                     group.setPlayers(newValue);
                                     mod.config.upsertGroup(group);
                                 })
@@ -101,7 +102,7 @@ public class EditGroupScreen {
                                 .build())
                         .group(ListOption.<String>createBuilder()
                                 .name(translatable("eventutils.config.groups.entities.label"))
-                                .binding(Group.Defaults.entityIds(), group::getEntityIds, newValue -> {
+                                .binding(new ArrayList<>(Group.Defaults.entityIds()), () -> new ArrayList<>(group.getEntityIds()), newValue -> {
                                     group.setEntitiesByIds(newValue);
                                     mod.config.upsertGroup(group);
                                 })
