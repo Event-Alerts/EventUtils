@@ -6,10 +6,12 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.jetbrains.annotations.NotNull;
+import xyz.srnyx.javautilities.manipulation.Mapper;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 public class MapEventTypeNotificationSoundAdapter extends TypeAdapter<Map<EventType, NotificationSound>> {
@@ -29,15 +31,12 @@ public class MapEventTypeNotificationSoundAdapter extends TypeAdapter<Map<EventT
         final Map<EventType, NotificationSound> map = new HashMap<>();
         in.beginObject();
         while (in.hasNext()) {
-            final String name = in.nextName();
-            final EventType type = EventType.fromString(name);
-            if (type == null) {
+            final Optional<EventType> type = Mapper.toEnum(in.nextName(), EventType.class);
+            if (type.isEmpty()) {
                 in.skipValue();
                 continue;
             }
-            final NotificationSound value = NotificationSound.fromString(in.nextString());
-            if (value == null) continue;
-            map.put(type, value);
+            Mapper.toEnum(in.nextString(), NotificationSound.class).ifPresent(value -> map.put(type.get(), value));
         }
         in.endObject();
         return map;

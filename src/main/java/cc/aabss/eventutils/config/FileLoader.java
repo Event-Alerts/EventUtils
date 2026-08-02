@@ -1,20 +1,22 @@
 package cc.aabss.eventutils.config;
 
-import cc.aabss.eventutils.config.adapters.EntityTypeAdapter;
-import cc.aabss.eventutils.config.adapters.EntityTypeListAdapter;
-import cc.aabss.eventutils.config.adapters.EventTypeSetAdapter;
+import cc.aabss.eventutils.config.adapters.CollectionAdapter;
+import cc.aabss.eventutils.config.adapters.EntityTypeCollectionAdapter;
 import cc.aabss.eventutils.config.adapters.MapEventTypeNotificationSoundAdapter;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.*;
 import net.minecraft.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.srnyx.javautilities.manipulation.Mapper;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,9 +29,12 @@ import java.util.Set;
 public abstract class FileLoader {
     @NotNull private static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
-            .registerTypeAdapter(EntityType.class, new EntityTypeAdapter())
-            .registerTypeAdapter(new TypeToken<List<EntityType<?>>>(){}.getType(), new EntityTypeListAdapter())
-            .registerTypeAdapter(new TypeToken<Set<EventType>>(){}.getType(), new EventTypeSetAdapter())
+            .registerTypeAdapter(new TypeToken<Set<EntityType<?>>>(){}.getType(), new EntityTypeCollectionAdapter<>(LinkedHashSet::new))
+            .registerTypeAdapter(new TypeToken<List<EntityType<?>>>(){}.getType(), new EntityTypeCollectionAdapter<>(ArrayList::new))
+            .registerTypeAdapter(new TypeToken<Set<EventType>>(){}.getType(), new CollectionAdapter<>(
+                    LinkedHashSet::new,
+                    EventType::name,
+                    string -> Mapper.toEnum(string, EventType.class).orElse(null)))
             .registerTypeAdapter(new TypeToken<Map<EventType, NotificationSound>>(){}.getType(), new MapEventTypeNotificationSoundAdapter())
             .create();
 

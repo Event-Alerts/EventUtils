@@ -1,6 +1,5 @@
 package cc.aabss.eventutils.config;
 
-import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.screen.config.ConfigScreen;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
@@ -107,16 +106,6 @@ public enum EventType {
                         .controller(ConfigScreen::getBooleanBuilder)
                         .build())
                 .build();
-    }
-
-    @Nullable
-    public static EventType fromString(@NotNull String eventType) {
-        try {
-            return EventType.valueOf(eventType.toUpperCase());
-        } catch (final IllegalArgumentException e) {
-            EventUtils.LOGGER.warn("Invalid event type: {}", eventType);
-            return null;
-        }
     }
 
     @Nullable
