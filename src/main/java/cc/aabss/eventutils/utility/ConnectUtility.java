@@ -62,7 +62,7 @@ public class ConnectUtility {
 
         // Get strings
         final List<String> strings = new ArrayList<>();
-        for (final String string : removeMarkdown(message).split("\\s+|\\n+")) {
+        for (final String string : MarkdownSanitizer.sanitize(message).split("\\s+|\\n+")) {
             if (string.contains(".") && !string.contains("/")) strings.add(string);
         }
 
@@ -100,37 +100,5 @@ public class ConnectUtility {
             Thread.currentThread().interrupt();
         } catch (final ExecutionException ignored) {}
         return false;
-    }
-
-    @NotNull
-    public static String removeMarkdown(@NotNull String string) {
-        return string
-                // Remove HTML tags
-                .replaceAll("<[^>]+>", "")
-                // Remove setext-style headers
-                .replaceAll("^[=\\-]{2,}\\s*$", "")
-                // Remove footnotes
-                .replaceAll("\\[\\^.+?](: .*?$)?", "")
-                .replaceAll("\\s{0,2}\\[.*?]: .*?$", "")
-                // Remove images
-                .replaceAll("!\\[(.*?)][\\[(].*?[])]", "$1")
-                // Remove inline links
-                .replaceAll("\\[([^]]*?)][\\[(].*?[])]", "$2")
-                // Remove blockquotes
-                .replaceAll("(?m)^(\\n)?\\s{0,3}>\\s?", "$1")
-                // Remove reference-style links
-                .replaceAll("^\\s{1,2}\\[(.*?)]: (\\S+)( \".*?\")?\\s*$", "")
-                // Remove atx-style headers
-                .replaceAll("(?m)^(\\n)?\\s*#{1,6}\\s*( (.+))? +#+$|^\\s*#{1,6}\\s*( (.+))?$", "$1$3$4$5")
-                // Remove * emphasis
-                .replaceAll("([*]+)(\\S)(.*?\\S)??\\1", "$2$3")
-                // Remove _ emphasis
-                .replaceAll("(^|\\W)(_+)(\\S)(.*?\\S)??\\2($|\\W)", "$1$3$4$5")
-                // Remove code blocks
-                .replaceAll("(`{3,})(.*?)\\1", "$2")
-                // Remove inline code
-                .replaceAll("`(.+?)`", "$1")
-                // Replace strike through
-                .replaceAll("~(.*?)~", "$1");
     }
 }

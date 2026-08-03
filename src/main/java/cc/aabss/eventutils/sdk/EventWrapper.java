@@ -6,11 +6,11 @@ import cc.aabss.eventutils.config.EventSettings;
 import cc.aabss.eventutils.config.EventType;
 import cc.aabss.eventutils.config.NotificationSound;
 import cc.aabss.eventutils.utility.ConnectUtility;
+import cc.aabss.eventutils.utility.MarkdownSanitizer;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAFamousEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +19,8 @@ import xyz.srnyx.javautilities.parents.Stringable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class EventWrapper {
@@ -31,7 +33,7 @@ public class EventWrapper {
     @NotNull public final List<EventType> eventTypes = new ArrayList<>();
     @NotNull public final String title;
     @Nullable public final String ip;
-    @Nullable public final Integer prize;
+    @Nullable public final String prize;
 
     public EventWrapper(@NotNull EventUtils mod, @NotNull EAEvent event) {
         this.mod = mod;
@@ -246,25 +248,45 @@ public class EventWrapper {
         return null;
     }
 
+    @NotNull private static final Pattern PRIZE_PATTERN = Pattern.compile(
+            "(?<symbol>[$€£])\\s*(?<symbolAmount>\\d+(?:,\\d{3})*)|(?<wordAmount>\\d+(?:,\\d{3})*)\\s*(?<currency>dollars?|euros?|pounds?)",
+            Pattern.CASE_INSENSITIVE);
+
     @Nullable
-    private Integer extractPrize() {
-        if (!(event instanceof EAEvent eaEvent) || eaEvent.rolesNamed == null || !eaEvent.rolesNamed.contains(EAEvent.PingRole.MONEY)) return null;
+    private String extractPrize() {
+        if (!(event instanceof EAEvent eaEvent) || eaEvent.rolesNamed == null || !eaEvent.rolesNamed.contains(EAEvent.PingRole.MONEY)) {
+            return null;
+        }
 
-        // Get prize from JSON
-        if (eaEvent.prize != null) return Integer.parseInt(eaEvent.prize.replaceAll("[$€£]", "").split(" ")[0]);
+        // Prize from JSON
+        if (eaEvent.prize != null) {
+            final Matcher matcher = PRIZE_PATTERN.matcher(eaEvent.prize);
+            if (matcher.find()) return formatPrize(matcher);
+        }
 
-        // Extract prize from description
-        if (eaEvent.description == null) return null;
-        for (final String line : ConnectUtility.removeMarkdown(eaEvent.description.toLowerCase()).split("\\n+")) {
-            if (!line.contains("$") && !line.contains("€") && !line.contains("£") && !line.contains("dollars") && !line.contains("prize")) continue;
-
-            for (String word : line.split(" ")) {
-                if (word.contains("$") || word.contains("€") || word.contains("£")) word = word.replaceAll("[$€£]", "");
-                try {
-                    return Integer.parseInt(word);
-                } catch (final NumberFormatException ignored) {}
+        // Prize from description
+        if (eaEvent.description != null) {
+            for (final String line : MarkdownSanitizer.sanitize(eaEvent.description).split("\\n+")) {
+                final Matcher matcher = PRIZE_PATTERN.matcher(line);
+                if (matcher.find()) return formatPrize(matcher);
             }
         }
+
         return null;
+    }
+
+    @NotNull
+    private static String formatPrize(@NotNull Matcher matcher) {
+        if (matcher.group("symbol") != null) {
+            return matcher.group("symbol") + matcher.group("symbolAmount").replace(",", "");
+        }
+
+        final String symbol = switch (matcher.group("currency").toLowerCase()) {
+            case "dollar", "dollars" -> "$";
+            case "euro", "euros" -> "€";
+            case "pound", "pounds" -> "£";
+            default -> "";
+        };
+        return symbol + matcher.group("wordAmount").replace(",", "");
     }
 }
