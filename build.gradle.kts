@@ -75,10 +75,10 @@ dependencies {
     }
 
     // Library: Java Utilities
-    shadow("xyz.srnyx:java-utilities:$javaUtilitiesVersion")
+    shadowLibrary("xyz.srnyx:java-utilities:$javaUtilitiesVersion")
     // Library: Event Alerts SDK
-    shadow("gg.eventalerts.sdk:http:$sdkVersion")
-    shadow("gg.eventalerts.sdk:websocket:$sdkVersion")
+    shadowLibrary("gg.eventalerts.sdk:http:$sdkVersion")
+    shadowLibrary("gg.eventalerts.sdk:websocket:$sdkVersion")
     // Library: FastStats (1.16.1-1.17.1, 1.18-1.21.8, 1.21.9-1.21.11, 26.1-26.3)
     when {
         sc.current.version >= "1.16.1" && sc.current.version <= "1.17.1" -> "1.16.1-1.17.1"
@@ -86,13 +86,9 @@ dependencies {
         sc.current.version >= "1.21.9" && sc.current.version <= "1.21.11" -> "1.21.9-1.21.11"
         sc.current.version >= "26.1" && sc.current.version <= "26.3" -> "26.1-26.3"
         else -> null
-    }?.let {
-        val fastStats = "dev.faststats.metrics:fabric:${property("library.faststats")}+mc$it"
-        implementation(fastStats)
-        include(fastStats)
-    }
+    }?.let { jijLibrary("dev.faststats.metrics:fabric:${property("library.faststats")}+mc$it") }
     // Library: JDiscordIPC (https://github.com/jagrosh/DiscordIPC/pull/24/changes)
-    shadow("io.github.cdagaming:DiscordIPC:${property("library.discord_ipc")}")
+    shadowLibrary("io.github.cdagaming:DiscordIPC:${property("library.discord_ipc")}")
 
     // Fabric
     modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
@@ -195,6 +191,7 @@ loom {
     }
 
     runConfigs.all {
+        generateRunConfig.set(true)
         jvmArguments.add("-Dmixin.debug.export=true") // Exports transformed classes for debugging
         runDirectory.set(file("../../run")) // Shares the run directory between versions
     }
@@ -239,4 +236,14 @@ if (sc.current.isActive) rootProject.tasks.register("buildActive") {
     dependsOn(tasks.named("build"))
     // Copy built jar to shared folder
     dependsOn(tasks.named("buildAndCollect"))
+}
+
+// Custom jijLibrary (modImplementation + include) and shadowLibrary (implementation + shadow) dependency configurations
+fun DependencyHandler.jijLibrary(dependency: String) {
+    modImplementation(dependency)
+    include(dependency)
+}
+fun DependencyHandler.shadowLibrary(dependency: String) {
+    implementation(dependency)
+    shadow(dependency)
 }
