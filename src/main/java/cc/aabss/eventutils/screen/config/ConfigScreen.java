@@ -89,7 +89,7 @@ public class ConfigScreen {
                             .build())
                     // Advanced
                     .group(OptionGroup.createBuilder()
-                            .name(translatable("eventutils.config.advanced"))
+                            .name(translatable("eventutils.config.advanced.category"))
                             .collapsed(true)
                             .option(Option.<Boolean>createBuilder()
                                     .name(translatable("eventutils.config.advanced.developer_mode.label"))
