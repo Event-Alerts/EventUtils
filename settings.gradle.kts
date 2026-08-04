@@ -2,6 +2,7 @@ pluginManagement { repositories {
     maven("https://maven.kikugie.dev/releases/")
     maven("https://maven.kikugie.dev/snapshots/")
     maven("https://maven.fabricmc.net/")
+    maven("https://repo.srnyx.com/snapshots/")
     gradlePluginPortal()
 } }
 

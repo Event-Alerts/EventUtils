@@ -62,8 +62,8 @@ public enum EventType {
                         .name(Text.translatable("eventutils.config.event_settings.toasts.label"))
                         .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.toasts.description")))
                         .binding(EventSettings.Defaults.TOASTS, () -> config.getEventSettings(this).toasts, newValue -> {
-                            config.getEventSettings(this).toasts = newValue;
-                            config.setSave("event_settings", config.eventSettings);
+                            config.getEventSettingsOrCreate(this).toasts = newValue;
+                            config.save();
                         })
                         .controller(ConfigScreen::getBooleanBuilder)
                         .build())
@@ -71,8 +71,8 @@ public enum EventType {
                         .name(Text.translatable("eventutils.config.event_settings.sound.label"))
                         .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.sound.description")))
                         .binding(EventSettings.Defaults.SOUND, () -> config.getEventSettings(this).sound, newValue -> {
-                            config.getEventSettings(this).sound = newValue;
-                            config.setSave("event_settings", config.eventSettings);
+                            config.getEventSettingsOrCreate(this).sound = newValue;
+                            config.save();
                         })
                         .controller(opt -> EnumControllerBuilder.create(opt)
                                 .enumClass(NotificationSound.class)
@@ -82,8 +82,8 @@ public enum EventType {
                         .name(Text.translatable("eventutils.config.event_settings.info_screen.label"))
                         .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.info_screen.description")))
                         .binding(EventSettings.Defaults.INFO_SCREEN, () -> config.getEventSettings(this).infoScreen, newValue -> {
-                            config.getEventSettings(this).infoScreen = newValue;
-                            config.setSave("event_settings", config.eventSettings);
+                            config.getEventSettingsOrCreate(this).infoScreen = newValue;
+                            config.save();
                         })
                         .controller(ConfigScreen::getBooleanBuilder)
                         .build())
@@ -91,8 +91,8 @@ public enum EventType {
                         .name(Text.translatable("eventutils.config.event_settings.auto_tp.label"))
                         .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.auto_tp.description")))
                         .binding(EventSettings.Defaults.AUTO_TP, () -> config.getEventSettings(this).autoTp, newValue -> {
-                            config.getEventSettings(this).autoTp = newValue;
-                            config.setSave("event_settings", config.eventSettings);
+                            config.getEventSettingsOrCreate(this).autoTp = newValue;
+                            config.save();
                         })
                         .controller(ConfigScreen::getBooleanBuilder)
                         .build())
@@ -100,8 +100,8 @@ public enum EventType {
                         .name(Text.translatable("eventutils.config.event_settings.server_list.label"))
                         .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.server_list.description")))
                         .binding(EventSettings.Defaults.SERVER_LIST, () -> config.getEventSettings(this).serverList, newValue -> {
-                            config.getEventSettings(this).serverList = newValue;
-                            config.setSave("event_settings", config.eventSettings);
+                            config.getEventSettingsOrCreate(this).serverList = newValue;
+                            config.save();
                         })
                         .controller(ConfigScreen::getBooleanBuilder)
                         .build())

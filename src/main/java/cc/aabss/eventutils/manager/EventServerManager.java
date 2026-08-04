@@ -75,10 +75,10 @@ public class EventServerManager {
             serverInfo.setResourcePackPolicy(ServerInfo.ResourcePackPolicy.PROMPT);
 
             // Did event start too long ago?
-            final long graceMs = TimeUnit.MINUTES.toMillis(mod.config.eventServerDisplayMinutes);
+            final long graceMs = TimeUnit.MINUTES.toMillis(mod.config.event_server_display_minutes);
             final long removalDelay = (timeMillis + graceMs) - System.currentTimeMillis();
             if (removalDelay <= 0) {
-                EventUtils.LOGGER.debug("Event '{}' started more than {} minutes ago; not adding", serverName, mod.config.eventServerDisplayMinutes);
+                EventUtils.LOGGER.debug("Event '{}' started more than {} minutes ago; not adding", serverName, mod.config.event_server_display_minutes);
                 return;
             }
 

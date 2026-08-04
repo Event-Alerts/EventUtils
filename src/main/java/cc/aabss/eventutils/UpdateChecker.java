@@ -38,7 +38,7 @@ public class UpdateChecker {
     }
 
     public void notifyUpdate() {
-        if (!mod.config.updateChecker) return;
+        if (!mod.config.update_checker) return;
 
         // Ensure client in-game
         final MinecraftClient client = MinecraftClient.getInstance();

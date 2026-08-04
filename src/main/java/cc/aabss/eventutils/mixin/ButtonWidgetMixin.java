@@ -35,7 +35,7 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
     *///?} else {
     private void onPress(CallbackInfo ci) {
     //?}
-        if (!EventUtils.MOD.config.confirmDisconnect || !translatable("menu.disconnect").equals(getMessage())) return;
+        if (!EventUtils.MOD.config.confirm_disconnect || !translatable("menu.disconnect").equals(getMessage())) return;
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null || !(client.currentScreen instanceof GameMenuScreen)) return;
 

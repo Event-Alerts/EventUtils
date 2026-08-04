@@ -82,7 +82,7 @@ public class EventWrapper {
         this.title = (eventType != null ? eventType.name() : "Unknown") + " Event";
 
         // ip
-        this.ip = Objects.requireNonNullElse(ConnectUtility.getIp(event.message), mod.config.defaultFamousIp).toLowerCase();
+        this.ip = Objects.requireNonNullElse(ConnectUtility.getIp(event.message), mod.config.default_famous_ip).toLowerCase();
     }
 
     @Override @NotNull

@@ -50,10 +50,10 @@ public class DiscordRPC {
 
     public void refreshConnection() {
         final PipeStatus status = client.getStatus();
-        EventUtils.LOGGER.debug("[DISCORD RPC] config.discordRpc={} status={}", mod.config.discordRpc, status);
+        EventUtils.LOGGER.debug("[DISCORD RPC] config.discordRpc={} status={}", mod.config.discord_rpc, status);
 
         // Enable
-        if (mod.config.discordRpc) {
+        if (mod.config.discord_rpc) {
             // Already enabled
             if (status == PipeStatus.CONNECTING || status == PipeStatus.CONNECTED) return;
 

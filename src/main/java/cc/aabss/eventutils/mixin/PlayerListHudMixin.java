@@ -49,7 +49,7 @@ public abstract class PlayerListHudMixin {
         if (client.player == null) return;
 
         // Bee icons disabled
-        if (!EventUtils.MOD.config.beeIcons) return;
+        if (!EventUtils.MOD.config.bee_icons) return;
 
         // Get UUID
         final UUID uuid = new VersionedGameProfile(entry.getProfile()).getId();

@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar.Companion.shadowJar
 import xyz.srnyx.gradlegalaxy.data.config.JavaSetupConfig
 import xyz.srnyx.gradlegalaxy.data.config.publishing.PublishingPlatformConfig
-import xyz.srnyx.gradlegalaxy.data.platforms.PluginPlatform
+import xyz.srnyx.gradlegalaxy.enums.PluginPlatform
 import xyz.srnyx.gradlegalaxy.enums.Repository
 import xyz.srnyx.gradlegalaxy.enums.repository
 import xyz.srnyx.gradlegalaxy.utility.addReplacementsTask
@@ -14,9 +14,9 @@ import xyz.srnyx.gradlegalaxy.utility.setupPublishingPlatforms
 
 plugins {
     id("dev.kikugie.loom-back-compat")
-    id("xyz.srnyx.gradle-galaxy") version "3.2.0"
-    id("me.modmuss50.mod-publish-plugin") version "2.1.1"
+    id("xyz.srnyx.gradle-galaxy") version "ac4875a"
     id("com.gradleup.shadow") version "9.6.1"
+    id("me.modmuss50.mod-publish-plugin") version "675051c"
     id("dev.kikugie.fletching-table.fabric") version "0.1.0-alpha.22"
     kotlin("jvm") version "2.4.10" // For Fletching Table
     id("com.google.devtools.ksp") version "2.3.10" // For Fletching Table
@@ -28,13 +28,14 @@ val modName = property("mod.name").toString()
 val loaderVersion = property("deps.loader").toString()
 val javaUtilitiesVersion = property("library.java_utilities").toString()
 val sdkVersion = property("library.sdk").toString()
+val okaeriConfigsVersion = property("library.okaeri_configs").toString()
 val fabricApiVersion = property("deps.fabric_api").toString()
 val yaclVersion = property("deps.yacl").toString()
 val modMenuVersion = property("deps.modmenu").toString()
 val placeholderApiVersion = if (hasProperty("deps.placeholder_api")) property("deps.placeholder_api").toString() else null
 
 // Add local repository if using dev version
-if (javaUtilitiesVersion == "dev" || sdkVersion == "dev") repository(Repository.MAVEN_LOCAL)
+if (javaUtilitiesVersion == "dev" || sdkVersion == "dev" || okaeriConfigsVersion == "dev") repository(Repository.MAVEN_LOCAL)
 
 // Java version
 val is261Plus: Boolean = sc.current.parsed >= "26.1"
@@ -59,6 +60,7 @@ version = "${sc.current.version}-$modVersion" // ex: 1.21.6-1.0.0, 1.21.4-0.0.0-
 
 repository("https://maven.gnomecraft.net/releases/", "https://maven.nucleoid.xyz/")
 repository(
+    Repository.OKAERI_RELEASES, Repository.OKAERI_SNAPSHOTS,
     Repository.SRNYX_RELEASES, Repository.SRNYX_SNAPSHOTS,
     Repository.FABRIC, Repository.SHEDANIEL, Repository.ISXANDER,
     Repository.FASTSTATS_RELEASES, Repository.FASTSTATS_SNAPSHOTS,
@@ -76,9 +78,17 @@ dependencies {
 
     // Library: Java Utilities
     shadowLibrary("xyz.srnyx:java-utilities:$javaUtilitiesVersion")
+    // Library: Semver4j
+    shadowLibrary("org.semver4j:semver4j:${property("library.semver4j")}")
     // Library: Event Alerts SDK
     shadowLibrary("gg.eventalerts.sdk:http:$sdkVersion")
     shadowLibrary("gg.eventalerts.sdk:websocket:$sdkVersion")
+    // Library: Okaeri Configs
+    shadowLibrary("eu.okaeri:okaeri-configs-core:$okaeriConfigsVersion")
+    shadowLibrary("eu.okaeri:okaeri-configs-json-gson:$okaeriConfigsVersion")
+    shadowLibrary("eu.okaeri:okaeri-configs-serdes-commons:$okaeriConfigsVersion")
+    // Library: JDiscordIPC (https://github.com/jagrosh/DiscordIPC/pull/24/changes)
+    shadowLibrary("io.github.cdagaming:DiscordIPC:${property("library.discord_ipc")}")
     // Library: FastStats (1.16.1-1.17.1, 1.18-1.21.8, 1.21.9-1.21.11, 26.1-26.3)
     when {
         sc.current.version >= "1.16.1" && sc.current.version <= "1.17.1" -> "1.16.1-1.17.1"
@@ -87,8 +97,6 @@ dependencies {
         sc.current.version >= "26.1" && sc.current.version <= "26.3" -> "26.1-26.3"
         else -> null
     }?.let { jijLibrary("dev.faststats.metrics:fabric:${property("library.faststats")}+mc$it") }
-    // Library: JDiscordIPC (https://github.com/jagrosh/DiscordIPC/pull/24/changes)
-    shadowLibrary("io.github.cdagaming:DiscordIPC:${property("library.discord_ipc")}")
 
     // Fabric
     modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
@@ -150,13 +158,19 @@ tasks {
         val libsPackage = "${project.group}.$modId.libs"
         // Java Utilities
         relocate("xyz.srnyx.javautilities", "$libsPackage.javautilities")
+        // Semver4j
+        relocate("org.semver4j", "$libsPackage.semver4j")
         // Event Alerts SDK
+        exclude("org/bson/codecs/**")
         relocate("gg.eventalerts.sdk", "$libsPackage.eventalerts.sdk")
         relocate("com.google.errorprone", "$libsPackage.errorprone")
         relocate("com.google.gson", "$libsPackage.gson")
         relocate("org.bson", "$libsPackage.bson")
         relocate("org.java_websocket", "$libsPackage.java_websocket")
         relocate("org.slf4j", "$libsPackage.slf4j")
+        // Okaeri Configs
+        exclude("org/jspecify/annotations/**")
+        relocate("eu.okaeri", "$libsPackage.okaeri")
         // JDiscordIPC
         relocate("com.jagrosh.discordipc", "$libsPackage.discordipc")
         relocate("net.lenni0451.reflect", "$libsPackage.lenni0451.reflect")

@@ -90,7 +90,7 @@ public class KeybindManager {
             }
 
             // Developer Mode: simulate test event
-            if (!testEventKey.isUnbound() && mod.config.developerMode) {
+            if (!testEventKey.isUnbound() && mod.config.developer_mode) {
                 if (GLFW.glfwGetKey(windowHandle, ((KeyBindingAccessor) testEventKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
                     if (canNotPress(testEventKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.debug("Test event key pressed");

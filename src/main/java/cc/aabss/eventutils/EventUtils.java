@@ -3,6 +3,11 @@ package cc.aabss.eventutils;
 import cc.aabss.eventutils.commands.CommandRegister;
 import cc.aabss.eventutils.config.EUConfig;
 import cc.aabss.eventutils.config.EventType;
+import cc.aabss.eventutils.config.Group;
+import cc.aabss.eventutils.config.migrations.*;
+import cc.aabss.eventutils.config.serdes.EntityTypeSerializer;
+import cc.aabss.eventutils.config.serdes.EventSettingsSerializer;
+import cc.aabss.eventutils.config.serdes.GroupSerializer;
 import cc.aabss.eventutils.discordrpc.DiscordRPC;
 import cc.aabss.eventutils.manager.AuthManager;
 import cc.aabss.eventutils.cache.CacheManager;
@@ -16,6 +21,8 @@ import cc.aabss.eventutils.websocket.listener.EventCancelledListener;
 import cc.aabss.eventutils.websocket.listener.EventPostedListener;
 import cc.aabss.eventutils.websocket.listener.FamousEventPostedListener;
 import dev.kikugie.fletching_table.annotation.fabric.Entrypoint;
+import eu.okaeri.configs.json.gson.JsonGsonConfigurer;
+import eu.okaeri.configs.serdes.commons.SerdesCommons;
 import gg.eventalerts.sdk.http.EAHTTP;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.websocket.EAWebSocket;
@@ -47,8 +54,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.srnyx.javautilities.MiscUtility;
-import xyz.srnyx.javautilities.objects.SemanticVersion;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -97,13 +104,39 @@ public class EventUtils implements ClientModInitializer {
 
     public EventUtils() {
         MOD = this;
-        updateLogLevel(); // Need to wait for config to be set
-    }
 
-    @Nullable
-    public static SemanticVersion getSemantic(@Nullable String string) {
-        if (string == null) return null;
-        return MiscUtility.handleException(() -> new SemanticVersion(string), NumberFormatException.class).orElse(null);
+        // Load config
+        config
+                .configure(opt -> {
+                    opt.configurer(
+                            new JsonGsonConfigurer(),
+
+                            // Okaeri serdes
+                            new SerdesCommons(),
+
+                            // Custom serdes
+                            new EntityTypeSerializer(),
+                            new EventSettingsSerializer(),
+                            new GroupSerializer());
+
+                    opt.bindFile(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
+                    opt.removeOrphans(true);
+                })
+                .saveDefaults()
+                .migrateInternalState(
+                        new C0001_Rename_kebab_case_to_snake_case(),
+                        new C0002_Rename_notifications_event_types(),
+                        new C0003_Flat_alerts_to_EventSettings(),
+                        new C0004_Flat_hiding_to_Groups(),
+                        new C0005_use_testing_api_to_developer_mode(),
+                        new C0006_Remove_duplicate_Group_names())
+                .save();
+
+        // Add group UUIDs to Groups
+        for (final Map.Entry<UUID, Group> entry : config.groups.entrySet()) entry.getValue().setUuid(entry.getKey());
+
+        // Need to wait for config to be loaded
+        updateLogLevel();
     }
 
     @Override
@@ -196,7 +229,7 @@ public class EventUtils implements ClientModInitializer {
         // Simple queue message
         ClientReceiveMessageEvents.ALLOW_GAME.register(((text, overlay) -> true));
         ClientReceiveMessageEvents.MODIFY_GAME.register(((text, overlay) -> {
-            if (config.simpleQueueMessage && text.getString().contains(QUEUE_TEXT)) {
+            if (config.simple_queue_message && text.getString().contains(QUEUE_TEXT)) {
                 final String original = text.getString();
                 final MutableText resultText = Text.literal("");
                 final Matcher matcher = java.util.regex.Pattern
@@ -218,8 +251,8 @@ public class EventUtils implements ClientModInitializer {
 
     public void updateLogLevel() {
         // Get level
-        Level level = Level.toLevel(config.logLevel.name());
-        if (level == Level.INFO && config.developerMode) level = Level.DEBUG;
+        Level level = Level.toLevel(config.log_level.name());
+        if (level == Level.INFO && config.developer_mode) level = Level.DEBUG;
 
         final LoggerContext context = (LoggerContext) LogManager.getContext(false);
         final Configuration config = context.getConfiguration();
@@ -240,7 +273,7 @@ public class EventUtils implements ClientModInitializer {
     public void setupSdk(@Nullable String reason) {
         // HTTP
         http = new EAHTTP.Builder(USER_AGENT)
-                .url(config.developerMode ? "http://localhost:8080/api/v1/" : "https://eventalerts.gg/api/v1/")
+                .url(config.developer_mode ? "http://localhost:8080/api/v1/" : "https://eventalerts.gg/api/v1/")
                 .build();
 
         // Shutdown old socket
@@ -248,7 +281,7 @@ public class EventUtils implements ClientModInitializer {
 
         // Connect new socket
         webSocket = new EAWebSocket.Builder(USER_AGENT)
-                .url((config.developerMode ? "ws://localhost:9090" : "wss://eventalerts.gg") + "/api/v1/socket")
+                .url((config.developer_mode ? "ws://localhost:9090" : "wss://eventalerts.gg") + "/api/v1/socket")
                 .handler(
                         new EventCancelledListener(this),
                         new EventPostedListener(this),

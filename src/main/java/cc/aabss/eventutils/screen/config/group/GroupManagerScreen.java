@@ -52,7 +52,7 @@ public class GroupManagerScreen extends Screen {
                 if (mod.groupManager.selectedGroup == group.getUuid()) mod.groupManager.selectedGroup = null;
 
                 mod.config.groups.remove(group.getUuid());
-                mod.config.setSave("groups", mod.config.groups);
+                mod.config.save();
                 if (client != null) client.setScreen(new GroupManagerScreen(mod, parent));
             }).dimensions(width - PADDING - REMOVE_WIDTH, y, REMOVE_WIDTH, 20).build());
         }

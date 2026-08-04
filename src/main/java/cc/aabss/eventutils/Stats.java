@@ -29,8 +29,8 @@ public class Stats {
                         eventsJoined.set(0);
                     });
 
-                    // Config
-                    factory.addMetric(Metric.object("config", mod.config::getJson));
+                    // Config TODO: take from annoying api FastStatsLoader.config(...) and StatsGson (adapters too)
+//                    factory.addMetric(Metric.object("config", mod.config::getJson));
 
                     // WebSocket
                     factory.addMetric(Metric.bool("socket_open", () -> mod.webSocket.isOpen()));

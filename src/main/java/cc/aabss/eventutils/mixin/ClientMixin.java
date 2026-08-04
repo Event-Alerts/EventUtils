@@ -18,7 +18,7 @@ import static net.minecraft.text.Text.translatable;
 public class ClientMixin {
     @Inject(method = "run", at = @At("HEAD"))
     private void onRun(CallbackInfo ci) {
-        if (!EventUtils.MOD.config.confirmWindowClose) return;
+        if (!EventUtils.MOD.config.confirm_window_close) return;
         final MinecraftClient client = MinecraftClient.getInstance();
         final long handle = client.getWindow().getHandle();
         final GLFWWindowCloseCallback callback = GLFW.glfwSetWindowCloseCallback(handle, win -> client.execute(() -> {
