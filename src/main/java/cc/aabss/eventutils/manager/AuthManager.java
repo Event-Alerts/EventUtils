@@ -39,7 +39,15 @@ public class AuthManager {
     public EAAction<EUOnlineAuthResponse> authenticate() {
         if (heartbeat != null) heartbeat.cancel(false);
 
+        // Get session and access token
         final Session session = MinecraftClient.getInstance().getSession();
+        final String accessToken = session.getAccessToken();
+        if (accessToken == null || accessToken.equals("FabricMC")) { // Development/offline environment
+            player = null;
+            return EAAction.completed(null);
+        }
+
+        // POST auth
         final EUOnlineAuthBody body = new EUOnlineAuthBody(
                 session.getAccessToken(),
                 session.getUuidOrNull(),
