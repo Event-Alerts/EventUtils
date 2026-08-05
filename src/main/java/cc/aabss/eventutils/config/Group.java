@@ -164,7 +164,7 @@ public class Group extends Stringable {
     }
 
     public boolean isEntityVisible(@NotNull EntityType<?> entityType, @Nullable Vec3d position) {
-        final boolean show = (entityMode == Mode.SHOW) == entities.contains(entityType.getName().getString().toLowerCase());
+        final boolean show = (entityMode == Mode.SHOW) == entities.contains(entityType);
         return show || outsideRadius(position);
     }
 
