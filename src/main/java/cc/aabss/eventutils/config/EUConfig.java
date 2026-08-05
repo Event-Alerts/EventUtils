@@ -15,7 +15,6 @@ public class EUConfig extends OkaeriConfig {
     public static final int MIN_EVENT_SERVER_DISPLAY_MINUTES = 1;
     public static final int MAX_EVENT_SERVER_DISPLAY_MINUTES = 15;
 
-
     public boolean discord_rpc = Defaults.DISCORD_RPC;
     public boolean simple_queue_message = Defaults.SIMPLE_QUEUE_MESSAGE;
     public boolean update_checker = Defaults.UPDATE_CHECKER;
@@ -24,8 +23,8 @@ public class EUConfig extends OkaeriConfig {
     @NotNull public String default_famous_ip = Defaults.DEFAULT_FAMOUS_IP;
     public boolean bee_icons = Defaults.BEE_ICONS;
     @Range(from = MIN_EVENT_SERVER_DISPLAY_MINUTES, to = MAX_EVENT_SERVER_DISPLAY_MINUTES) public int event_server_display_minutes = Defaults.EVENT_SERVER_DISPLAY_MINUTES;
-    @NotNull public final Map<UUID, Group> groups = Defaults.groups();
-    @NotNull public final Map<EventType, EventSettings> event_settings = Defaults.eventSettings();
+    @NotNull public Map<UUID, Group> groups = Defaults.groups();
+    @NotNull public Map<EventType, EventSettings> event_settings = Defaults.eventSettings();
     public boolean developer_mode = Defaults.DEVELOPER_MODE;
     @NotNull public StandardLevel log_level = Defaults.LOG_LEVEL;
 
@@ -63,9 +62,12 @@ public class EUConfig extends OkaeriConfig {
     }
 
     public void setEventServerDisplayMinutes(int eventServerDisplayMinutes) {
+        final int before = this.event_server_display_minutes;
         // Don't use Math.clamp to support older Java versions
         this.event_server_display_minutes = Math.max(MIN_EVENT_SERVER_DISPLAY_MINUTES, Math.min(MAX_EVENT_SERVER_DISPLAY_MINUTES, eventServerDisplayMinutes));
-        save();
+
+        // Only save if changed
+        if (before != this.event_server_display_minutes) save();
     }
 
     // Collections/Maps need to have methods to create new instances of the collection!

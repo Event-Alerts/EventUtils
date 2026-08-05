@@ -106,8 +106,7 @@ public class EventUtils implements ClientModInitializer {
         MOD = this;
 
         // Load config
-        config
-                .configure(opt -> {
+        config.configure(opt -> {
                     opt.configurer(
                             new JsonGsonConfigurer(),
 
@@ -121,19 +120,31 @@ public class EventUtils implements ClientModInitializer {
 
                     opt.bindFile(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
                     opt.removeOrphans(true);
-                })
-                .saveDefaults()
-                .migrateInternalState(
-                        new C0001_Rename_kebab_case_to_snake_case(),
-                        new C0002_Rename_notifications_event_types(),
-                        new C0003_Flat_alerts_to_EventSettings(),
-                        new C0004_Flat_hiding_to_Groups(),
-                        new C0005_use_testing_api_to_developer_mode(),
-                        new C0006_Remove_duplicate_Group_names())
-                .save();
+                });
+        config.saveDefaults(); // Basically just creates file if it doesn't exist
+        config.load(); // Initial load (for migrations)
+        config.migrateInternalState( // Migrations
+                new C0001_Rename_kebab_case_to_snake_case(),
+                new C0002_Rename_notifications_event_types(),
+                new C0003_Flat_alerts_to_EventSettings(),
+                new C0004_Flat_hiding_to_Groups(),
+                new C0005_use_testing_api_to_developer_mode());
+        config.save(); // Manually save in-case no migrations occured
 
-        // Add group UUIDs to Groups
+        // Clamp event_server_display_minutes
+        config.setEventServerDisplayMinutes(config.event_server_display_minutes);
+        // Add UUIDs to Groups
         for (final Map.Entry<UUID, Group> entry : config.groups.entrySet()) entry.getValue().setUuid(entry.getKey());
+        // Validate groups (unique names)
+        boolean updated = false;
+        final Set<String> groupNames = new HashSet<>();
+        for (final Group group : new HashSet<>(config.groups.values())) {
+            if (groupNames.add(group.getName().toLowerCase())) continue;
+            EventUtils.LOGGER.error("Removing duplicate group: {}", group);
+            config.groups.remove(group.getUuid());
+            updated = true;
+        }
+        if (updated) config.save(); // Save if a group was removed
 
         // Need to wait for config to be loaded
         updateLogLevel();

@@ -1,9 +1,10 @@
 package cc.aabss.eventutils.config;
 
 import org.jetbrains.annotations.NotNull;
+import xyz.srnyx.javautilities.parents.Stringable;
 
 
-public class EventSettings {
+public class EventSettings extends Stringable {
     public boolean toasts = Defaults.TOASTS;
     @NotNull public NotificationSound sound = Defaults.SOUND;
     public boolean infoScreen = Defaults.INFO_SCREEN;

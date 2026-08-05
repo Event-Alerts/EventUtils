@@ -17,7 +17,7 @@ public class Group extends Stringable {
     public static final int MAX_RADIUS = 100;
 
     @NotNull private transient UUID uuid;
-    @NotNull private String name;
+    @Nullable private String name;
     @NotNull private Set<String> players = Defaults.players();
     @NotNull private Set<EntityType<?>> entities = Defaults.entities();
     @NotNull private Mode playerMode = Defaults.PLAYER_MODE;
@@ -30,7 +30,6 @@ public class Group extends Stringable {
 
     public Group() {
         this.uuid = UUID.randomUUID();
-        this.name = uuid.toString();
     }
 
     @NotNull
@@ -46,11 +45,11 @@ public class Group extends Stringable {
 
     @NotNull
     public String getName() {
-        return name;
+        return Objects.requireNonNullElse(name, uuid.toString());
     }
 
     @NotNull
-    public Group setName(@NotNull String name) {
+    public Group setName(@Nullable String name) {
         this.name = name;
         return this;
     }
