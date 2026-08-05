@@ -5,6 +5,7 @@ import cc.aabss.eventutils.EventUtils;
 import com.jagrosh.discordipc.IPCClient;
 import com.jagrosh.discordipc.entities.RichPresence;
 import com.jagrosh.discordipc.entities.pipe.PipeStatus;
+import com.jagrosh.discordipc.exceptions.NoDiscordClientException;
 import gg.eventalerts.sdk.http.action.EAAction;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
@@ -63,7 +64,7 @@ public class DiscordRPC {
                 client.connect();
                 EventUtils.LOGGER.debug("[DISCORD RPC] Connected");
             } catch (final Exception e) {
-                EventUtils.LOGGER.warn("[DISCORD RPC] Failed to connect!", e);
+                if (!(e instanceof NoDiscordClientException)) EventUtils.LOGGER.warn("[DISCORD RPC] Failed to connect!", e);
             }
             return;
         }
