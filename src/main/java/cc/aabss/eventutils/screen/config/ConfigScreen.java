@@ -1,5 +1,6 @@
 package cc.aabss.eventutils.screen.config;
 
+import cc.aabss.eventutils.BuildProperties;
 import cc.aabss.eventutils.config.EventType;
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.EUConfig;
@@ -11,6 +12,7 @@ import dev.isxander.yacl3.api.controller.IntegerFieldControllerBuilder;
 import dev.isxander.yacl3.api.controller.StringControllerBuilder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.spi.StandardLevel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +29,10 @@ public class ConfigScreen {
             .category(ConfigCategory.createBuilder().name(translatable("eventutils.config.general"))
                     .option(Option.<Boolean>createBuilder()
                             .name(translatable("eventutils.config.discord.label"))
-                            .description(OptionDescription.of(translatable("eventutils.config.discord.description")))
+                            .description(OptionDescription.createBuilder()
+                                    .text(translatable("eventutils.config.discord.description"))
+                                    .image(Identifier.of(BuildProperties.MOD_ID, "textures/config/discord_rpc.png"), 351, 165)
+                                    .build())
                             .binding(EUConfig.Defaults.DISCORD_RPC, () -> config.discord_rpc, newValue -> {
                                 config.discord_rpc = newValue;
                                 config.save();
@@ -56,7 +61,10 @@ public class ConfigScreen {
                             .build())
                     .option(Option.<Boolean>createBuilder()
                             .name(translatable("eventutils.config.window.label"))
-                            .description(OptionDescription.of(translatable("eventutils.config.window.description")))
+                            .description(OptionDescription.createBuilder()
+                                    .text(translatable("eventutils.config.window.description"))
+                                    .image(Identifier.of(BuildProperties.MOD_ID, "textures/config/confirm_exit.png"), 950, 272)
+                                    .build())
                             .binding(EUConfig.Defaults.CONFIRM_WINDOW_CLOSE, () -> config.confirm_window_close, newValue -> {
                                 config.confirm_window_close = newValue;
                                 config.save();
@@ -65,7 +73,10 @@ public class ConfigScreen {
                             .build())
                     .option(Option.<Boolean>createBuilder()
                             .name(translatable("eventutils.config.disconnect.label"))
-                            .description(OptionDescription.of(translatable("eventutils.config.disconnect.description")))
+                            .description(OptionDescription.createBuilder()
+                                    .text(translatable("eventutils.config.disconnect.description"))
+                                    .image(Identifier.of(BuildProperties.MOD_ID, "textures/config/confirm_disconnect.png"), 972, 295)
+                                    .build())
                             .binding(EUConfig.Defaults.CONFIRM_DISCONNECT, () -> config.confirm_disconnect, newValue -> {
                                 config.confirm_disconnect = newValue;
                                 config.save();
@@ -74,7 +85,10 @@ public class ConfigScreen {
                             .build())
                     .option(Option.<Boolean>createBuilder()
                             .name(translatable("eventutils.config.bee_icons.label"))
-                            .description(OptionDescription.of(translatable("eventutils.config.bee_icons.description")))
+                            .description(OptionDescription.createBuilder()
+                                    .text(translatable("eventutils.config.bee_icons.description"))
+                                    .image(Identifier.of(BuildProperties.MOD_ID, "textures/config/bee_icons.png"), 391, 61)
+                                    .build())
                             .binding(EUConfig.Defaults.BEE_ICONS, () -> config.bee_icons, newValue -> {
                                 config.bee_icons = newValue;
                                 config.save();
