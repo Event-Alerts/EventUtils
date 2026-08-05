@@ -28,7 +28,7 @@
     },
 
     "event": {
-      "type" : {
+      "type": {
         "SKEPPY": "Skeppy",
         "POTENTIAL_FAMOUS": "Potential Skeppy",
         "SIGHTING": "Skeppy Sighting",
@@ -40,6 +40,20 @@
         "CIVILIZATION": "Civilization",
         "HOUSING": "Housing",
         "FUN": "Fun"
+      },
+
+      "description": {
+        "SKEPPY": "Skeppy is hosting an event",
+        "POTENTIAL_FAMOUS": "Skeppy MAY be hosting an event soon",
+        "SIGHTING": "Skeppy has been sighted on the event server",
+        "FAMOUS": "A large content creator is hosting an event",
+        "PARTNER": "An Event Alerts Partner is hosting an event",
+        "COMMUNITY": "An Event Alerts community member is hosting an event",
+        "BIG_MONEY": "An Event Alerts Partner is hosting an event with a prize pool of $50+ USD",
+        "MONEY": "An Event Alerts Partner is hosting an event with a prize pool of $10+ USD",
+        "CIVILIZATION": "An Event Alerts Partner is hosting a civilization event",
+        "HOUSING": "An Event Alerts Partner is hosting a Hypixel housing event",
+        "FUN": "An Event Alerts Partner is hosting an event for fun (no money prize)"
       },
 
       "toast": {
@@ -214,6 +228,7 @@
         "category": "Events",
 
         "title": "%s",
+        "description": "%s",
 
         "toasts": {
           "label": "Send toasts",

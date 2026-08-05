@@ -36,13 +36,13 @@ public enum EventType {
     @Nullable public final EAEvent.PingRole pingRole;
     @Nullable public final EAFamousEvent.Type famousEventType;
     @NotNull public final Formatting color;
-    @NotNull public final Text translatable;
+    @NotNull public final Text nameTranslation = Text.translatable("eventutils.event.type." + name());
+    @NotNull public final Text descriptionTranslation = Text.translatable("eventutils.event.description." + name());
 
     EventType(@Nullable EAEvent.PingRole pingRole, @Nullable EAFamousEvent.Type famousEventType, @NotNull Formatting color) {
         this.pingRole = pingRole;
         this.famousEventType = famousEventType;
         this.color = color;
-        this.translatable = Text.translatable("eventutils.event.type." + name());
     }
 
     EventType(@NotNull EAEvent.PingRole pingRole, @NotNull Formatting color) {
@@ -56,7 +56,8 @@ public enum EventType {
     @NotNull
     public OptionGroup getOptionGroup(@NotNull EUConfig config) {
         return OptionGroup.createBuilder()
-                .name(Text.translatable("eventutils.config.event_settings.title", translatable).formatted(color))
+                .name(Text.translatable("eventutils.config.event_settings.title", nameTranslation).formatted(color))
+                .description(OptionDescription.of(Text.translatable("eventutils.config.event_settings.description", descriptionTranslation)))
                 .collapsed(true)
                 .option(Option.<Boolean>createBuilder()
                         .name(Text.translatable("eventutils.config.event_settings.toasts.label"))

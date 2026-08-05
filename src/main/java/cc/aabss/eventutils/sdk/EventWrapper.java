@@ -184,7 +184,7 @@ public class EventWrapper {
                 if (client != null) {
                     // Get title
                     final String prizeTranslation = prize != null ? "eventutils.event.toast.prize.text" : "eventutils.event.toast.prize.none";
-                    final Text title = Text.translatable("eventutils.event.toast.title", eventType.translatable, Text.translatable(prizeTranslation, prize)).formatted(eventType.color);
+                    final Text title = Text.translatable("eventutils.event.toast.title", eventType.nameTranslation, Text.translatable(prizeTranslation, prize)).formatted(eventType.color);
 
                     // Get description
                     final Text description = ip != null ? Text.translatable("eventutils.event.teleport.text", Text.translatable("eventutils.event.teleport.command", eventType.name().toLowerCase()).formatted(eventType.color)) : null;
