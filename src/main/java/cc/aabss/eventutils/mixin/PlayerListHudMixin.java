@@ -41,11 +41,20 @@ public abstract class PlayerListHudMixin {
                 .collect(Collectors.toSet()));
     }
 
-    /**
-     * Draw plus icon for every tab list row
-     */
-    @Inject(method = "renderLatencyIcon", at = @At("TAIL"))
+    @Inject(method = "renderLatencyIcon", at = @At("TAIL"), require = 0)
     private void eventutils$drawPlusTagNextToName(DrawContext context, int width, int x, int y, PlayerListEntry entry, CallbackInfo ci) {
+        drawPlusTagNextToName(context, x, y, entry);
+    }
+
+    // Lunar is super annoying and breaks "renderLatencyIcon" (never called). So we inject into their custom handler for it.
+    // We can't add Lunar to classpath so @Inject will show errors. This is expected and okay.
+    @Inject(method = "handler$bbk000$lunar$drawPing$v1_20_0", at = @At("TAIL"), require = 0)
+    private void eventutils$drawPlusTagNextToNameLunar(DrawContext context, int width, int x, int y, PlayerListEntry entry, CallbackInfo lunarCi, CallbackInfo ci) {
+        drawPlusTagNextToName(context, x, y, entry);
+    }
+
+    @Unique
+    private void drawPlusTagNextToName(DrawContext context, int x, int y, PlayerListEntry entry) {
         if (client.player == null) return;
 
         // Bee icons disabled
