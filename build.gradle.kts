@@ -205,7 +205,7 @@ loom {
     }
 
     runConfigs.all {
-        generateRunConfig.set(true)
+        preferGradleTask.set(true)
         jvmArguments.add("-Dmixin.debug.export=true") // Exports transformed classes for debugging
         runDirectory.set(file("../../run")) // Shares the run directory between versions
     }
