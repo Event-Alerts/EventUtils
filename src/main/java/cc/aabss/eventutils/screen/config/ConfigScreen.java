@@ -87,7 +87,7 @@ public class ConfigScreen {
                             .name(translatable("eventutils.config.bee_icons.label"))
                             .description(OptionDescription.createBuilder()
                                     .text(translatable("eventutils.config.bee_icons.description"))
-                                    .image(Identifier.of(BuildProperties.MOD_ID, "textures/config/bee_icons.png"), 391, 61)
+                                    .image(Identifier.of(BuildProperties.MOD_ID, "textures/config/bee_icons.png"), 404, 88)
                                     .build())
                             .binding(EUConfig.Defaults.BEE_ICONS, () -> config.bee_icons, newValue -> {
                                 config.bee_icons = newValue;
