@@ -52,11 +52,11 @@ setupJava(JavaSetupConfig(
 
 // We need to let setupJava process version first then prefix with Minecraft version
 val modVersion = when {
-    !inGitHubWorkflow -> "0.0.0-dev"
-    !inGitHubPublish -> "0.0.0-dev+$version"
+    !inGitHubWorkflow -> "0.0.0-snapshot"
+    !inGitHubPublish -> "0.0.0-snapshot.$version"
     else -> version.toString()
 }
-version = "${sc.current.version}-$modVersion" // ex: 1.21.6-1.0.0, 1.21.4-0.0.0-dev, 1.21.11-0.0.0-dev+25fsf52
+version = "${sc.current.version}-$modVersion" // ex: 1.21.6-1.0.0, 1.21.4-0.0.0-snapshot, 1.21.11-0.0.0-snapshot.25fsf52
 
 repository("https://maven.gnomecraft.net/releases/", "https://maven.nucleoid.xyz/")
 repository(
