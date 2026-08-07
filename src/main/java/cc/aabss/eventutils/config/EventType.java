@@ -5,7 +5,7 @@ import cc.aabss.eventutils.screen.config.ConfigScreen;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
 import dev.isxander.yacl3.api.OptionGroup;
-import dev.isxander.yacl3.api.controller.EnumControllerBuilder;
+import dev.isxander.yacl3.api.controller.EnumDropdownControllerBuilder;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAFamousEvent;
 import net.minecraft.text.Text;
@@ -80,8 +80,7 @@ public enum EventType {
                             config.getEventSettingsOrCreate(this).sound = newValue;
                             config.save();
                         })
-                        .controller(opt -> EnumControllerBuilder.create(opt)
-                                .enumClass(NotificationSound.class)
+                        .controller(opt -> EnumDropdownControllerBuilder.create(opt)
                                 .formatValue(NotificationSound::getDisplayName))
                         .build())
                 .option(Option.<Boolean>createBuilder()

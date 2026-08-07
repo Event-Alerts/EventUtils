@@ -7,8 +7,8 @@ import cc.aabss.eventutils.config.EUConfig;
 import cc.aabss.eventutils.screen.config.group.GroupManagerScreen;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
-import dev.isxander.yacl3.api.controller.EnumControllerBuilder;
-import dev.isxander.yacl3.api.controller.IntegerFieldControllerBuilder;
+import dev.isxander.yacl3.api.controller.EnumDropdownControllerBuilder;
+import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder;
 import dev.isxander.yacl3.api.controller.StringControllerBuilder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -126,7 +126,7 @@ public class ConfigScreen {
                                         config.save();
                                         EventUtils.MOD.updateLogLevel();
                                     })
-                                    .controller(opt -> EnumControllerBuilder.create(opt).enumClass(StandardLevel.class))
+                                    .controller(EnumDropdownControllerBuilder::create)
                                     .build())
                             .build())
                     .build());
@@ -147,8 +147,10 @@ public class ConfigScreen {
                         .name(translatable("eventutils.config.server_list_minutes.label"))
                         .description(OptionDescription.of(translatable("eventutils.config.server_list_minutes.description")))
                         .binding(EUConfig.Defaults.EVENT_SERVER_DISPLAY_MINUTES, () -> config.event_server_display_minutes, config::setEventServerDisplayMinutes)
-                        .controller(option -> IntegerFieldControllerBuilder.create(option)
-                                .range(EUConfig.MIN_EVENT_SERVER_DISPLAY_MINUTES, EUConfig.MAX_EVENT_SERVER_DISPLAY_MINUTES))
+                        .controller(opt -> IntegerSliderControllerBuilder.create(opt)
+                                .range(EUConfig.MIN_EVENT_SERVER_DISPLAY_MINUTES, EUConfig.MAX_EVENT_SERVER_DISPLAY_MINUTES)
+                                .step(1)
+                                .formatValue(value -> translatable("eventutils.config.server_list_minutes.value", value)))
                         .build());
         for (final EventType type : EventType.values()) alertsCategory.group(type.getOptionGroup(config));
         builder.category(alertsCategory.build());

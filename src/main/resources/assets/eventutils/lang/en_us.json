@@ -149,7 +149,8 @@
 
       "server_list_minutes": {
         "label": "Event server display time",
-        "description": "How long event servers stay in the multiplayer list after start in minutes (1-15)"
+        "description": "How long event servers stay in the multiplayer list after start",
+        "value": "%s minutes"
       },
       "queue": {
         "label": "Simple queue message",
