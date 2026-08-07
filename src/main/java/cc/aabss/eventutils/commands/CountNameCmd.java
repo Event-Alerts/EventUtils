@@ -2,7 +2,10 @@ package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.MutableText;
@@ -14,7 +17,34 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 
-public class CountNameCmd {
+public class CountNameCmd extends EUCommand {
+    public CountNameCmd(@NotNull EventUtils mod) {
+        super(mod);
+    }
+
+    @Override @NotNull
+    public LiteralCommandNode<FabricClientCommandSource> build() {
+        return ClientCommandManager
+                .literal("countname")
+                .then(ClientCommandManager.literal("count")
+                        .then(ClientCommandManager.argument("filter", StringArgumentType.string())
+                                .executes((context) -> {
+                                    count(context, StringArgumentType.getString(context, "filter"));
+                                    return 0;
+                                })))
+                .then(ClientCommandManager.literal("list")
+                        .then(ClientCommandManager.argument("filter", StringArgumentType.string())
+                                .executes((context) -> {
+                                    list(context, StringArgumentType.getString(context, "filter"));
+                                    return 0;
+                                })))
+                .executes(context -> {
+                    list(context, "");
+                    return 0;
+                })
+                .build();
+    }
+
     @Nullable
     private static List<String> getFilteredNames(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull MinecraftClient client, @NotNull String filter) {
         // No players available
@@ -40,7 +70,7 @@ public class CountNameCmd {
         return namesFiltered;
     }
 
-    public static void count(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull String filter) {
+    private static void count(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull String filter) {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             // Get names
@@ -52,7 +82,7 @@ public class CountNameCmd {
         });
     }
 
-    public static void list(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull String filter) {
+    private static void list(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull String filter) {
         final MinecraftClient client = context.getSource().getClient();
         client.send(() -> {
             // Get names

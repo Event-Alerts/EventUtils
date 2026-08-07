@@ -1,10 +1,13 @@
-package cc.aabss.eventutils.commands;
+package cc.aabss.eventutils.commands.priority;
 
 import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.commands.EUCommand;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -12,56 +15,39 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.Comparator;
 import java.util.List;
 
 
-public class PriorityCmd {
+public class PriorityTopCmd extends EUCommand {
     private static final int PLAYERS_PER_PAGE = 10;
 
-    @Nullable @Unmodifiable
-    private static List<String> getNamesSorted(@NotNull MinecraftClient client) {
-        if (client.world == null || client.player == null) return null;
-        return client.world.getPlayers().stream()
-                .filter(player -> !EventUtils.isNpc(player.getUuid()))
-                .sorted(Comparator.comparingInt(AbstractClientPlayerEntity::getId))
-                .map(player -> player.getName().getString())
-                .toList();
+    public PriorityTopCmd(@NotNull EventUtils mod) {
+        super(mod);
     }
 
-    public static void priority(@NotNull CommandContext<FabricClientCommandSource> context, String name) {
-        final MinecraftClient client = context.getSource().getClient();
-        client.send(() -> {
-            // Get names
-            final List<String> namesSorted = getNamesSorted(client);
-            if (namesSorted == null || client.player == null) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.noplayer", EventUtils.ERROR_MESSAGE_PREFIX));
-                return;
-            }
-
-            final String nameLower = name.toLowerCase();
-            for (final String playerName : namesSorted) if (nameLower.equals(playerName.toLowerCase())) {
-                if (playerName.equalsIgnoreCase(client.player.getName().getString())) {
-                    context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.self", EventUtils.MESSAGE_PREFIX, "§6#" + (namesSorted.indexOf(playerName) + 1)));
-                } else {
-                    context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.player", EventUtils.MESSAGE_PREFIX, Text.literal(playerName).formatted(Formatting.YELLOW), "§6#" + (namesSorted.indexOf(playerName) + 1)));
-                }
-
-                return;
-            }
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.noplayer", EventUtils.ERROR_MESSAGE_PREFIX));
-        });
+    @Override @NotNull
+    public LiteralCommandNode<FabricClientCommandSource> build() {
+        return ClientCommandManager
+                .literal("prioritytop")
+                .then(ClientCommandManager.argument("page", IntegerArgumentType.integer())
+                        .executes((context) -> {
+                            execute(context, IntegerArgumentType.getInteger(context, "page"));
+                            return 0;
+                        }))
+                .executes(context -> {
+                    execute(context, 1);
+                    return 0;
+                })
+                .build();
     }
 
-    public static void priority(@NotNull CommandContext<FabricClientCommandSource> context, int page) {
+    private static void execute(@NotNull CommandContext<FabricClientCommandSource> context, int page) {
         final FabricClientCommandSource source = context.getSource();
         final MinecraftClient client = source.getClient();
         client.send(() -> {
             // Get names
-            final List<String> namesSorted = getNamesSorted(client);
+            final List<String> namesSorted = PriorityCommon.getNamesSorted(client);
             if (namesSorted == null || client.player == null) {
                 source.sendFeedback(Text.translatable("eventutils.command.prioritytop.emptypage"));
                 return;
@@ -109,16 +95,14 @@ public class PriorityCmd {
             MutableText nextpage = Text.literal("");
 
             if (page > 1) {
-                lastpage = Text.translatable(
-                        "eventutils.command.prioritytop.lastpage",
-                        page - 1
-                ).setStyle(
+                final String command = "/eventutils prioritytop " + (page - 1);
+                lastpage = Text.translatable("eventutils.command.prioritytop.lastpage", page - 1).setStyle(Style.EMPTY.withClickEvent(
                         //? if <=1.21.4 {
-                          Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/eventutils prioritytop " + (page - 1)))
+                          new ClickEvent(ClickEvent.Action.RUN_COMMAND, command)
                         //?} else {
-                        /*Style.EMPTY.withClickEvent(new ClickEvent.RunCommand("/eventutils prioritytop " + (page - 1)))
+                        /*new ClickEvent.RunCommand(command)
                         *///?}
-                );
+                ));
             }
 
             if (page + 1 <= totalPages) {

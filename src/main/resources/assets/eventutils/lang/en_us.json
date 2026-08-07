@@ -113,10 +113,9 @@
     },
 
     "command": {
+      "unknown": "Unknown command! Use tab-completion to see available commands.",
       "no_event_specified": "No event type specified!",
       "no_event_found": "No event/IP found for ",
-      "config": "Opens EventUtils' config screen",
-      "teleport": "Teleports to the last posted event of that type",
 
       "priority": {
         "self": "%s§e You have pickup priority %s §ebased on the people around you.",

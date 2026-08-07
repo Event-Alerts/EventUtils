@@ -2,23 +2,46 @@ package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.Group;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.command.CommandSource;
 import org.jetbrains.annotations.NotNull;
 
 import static net.minecraft.text.Text.translatable;
 
 
-public class GroupMsgCmd {
-    public static int groupMsg(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull String groupName, @NotNull String message) {
+public class GroupMsgCmd extends EUCommand {
+    public GroupMsgCmd(@NotNull EventUtils mod) {
+        super(mod);
+    }
+
+    @Override @NotNull
+    public LiteralCommandNode<FabricClientCommandSource> build() {
+        return ClientCommandManager
+                .literal("groupmsg")
+                .then(ClientCommandManager.argument("group", StringArgumentType.word())
+                        .suggests((context, builder) ->
+                                CommandSource.suggestMatching(() -> mod.config.getGroupNames().iterator(), builder))
+                        .then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
+                                .executes(context -> execute(
+                                        context,
+                                        StringArgumentType.getString(context, "group"),
+                                        StringArgumentType.getString(context, "message")))))
+                .build();
+    }
+
+    private int execute(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull String groupName, @NotNull String message) {
         if (message.isEmpty()) return 0;
 
         final ClientPlayerEntity sender = context.getSource().getPlayer();
         if (sender.networkHandler == null) return 0;
 
         // Get group
-        final Group group = EventUtils.MOD.config.getGroupByName(groupName);
+        final Group group = mod.config.getGroupByName(groupName);
         if (group == null) {
             context.getSource().sendError(translatable("eventutils.command.groupmsg.no_group", EventUtils.ERROR_MESSAGE_PREFIX, groupName));
             return 0;

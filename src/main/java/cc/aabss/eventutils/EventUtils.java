@@ -169,7 +169,7 @@ public class EventUtils implements ClientModInitializer {
                 });
 
         // Command registration
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> CommandRegister.register(dispatcher));
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> CommandRegister.register(this, dispatcher));
 
         // Game closed
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
