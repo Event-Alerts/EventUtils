@@ -234,7 +234,7 @@ public class EventUtils implements ClientModInitializer {
         // On leave
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             // Clear cache
-            LOGGER.debug("[EventUtils] DISCONNECT: clearing cache");
+            LOGGER.debug("[CACHE] DISCONNECT: clearing cache");
             cacheManager.clearAll();
 
             // inEvent

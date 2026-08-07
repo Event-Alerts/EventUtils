@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 
 public class PrefixMessageFactory extends AbstractMessageFactory {
-    @NotNull private static final String PREFIX = "[EventUtils] ";
+    @NotNull private static final String PREFIX = "[" + BuildProperties.MOD_NAME + "] ";
 
     @Override
     public Message newMessage(final CharSequence message) {

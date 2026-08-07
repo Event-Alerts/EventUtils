@@ -4,9 +4,10 @@ import cc.aabss.eventutils.plustag.PlusTag;
 import gg.eventalerts.sdk.object.EAPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.srnyx.javautilities.parents.Stringable;
 
 
-public class EnrichedPlayer {
+public class EnrichedPlayer extends Stringable {
     @NotNull public final EAPlayer player;
 
     // --- Enrichment ---

@@ -80,7 +80,7 @@ public class KeybindManager {
 
                     // Open screen
                     if (lastEventForInfoScreen != null) {
-                        client.setScreen(new EventInfoScreen(lastEventForInfoScreen));
+                        client.setScreen(new EventInfoScreen(mod, lastEventForInfoScreen));
                         return;
                     }
 

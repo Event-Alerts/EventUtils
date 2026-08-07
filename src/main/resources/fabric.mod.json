@@ -7,7 +7,7 @@
   "authors": ["Event Alerts", "aabss", "srnyx", "pvty", "QWERTZ_EXE"],
   "contact": {
     "repo": "https://github.com/Event-Alerts/EventUtils",
-    "discord": "https://discord.gg/uFPFNYzAWC"
+    "discord": "https://eventalerts.gg/discord"
   },
   "license": "GPL-3.0",
   "icon": "assets/eventutils/textures/icon.png",
@@ -24,7 +24,7 @@
   "custom": {
     "modmenu": {
       "links": {
-        "modmenu.discord": "https://discord.gg/uFPFNYzAWC",
+        "modmenu.discord": "https://eventalerts.gg/discord",
         "modmenu.source": "https://github.com/Event-Alerts/EventUtils"
       }
     }

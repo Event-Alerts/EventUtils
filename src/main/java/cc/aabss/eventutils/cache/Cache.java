@@ -19,9 +19,11 @@ public abstract class Cache<K, V> {
     public EAAction<V> get(@NotNull K uuid) {
         // Is cached
         final Optional<V> cached = cache.get(uuid);
+        EventUtils.LOGGER.trace("[CACHE] hit for key {}: {}", uuid, cached);
         if (cached != null) return EAAction.completed(cached.orElse(null));
 
         // Not cached yet, fetch
+        EventUtils.LOGGER.trace("[CACHE] miss for key {}", uuid);
         return fetch(uuid);
     }
 
@@ -38,9 +40,11 @@ public abstract class Cache<K, V> {
                 missing.add(uuid);
             }
         }
+        EventUtils.LOGGER.trace("[CACHE] hits: {}", cached);
 
         // Fetch missing players
         if (missing.isEmpty()) return EAAction.completed(cached);
+        EventUtils.LOGGER.trace("[CACHE] misses: {}", missing);
         return fetch(missing).map(fetched -> {
             // Merge cached and fetched players
             final Set<V> all = new HashSet<>(cached);
@@ -70,6 +74,7 @@ public abstract class Cache<K, V> {
     private EAAction<V> fetch(@NotNull K key) {
         return inFlight.computeIfAbsent(key, keyFlight -> fetchImpl(keyFlight)
                 .map(fetched -> {
+                    EventUtils.LOGGER.trace("[CACHE] fetched with key {}", keyFlight);
                     addToCache(keyFlight, fetched);
                     return fetched;
                 })
@@ -95,6 +100,7 @@ public abstract class Cache<K, V> {
                         foundKeys.add(key);
                         values.add(value);
                     }
+                    EventUtils.LOGGER.trace("[CACHE] fetched with keys {}", foundKeys);
 
                     // Cache missing values as empty
                     for (final K key : keys) if (!foundKeys.contains(key)) addToCache(key, null);
