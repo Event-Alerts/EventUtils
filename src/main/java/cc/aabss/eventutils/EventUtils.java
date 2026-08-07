@@ -60,6 +60,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 
 @Entrypoint("client")
@@ -185,6 +186,15 @@ public class EventUtils implements ClientModInitializer {
 
             // Delay some stuff to wait for server info to be fully loaded
             MiscUtility.IO_SCHEDULER.schedule(() -> {
+                // Populate players cache
+                final ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
+                if (networkHandler != null) cacheManager
+                        .players()
+                        .get(networkHandler.getListedPlayerListEntries().stream()
+                                .map(entry -> new VersionedGameProfile(entry.getProfile()).getId())
+                                .collect(Collectors.toSet()))
+                        .queue();
+
                 // inEvent
                 final ServerInfo server = client.getCurrentServerEntry();
                 EventUtils.LOGGER.debug("[JOIN] server={}", server != null ? server.address : "null");
