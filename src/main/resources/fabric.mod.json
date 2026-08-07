@@ -9,7 +9,7 @@
     "repo": "https://github.com/Event-Alerts/EventUtils",
     "discord": "https://discord.gg/uFPFNYzAWC"
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "icon": "assets/eventutils/textures/icon.png",
   "environment": "client",
   "depends": {
