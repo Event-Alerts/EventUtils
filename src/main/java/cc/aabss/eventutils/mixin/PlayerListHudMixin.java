@@ -4,10 +4,16 @@ import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.plustag.IconRenderer;
 import cc.aabss.eventutils.plustag.PlusTag;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
+//? if >=1.21.11
+//import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.PlayerListHud;
 import net.minecraft.client.network.PlayerListEntry;
+//? if >=1.21.11 {
+/*import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.scoreboard.ScoreboardObjective;
+*///?}
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,6 +23,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//? if >=1.21.11
+//import java.util.List;
 import java.util.UUID;
 
 
@@ -24,6 +32,16 @@ import java.util.UUID;
 public abstract class PlayerListHudMixin {
     @Shadow @Final private MinecraftClient client;
 
+    //? if >=1.21.11 {
+    /*@Inject(method = "render", at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;", ordinal = 0))
+    private void eventutils$drawPlusTagNextToName(DrawContext context, int scaledWindowWidth, Scoreboard scoreboard, ScoreboardObjective objective, CallbackInfo ci,
+                                                   @Local(index = 5) List<PlayerListEntry> entries,
+                                                   @Local(index = 22) int entryIndex,
+                                                   @Local(index = 25) int x,
+                                                   @Local(index = 26) int y) {
+        drawPlusTagNextToName(context, x, y, entries.get(entryIndex));
+    }
+    *///?} else {
     @Inject(method = "renderLatencyIcon", at = @At("TAIL"), require = 0)
     private void eventutils$drawPlusTagNextToName(DrawContext context, int width, int x, int y, PlayerListEntry entry, CallbackInfo ci) {
         drawPlusTagNextToName(context, x, y, entry);
@@ -35,6 +53,7 @@ public abstract class PlayerListHudMixin {
     private void eventutils$drawPlusTagNextToNameLunar(DrawContext context, int width, int x, int y, PlayerListEntry entry, CallbackInfo lunarCi, CallbackInfo ci) {
         drawPlusTagNextToName(context, x, y, entry);
     }
+    //?}
 
     @Unique
     private void drawPlusTagNextToName(DrawContext context, int x, int y, PlayerListEntry entry) {
