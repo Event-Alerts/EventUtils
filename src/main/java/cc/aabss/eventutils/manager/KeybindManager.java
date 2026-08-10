@@ -2,7 +2,6 @@ package cc.aabss.eventutils.manager;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.Group;
-import cc.aabss.eventutils.mixin.KeyBindingAccessor;
 import cc.aabss.eventutils.screen.EventInfoScreen;
 import cc.aabss.eventutils.sdk.EventWrapper;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -36,7 +35,6 @@ public class KeybindManager {
     @NotNull private static final String CATEGORY = "key.category.eventutils";
     //?}
 
-    @Nullable private Long windowHandle;
     @NotNull public KeyBinding eventInfoKey;
     @NotNull private final Map<String, Long> lastKeyPresses = new HashMap<>();
     @Nullable public EventWrapper lastEventForInfoScreen;
@@ -63,12 +61,12 @@ public class KeybindManager {
             // Only allow if no screen or TitleScreen
             if (client.currentScreen != null && (!(client.currentScreen instanceof TitleScreen))) return;
 
-            // Store Minecraft's window
-            if (windowHandle == null) windowHandle = client.getWindow().getHandle();
+            // Vanilla does not update ordinary keybinding states while the title screen is open
+            if (client.currentScreen instanceof TitleScreen) KeyBinding.updatePressedStates();
 
             // Event info key
             if (!eventInfoKey.isUnbound()) {
-                if (GLFW.glfwGetKey(windowHandle, ((KeyBindingAccessor) eventInfoKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
+                if (eventInfoKey.isPressed()) {
                     if (canNotPress(eventInfoKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.debug("Event info key pressed");
 
@@ -91,7 +89,7 @@ public class KeybindManager {
 
             // Developer Mode: simulate test event
             if (!testEventKey.isUnbound() && mod.config.developer_mode) {
-                if (GLFW.glfwGetKey(windowHandle, ((KeyBindingAccessor) testEventKey).getBoundKey().getCode()) == GLFW.GLFW_PRESS) {
+                if (testEventKey.isPressed()) {
                     if (canNotPress(testEventKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.debug("Test event key pressed");
 
