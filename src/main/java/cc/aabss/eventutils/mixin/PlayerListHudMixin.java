@@ -7,7 +7,10 @@ import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.PlayerListHud;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.scoreboard.ScoreboardObjective;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,11 +21,25 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Mixin(PlayerListHud.class)
 public abstract class PlayerListHudMixin {
     @Shadow @Final private MinecraftClient client;
+
+    // We want to cache on both join AND tab open just in-case any players were missed on-join
+    @Inject(method = "render", at = @At("HEAD"))
+    private void eventutils$populatePlayersCache(DrawContext context, int scaledWindowWidth, Scoreboard scoreboard, ScoreboardObjective objective, CallbackInfo ci) {
+        if (client.player == null) return;
+        final ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
+        if (networkHandler == null) return;
+        EventUtils.MOD.cacheManager.players()
+                .get(networkHandler.getListedPlayerListEntries().stream()
+                        .map(entry -> new VersionedGameProfile(entry.getProfile()).getId())
+                        .collect(Collectors.toSet()))
+                .queue();
+    }
 
     @Inject(method = "renderLatencyIcon", at = @At("TAIL"), require = 0)
     private void eventutils$drawPlusTagNextToName(DrawContext context, int width, int x, int y, PlayerListEntry entry, CallbackInfo ci) {

@@ -2,18 +2,20 @@ package cc.aabss.eventutils.cache;
 
 import cc.aabss.eventutils.EventUtils;
 import gg.eventalerts.sdk.http.action.EAAction;
+import gg.eventalerts.sdk.http.exception.EAHttpResponseException;
 import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
 public abstract class Cache<K, V> {
     @NotNull protected final ConcurrentMap<K, Optional<V>> cache = new ConcurrentHashMap<>();
-    @NotNull protected final ConcurrentMap<K, EAAction<V>> inFlight = new ConcurrentHashMap<>();
+    @NotNull protected final ConcurrentMap<K, CompletableFuture<V>> inFlight = new ConcurrentHashMap<>();
 
     @NotNull @CheckReturnValue
     public EAAction<V> get(@NotNull K uuid) {
@@ -72,42 +74,71 @@ public abstract class Cache<K, V> {
 
     @NotNull @CheckReturnValue
     private EAAction<V> fetch(@NotNull K key) {
-        return inFlight.computeIfAbsent(key, keyFlight -> fetchImpl(keyFlight)
-                .map(fetched -> {
+        final CompletableFuture<V> future = inFlight.computeIfAbsent(key, keyFlight -> fetchImpl(keyFlight)
+                .onSuccess(fetched -> {
                     EventUtils.LOGGER.trace("[CACHE] fetched with key {}", keyFlight);
                     addToCache(keyFlight, fetched);
-                    return fetched;
                 })
                 .onError(t -> {
                     removeFromCache(keyFlight);
+
+                    // Don't log rate limits
+                    if (t instanceof EAHttpResponseException e && e.getStatusCode() == 429) return;
                     EventUtils.LOGGER.warn("Failed to fetch with key {}, removed from cache", keyFlight, t);
                 })
-                .onComplete(() -> inFlight.remove(keyFlight)));
+                .onComplete(() -> inFlight.remove(keyFlight))
+                .submit());
+        return new EAAction<>("cached-fetch:" + key, future::join);
     }
 
     @NotNull @CheckReturnValue
     private EAAction<Set<V>> fetch(@NotNull Collection<K> keys) {
         if (keys.isEmpty()) return EAAction.completed(Collections.emptySet());
-        return fetchImpl(keys)
-                .map(fetched -> {
-                    // Cache found values
-                    final Set<K> foundKeys = new HashSet<>();
-                    final Set<V> values = new HashSet<>();
-                    for (final Map.Entry<K, V> entry : fetched.entrySet()) {
-                        final K key = entry.getKey();
-                        final V value = entry.getValue();
-                        addToCache(key, value);
-                        foundKeys.add(key);
-                        values.add(value);
-                    }
-                    EventUtils.LOGGER.trace("[CACHE] fetched with keys {}", foundKeys);
 
-                    // Cache missing values as empty
-                    for (final K key : keys) if (!foundKeys.contains(key)) addToCache(key, null);
+        // Only fetch keys that aren't already being fetched (individually or by another batch)
+        final Set<K> newKeys = new HashSet<>();
+        for (final K key : keys) if (!inFlight.containsKey(key)) newKeys.add(key);
 
-                    return values;
-                })
-                .onError(t -> removeFromCache(keys));
+        if (!newKeys.isEmpty()) {
+            final CompletableFuture<Map<K, V>> batch = fetchImpl(newKeys)
+                    .onSuccess(fetched -> {
+                        // Cache found values
+                        final Set<K> foundKeys = new HashSet<>();
+                        for (final Map.Entry<K, V> entry : fetched.entrySet()) {
+                            final K key = entry.getKey();
+                            addToCache(key, entry.getValue());
+                            foundKeys.add(key);
+                        }
+                        EventUtils.LOGGER.trace("[CACHE] fetched with keys {}", foundKeys);
+
+                        // Cache missing values as empty
+                        for (final K key : newKeys) if (!foundKeys.contains(key)) addToCache(key, null);
+                    })
+                    .onError(t -> removeFromCache(newKeys))
+                    .onComplete(() -> newKeys.forEach(inFlight::remove))
+                    .submit();
+
+            // Register each new key so concurrent individual/bulk calls dedupe against this batch
+            for (final K key : newKeys) inFlight.put(key, batch.thenApply(fetched -> fetched.get(key)));
+        }
+
+        // Wait for all requested keys (new + already in-flight) to settle, then read from cache
+        final List<CompletableFuture<?>> waits = new ArrayList<>();
+        for (final K key : keys) {
+            final CompletableFuture<V> future = inFlight.get(key);
+            if (future != null) waits.add(future);
+        }
+        final CompletableFuture<Void> all = CompletableFuture.allOf(waits.toArray(new CompletableFuture[0]));
+
+        return new EAAction<>("cached-fetch-batch", () -> {
+            all.join();
+            final Set<V> values = new HashSet<>();
+            for (final K key : keys) {
+                final Optional<V> cached = cache.get(key);
+                if (cached != null) cached.ifPresent(values::add);
+            }
+            return values;
+        });
     }
 
     @NotNull @CheckReturnValue
