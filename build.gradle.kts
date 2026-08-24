@@ -1,26 +1,18 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar.Companion.shadowJar
-import xyz.srnyx.gradlegalaxy.data.config.JavaSetupConfig
-import xyz.srnyx.gradlegalaxy.data.config.publishing.PublishingPlatformConfig
-import xyz.srnyx.gradlegalaxy.enums.PluginPlatform
-import xyz.srnyx.gradlegalaxy.enums.Repository
-import xyz.srnyx.gradlegalaxy.enums.repository
-import xyz.srnyx.gradlegalaxy.utility.addReplacementsTask
-import xyz.srnyx.gradlegalaxy.utility.getDefaultReplacements
 import xyz.srnyx.gradlegalaxy.utility.inGitHubPublish
 import xyz.srnyx.gradlegalaxy.utility.inGitHubWorkflow
-import xyz.srnyx.gradlegalaxy.utility.setupJava
-import xyz.srnyx.gradlegalaxy.utility.setupPublishingPlatforms
-
 
 plugins {
     id("dev.kikugie.loom-back-compat")
-    id("xyz.srnyx.gradle-galaxy") version "ac4875a"
+    id("xyz.srnyx.gradle-galaxy") version "a8227b9"
     id("com.gradleup.shadow") version "9.6.1"
     id("me.modmuss50.mod-publish-plugin") version "675051c"
     id("dev.kikugie.fletching-table.fabric") version "0.1.0-alpha.22"
     kotlin("jvm") version "2.4.10" // For Fletching Table
     id("com.google.devtools.ksp") version "2.3.10" // For Fletching Table
 }
+
+group = "cc.aabss"
+description = "Alerting for Event Alerts Minecraft events"
 
 // Properties
 val modId = property("mod.id").toString()
@@ -34,37 +26,83 @@ val yaclVersion = property("deps.yacl").toString()
 val modMenuVersion = property("deps.modmenu").toString()
 val placeholderApiVersion = if (hasProperty("deps.placeholder_api")) property("deps.placeholder_api").toString() else null
 
-// Add local repository if using dev version
-if (javaUtilitiesVersion == "dev" || sdkVersion == "dev" || okaeriConfigsVersion == "dev") repository(Repository.MAVEN_LOCAL)
-
 // Java version
 val is261Plus: Boolean = sc.current.parsed >= "26.1"
-val java = when {
+val javaVersionProject = when {
     is261Plus -> JavaVersion.VERSION_25
     sc.current.parsed >= "1.20.5" -> JavaVersion.VERSION_21
     else -> JavaVersion.VERSION_17
 }
 
-setupJava(JavaSetupConfig(
-    group = "cc.aabss",
-    description = "Alerting for Event Alerts Minecraft events",
-    javaVersion = java))
-
-// We need to let setupJava process version first then prefix with Minecraft version
+// Mod version
 val modVersion = when {
     !inGitHubWorkflow -> "0.0.0-snapshot"
-    !inGitHubPublish -> "0.0.0-snapshot.$version"
-    else -> version.toString()
+    !inGitHubPublish -> "0.0.0-snapshot.${galaxy.java.version.get()}"
+    else -> galaxy.java.version.get()
 }
-version = "${sc.current.version}-$modVersion" // ex: 1.21.6-1.0.0, 1.21.4-0.0.0-snapshot, 1.21.11-0.0.0-snapshot.25fsf52
 
-repository("https://maven.gnomecraft.net/releases/", "https://maven.nucleoid.xyz/")
-repository(
-    Repository.OKAERI_RELEASES, Repository.OKAERI_SNAPSHOTS,
-    Repository.SRNYX_RELEASES, Repository.SRNYX_SNAPSHOTS,
-    Repository.FABRIC, Repository.SHEDANIEL, Repository.ISXANDER,
-    Repository.FASTSTATS_RELEASES, Repository.FASTSTATS_SNAPSHOTS,
-    Repository.MAVEN_CENTRAL, Repository.JITPACK)
+galaxy {
+    java {
+        version = "${sc.current.version}-$modVersion" // ex: 1.21.6-1.0.0, 1.21.4-0.0.0-snapshot, 1.21.11-0.0.0-snapshot.25fsf52
+        javaVersion = javaVersionProject
+    }
+
+    repository {
+        // Add local repository if using snapshot version
+        if (javaUtilitiesVersion == "snapshot" || sdkVersion == "snapshot" || okaeriConfigsVersion == "snapshot") add(MAVEN_LOCAL)
+
+        add(
+            "https://maven.gnomecraft.net/releases/", "https://maven.nucleoid.xyz/",
+            OKAERI_RELEASES, OKAERI_SNAPSHOTS,
+            SRNYX_RELEASES, SRNYX_SNAPSHOTS,
+            FABRIC, SHEDANIEL, ISXANDER,
+            FASTSTATS_RELEASES, FASTSTATS_SNAPSHOTS,
+            MAVEN_CENTRAL, JITPACK)
+    }
+
+    minecraft {
+        replacementFiles = setOf("fabric.mod.json")
+        replacements.putAll(replacements.get() + mapOf(
+            "mod_id" to modId,
+            "mod_name" to modName,
+            "mod_version" to modVersion,
+            "deps_minecraft" to sc.current.version,
+            "deps_loader" to loaderVersion,
+            "deps_fabric_api" to fabricApiVersion,
+            "deps_yacl" to yaclVersion,
+            "deps_modmenu" to modMenuVersion))
+
+        platformPublishing {
+            modrinth("ZcRRACSs") {
+                // Fabric API
+                requires {
+                    id.set("P7dR8mSH")
+                    version.set(fabricApiVersion)
+                }
+                // YetAnotherConfigLib (YACL)
+                requires {
+                    id.set("1eAoo2KR")
+                    version.set(yaclVersion)
+                }
+                // Text Placeholder API
+                placeholderApiVersion?.let { requires {
+                    id.set("eXts2L7r")
+                    version.set(it)
+                } }
+                // Mod Menu
+                optional {
+                    id.set("mOgUt4GM")
+                    version.set(modMenuVersion)
+                }
+            }
+
+            minecraftVersionStart = sc.current.version
+            minecraftVersionEnd = sc.current.version
+            apiTiers.add(FABRIC)
+            addAnnoyingApiDependency = false
+        }
+    }
+}
 
 dependencies {
     minecraft("com.mojang:minecraft:${sc.current.version}")
@@ -111,7 +149,7 @@ dependencies {
 base.archivesName = modName
 
 stonecutter {
-    dependencies["java"] = java.majorVersion
+    dependencies["java"] = javaVersionProject.majorVersion
 
     // Swaps
     swaps["mod_id"] = "\"$modId\""
@@ -135,17 +173,6 @@ fletchingTable {
         patterns.add("assets/$modId/lang/**")
     }
 }
-
-// Replacements for fabric.mod.json
-addReplacementsTask(setOf("fabric.mod.json"), getDefaultReplacements() + mapOf(
-    "mod_id" to modId,
-    "mod_name" to modName,
-    "mod_version" to modVersion,
-    "deps_minecraft" to sc.current.version,
-    "deps_loader" to loaderVersion,
-    "deps_fabric_api" to fabricApiVersion,
-    "deps_yacl" to yaclVersion,
-    "deps_modmenu" to modMenuVersion))
 
 tasks {
     jar { archiveClassifier.set("") }
@@ -210,36 +237,6 @@ loom {
         runDirectory.set(file("../../run")) // Shares the run directory between versions
     }
 }
-
-// Platform publishing
-setupPublishingPlatforms(PublishingPlatformConfig(
-    platforms = mapOf(PluginPlatform.MODRINTH to "ZcRRACSs"),
-    minecraftVersionStart = sc.current.version,
-    minecraftVersionEnd = sc.current.version,
-    loaders = listOf("fabric"),
-    addAnnoyingApiDependency = false,
-    modrinthAction = {
-        // Fabric API
-        requires {
-            id.set("P7dR8mSH")
-            version.set(fabricApiVersion)
-        }
-        // YetAnotherConfigLib (YACL)
-        requires {
-            id.set("1eAoo2KR")
-            version.set(yaclVersion)
-        }
-        // Text Placeholder API
-        placeholderApiVersion?.let { requires {
-            id.set("eXts2L7r")
-            version.set(it)
-        } }
-        // Mod Menu
-        optional {
-            id.set("mOgUt4GM")
-            version.set(modMenuVersion)
-        }
-    }))
 
 // Register buildActive task
 if (sc.current.isActive) rootProject.tasks.register("buildActive") {
