@@ -3,10 +3,8 @@ package cc.aabss.eventutils.config.migrations;
 import cc.aabss.eventutils.config.EventType;
 import cc.aabss.eventutils.config.NotificationSound;
 import eu.okaeri.configs.migrate.builtin.NamedMigration;
-import eu.okaeri.configs.schema.GenericsDeclaration;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,10 +38,10 @@ public class C0003_Flat_alerts_to_EventSettings extends NamedMigration {
                         (config, view) -> {
                             // Get legacy settings
                             final boolean autoTp = view.getOr("auto_tp", Boolean.class, false);
-                            final Set<EventType> notifications = view.get("notifications", GenericsDeclaration.of(Set.class, List.of(EventType.class)));
-                            final Map<EventType, NotificationSound> notificationSounds = view.get("notification_sounds", GenericsDeclaration.of(Map.class, List.of(EventType.class, NotificationSound.class)));
+                            final Set<EventType> notifications = view.getAsSet("notifications", EventType.class);
+                            final Map<EventType, NotificationSound> notificationSounds = view.getAsMap("notification_sounds", EventType.class, NotificationSound.class);
                             final Boolean eventServersEnabledGlobal = view.get("event_servers_enabled", Boolean.class);
-                            final Set<EventType> eventServerTypes = view.get("event_server_types", GenericsDeclaration.of(Set.class, List.of(EventType.class)));
+                            final Set<EventType> eventServerTypes = view.getAsSet("event_server_types", EventType.class);
 
                             // Create settings for each EventType
                             for (final EventType type : TO_MIGRATE) {
