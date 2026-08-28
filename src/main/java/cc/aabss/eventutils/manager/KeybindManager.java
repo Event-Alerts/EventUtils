@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 //? if >=1.21.11 {
 /*import cc.aabss.eventutils.BuildProperties;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 *///?}
 
 import java.util.HashMap;
@@ -30,7 +30,7 @@ import static net.minecraft.network.chat.Component.translatable;
 public class KeybindManager {
     private static final long DEFAULT_COOLDOWN_TIME_MS = 500;
     //? if >=1.21.11 {
-    /*@NotNull private static final KeyMapping.Category CATEGORY = KeyMapping.Category.create(ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, BuildProperties.MOD_ID));
+    /*@NotNull private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(BuildProperties.MOD_ID, BuildProperties.MOD_ID));
     *///? } else {
     @NotNull private static final String CATEGORY = "key.category.eventutils";
     //?}
@@ -63,7 +63,12 @@ public class KeybindManager {
             if (client.screen != null && (!(client.screen instanceof TitleScreen))) return;
 
             // Store Minecraft's window
-            if (windowHandle == null) windowHandle = client.getWindow().getWindow();
+            if (windowHandle == null) {
+                //? if >=1.21.11 {
+                /*windowHandle = client.getWindow().handle();
+                //windowHandle = client.getWindow().getWindow();
+                *///?}
+            }
 
             // Event info key
             if (!eventInfoKey.isUnbound()) {
@@ -131,15 +136,11 @@ public class KeybindManager {
     }
 
     private boolean canNotPress(@NotNull KeyMapping keyBinding, long cooldownTimeMs) {
-        //? if >=1.21.11 {
-        /*final String translationKey = keyBinding.getId();
-        *///?} else {
-        final String translationKey = keyBinding.getName();
-        //?}
-        final Long lastPressTime = lastKeyPresses.get(translationKey);
+        final String name = keyBinding.getName();
+        final Long lastPressTime = lastKeyPresses.get(name);
         final long now = System.currentTimeMillis();
         if (lastPressTime != null && now - lastPressTime < cooldownTimeMs) return true;
-        lastKeyPresses.put(translationKey, now);
+        lastKeyPresses.put(name, now);
         return false;
     }
 }

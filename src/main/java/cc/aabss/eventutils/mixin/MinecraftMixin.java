@@ -15,12 +15,16 @@ import static net.minecraft.network.chat.Component.translatable;
 
 
 @Mixin(Minecraft.class)
-public class ClientMixin {
+public class MinecraftMixin {
     @Inject(method = "run", at = @At("HEAD"))
     private void onRun(CallbackInfo ci) {
         if (!EventUtils.MOD.config.confirm_window_close) return;
         final Minecraft client = Minecraft.getInstance();
+        //? if >=1.21.11 {
+        /*final long handle = client.getWindow().handle();
+        *///?} else {
         final long handle = client.getWindow().getWindow();
+        //?}
         final GLFWWindowCloseCallback callback = GLFW.glfwSetWindowCloseCallback(handle, win -> client.execute(() -> {
             GLFW.glfwSetWindowShouldClose(handle, false);
             final Screen current = client.screen;

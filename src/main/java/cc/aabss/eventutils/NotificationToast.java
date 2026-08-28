@@ -1,5 +1,6 @@
 package cc.aabss.eventutils;
 
+import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -7,11 +8,12 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 //? if >=1.21.6 {
-//import net.minecraft.client.gl.RenderPipelines;
+/*import net.minecraft.resources.Identifier;
+*///?} else {
+import net.minecraft.resources.ResourceLocation;
 //?}
 import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +25,12 @@ import java.util.List;
 
 
 public class NotificationToast implements Toast {
-    @NotNull private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "toast/notification");
+    //? if >=1.21.6 {
+    /*@NotNull private static final Identifier TEXTURE
+    *///?} else {
+    @NotNull private static final ResourceLocation TEXTURE
+    //?}
+            = VersionedIdentifier.of("toast/notification");
 
     @NotNull private final Component title;
     @NotNull private final List<FormattedCharSequence> lines;
@@ -50,13 +57,13 @@ public class NotificationToast implements Toast {
     }
 
     //? if >=1.21.2 {
-    @Override
+    @Override @NotNull
     public Visibility getWantedVisibility() {
         return visibility;
     }
 
     @Override
-    public void update(ToastManager toastManager, long startTime) {
+    public void update(@NotNull ToastManager toastManager, long startTime) {
         visibility = startTime >= Type.DEFAULT.displayDuration ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
     }
     //?}
@@ -80,13 +87,13 @@ public class NotificationToast implements Toast {
     //? if <1.21.2 {
     /*public Toast.Visibility render(GuiGraphics drawContext, ToastManager manager, long startTime) {
     *///?} else {
-    public void render(GuiGraphics drawContext, Font textRenderer, long startTime) {
+    public void render(@NotNull GuiGraphics drawContext, @NotNull Font textRenderer, long startTime) {
     //?}
         if (width == 160 && lines.size() <= 1) {
             //? if <1.21.2 {
-            /*drawContext.drawGuiTexture(TEXTURE, 0, 0, width, height);
+            /*drawContext.blitSprite(TEXTURE, 0, 0, width, height);
             *///?} else if >=1.21.6 {
-            /*drawContext.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
+            /*drawContext.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
             *///?} else {
             drawContext.blitSprite(RenderType::guiTextured, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
             //?}

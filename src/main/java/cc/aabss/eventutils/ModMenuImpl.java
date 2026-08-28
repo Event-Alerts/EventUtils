@@ -3,7 +3,7 @@ package cc.aabss.eventutils;
 import cc.aabss.eventutils.screen.config.ConfigScreen;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import dev.kikugie.fletching_table.annotation.fabric.Entrypoint;
+import dev.kikugie.fletching_table.fabric.Entrypoint;
 import org.jetbrains.annotations.NotNull;
 
 

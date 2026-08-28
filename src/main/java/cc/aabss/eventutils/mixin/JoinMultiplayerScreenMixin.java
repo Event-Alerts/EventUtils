@@ -5,7 +5,7 @@ import cc.aabss.eventutils.manager.EventServerManager;
 //? if >=1.21.11 {
 /*import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Unique;
 *///? } else {
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
 @Mixin(JoinMultiplayerScreen.class)
-public class MultiplayerScreenMixin {
+public class JoinMultiplayerScreenMixin {
     @Shadow private ServerList servers;
     @Shadow protected ServerSelectionList serverSelectionList;
 
@@ -50,9 +50,9 @@ public class MultiplayerScreenMixin {
             final String normalized = label.replaceAll("§.", "");
             if (!label.contains(EventServerManager.EVENT_SERVER_PREFIX) && !normalized.contains("[Event] ")) continue;
 
-            final int top = ((EntryListWidgetAccessor) serverSelectionList).invokeGetRowTop(i);
+            final int top = ((AbstractSelectionListAccessor) serverSelectionList).invokeGetRowTop(i);
             final int bottom = (i + 1 < servers)
-                    ? ((EntryListWidgetAccessor) serverSelectionList).invokeGetRowTop(i + 1) - 1
+                    ? ((AbstractSelectionListAccessor) serverSelectionList).invokeGetRowTop(i + 1) - 1
                     : top + 36;
 
             // Subtle highlight overlay so text/icon remain readable

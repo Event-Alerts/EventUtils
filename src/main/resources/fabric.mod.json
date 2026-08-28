@@ -21,6 +21,9 @@
   "suggests": {
     "modmenu": ">=${deps_modmenu}"
   },
+  "mixins": [
+    "eventutils.mixins.json"
+  ],
   "custom": {
     "modmenu": {
       "links": {

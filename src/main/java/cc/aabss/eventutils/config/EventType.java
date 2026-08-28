@@ -1,8 +1,7 @@
 package cc.aabss.eventutils.config;
 
-import cc.aabss.eventutils.BuildProperties;
 import cc.aabss.eventutils.screen.config.ConfigScreen;
-import dev.isxander.yacl3.api.Option;
+import cc.aabss.eventutils.versioning.VersionedIdentifier;import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
 import dev.isxander.yacl3.api.OptionGroup;
 import dev.isxander.yacl3.api.controller.EnumDropdownControllerBuilder;
@@ -10,7 +9,6 @@ import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAFamousEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,7 +63,7 @@ public enum EventType {
                         .name(Component.translatable("eventutils.config.event_settings.toasts.label"))
                         .description(OptionDescription.createBuilder()
                                 .text(Component.translatable("eventutils.config.event_settings.toasts.description"))
-                                .image(ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "textures/config/toast.png"), 767, 128)
+                                .image(VersionedIdentifier.of("textures/config/toast.png"), 767, 128)
                                 .build())
                         .binding(EventSettings.Defaults.TOASTS, () -> config.getEventSettings(this).toasts, newValue -> {
                             config.getEventSettingsOrCreate(this).toasts = newValue;
@@ -87,7 +85,7 @@ public enum EventType {
                         .name(Component.translatable("eventutils.config.event_settings.info_screen.label"))
                         .description(OptionDescription.createBuilder()
                                 .text(Component.translatable("eventutils.config.event_settings.info_screen.description"))
-                                .image(ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "textures/config/info_screen.png"), 1106, 898)
+                                .image(VersionedIdentifier.of("textures/config/info_screen.png"), 1106, 898)
                                 .build())
                         .binding(EventSettings.Defaults.INFO_SCREEN, () -> config.getEventSettings(this).infoScreen, newValue -> {
                             config.getEventSettingsOrCreate(this).infoScreen = newValue;
@@ -108,7 +106,7 @@ public enum EventType {
                         .name(Component.translatable("eventutils.config.event_settings.server_list.label"))
                         .description(OptionDescription.createBuilder()
                                 .text(Component.translatable("eventutils.config.event_settings.server_list.description"))
-                                .image(ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "textures/config/server_listing.png"), 975, 415)
+                                .image(VersionedIdentifier.of("textures/config/server_listing.png"), 975, 415)
                                 .build())
                         .binding(EventSettings.Defaults.SERVER_LIST, () -> config.getEventSettings(this).serverList, newValue -> {
                             config.getEventSettingsOrCreate(this).serverList = newValue;

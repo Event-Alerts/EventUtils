@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 
 @Mixin(PlayerTabOverlay.class)
-public abstract class PlayerListHudMixin {
+public abstract class PlayerTabOverlayMixin {
     @Shadow @Final private Minecraft minecraft;
 
     // We want to cache on both join AND tab open just in-case any players were missed on-join

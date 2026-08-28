@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 
 @Mixin(AbstractSelectionList.class)
-public interface EntryListWidgetAccessor {
+public interface AbstractSelectionListAccessor {
 	@Invoker("getRowTop")
 	int invokeGetRowTop(int index);
 }

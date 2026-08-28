@@ -26,11 +26,7 @@ public class EventInfoScreen extends Screen {
     @NotNull private final EventWrapper event;
 
     public EventInfoScreen(@NotNull EventUtils mod, @NotNull EventWrapper event) {
-        //? if >=1.21.11 {
-        /*super(Component.translatable(mod.keybindManager.eventInfoKey.getId()));
-        *///?} else {
         super(Component.translatable(mod.keybindManager.eventInfoKey.getName()));
-        //?}
         this.event = event;
     }
 

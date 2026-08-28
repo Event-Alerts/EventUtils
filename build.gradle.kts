@@ -7,9 +7,12 @@ plugins {
     id("xyz.srnyx.gradle-galaxy") version "a8227b9"
     id("com.gradleup.shadow") version "9.6.1"
     id("me.modmuss50.mod-publish-plugin") version "675051c"
-    id("dev.kikugie.fletching-table.fabric") version "0.1.0-alpha.22"
-    kotlin("jvm") version "2.4.10" // For Fletching Table
-    id("com.google.devtools.ksp") version "2.3.10" // For Fletching Table
+
+    // Fletching Table
+    alias(ft.plugins.default)
+    alias(ft.plugins.fabric)
+    alias(ft.plugins.mixin)
+    alias(ft.plugins.lang)
 }
 
 group = "cc.aabss"
@@ -62,7 +65,7 @@ galaxy {
     }
 
     minecraft {
-        replacementFiles = setOf("fabric.mod.json")
+        replacementFiles = setOf("fabric.mod.json", "eventutils.mixin.json")
         replacements.putAll(replacements.get() + mapOf(
             "mod_id" to modId,
             "mod_name" to modName,
@@ -102,6 +105,7 @@ galaxy {
             apiTiers.add(FABRIC)
             addAnnoyingApiDependency = false
 
+            //TODO
 //            modPublishPlugin {
 //                file(loomx.modJar.map { it.archiveFile })
 //            }
@@ -160,19 +164,17 @@ stonecutter {
 }
 
 fletchingTable {
-    fabric {
-        entrypointMappings.put("modmenu", "com.terraformersmc.modmenu.api.ModMenuApi")
+    fabric.configure("main") {
+        entrypoint("modmenu", "com.terraformersmc.modmenu.api.ModMenuApi")
     }
 
-    mixins.create("main") {
-        mixin("default", "eventutils.mixins.json") {
+    mixins.configure("main") {
+        mixin("eventutils.mixins.json") {
             env("client")
         }
     }
 
-    lang.create("main") {
-        patterns.add("assets/$modId/lang/**")
-    }
+    lang.configure("main") {}
 }
 
 tasks {

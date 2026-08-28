@@ -5,13 +5,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Button;
 //? if >=1.21.11 {
-//import net.minecraft.client.input.AbstractInput;
-//?}
+/*import net.minecraft.client.input.InputWithModifiers;
+*///?}
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.spongepowered.asm.mixin.Mixin;
+import org.jetbrains.annotations.NotNull;import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,14 +27,14 @@ public abstract class ButtonWidgetMixin extends AbstractButton {
     }
 
     //? if >=1.21.11 {
-    /*@Shadow public abstract void onPress(AbstractInput abstractInput);
+    /*@Shadow public abstract void onPress(@NotNull InputWithModifiers abstractInput);
     *///?} else {
     @Shadow public abstract void onPress();
     //?}
 
     @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
     //? if >=1.21.11 {
-    /*public void onPress(AbstractInput abstractInput, CallbackInfo ci) {
+    /*public void onPress(InputWithModifiers abstractInput, CallbackInfo ci) {
     *///?} else {
     private void onPress(CallbackInfo ci) {
     //?}

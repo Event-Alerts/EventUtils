@@ -1,11 +1,10 @@
 package cc.aabss.eventutils.config;
 
-import cc.aabss.eventutils.BuildProperties;
+import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import dev.isxander.yacl3.api.NameableEnum;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +26,7 @@ public enum NotificationSound implements NameableEnum {
     TIME_OF_WAR;
 
     public void play() {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "notification." + name().toLowerCase())), 1, 1));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvent.createVariableRangeEvent(VersionedIdentifier.of("notification." + name().toLowerCase())), 1, 1));
     }
 
     @Override @NotNull @Contract(" -> new")
