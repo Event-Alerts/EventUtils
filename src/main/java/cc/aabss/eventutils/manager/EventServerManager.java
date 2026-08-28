@@ -4,9 +4,9 @@ import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.mixin.ServerListAccessor;
 import cc.aabss.eventutils.sdk.EventWrapper;
 import gg.eventalerts.sdk.object.EAEvent;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.option.ServerList;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.ServerList;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +37,7 @@ public class EventServerManager {
 
     public boolean isActiveEventServer(@NotNull String ip) {
         final String ipLower = ip.toLowerCase();
-        return activeEventServers.values().stream().anyMatch(info -> info.serverInfo.address.toLowerCase().equals(ipLower));
+        return activeEventServers.values().stream().anyMatch(info -> info.serverData.ip.toLowerCase().equals(ipLower));
     }
 
     public void addEventServer(@NotNull EventWrapper wrapper) {
@@ -45,8 +45,6 @@ public class EventServerManager {
             EventUtils.LOGGER.debug("Cannot add event server because IP is null: {}", wrapper);
             return;
         }
-        final MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null) return;
 
         // Don't add if already exists
         if (activeEventServers.containsKey(wrapper.id)) return;
@@ -54,7 +52,7 @@ public class EventServerManager {
         // Get time in milliseconds
         final long timeMillis = wrapper.event instanceof EAEvent eaEvent && eaEvent.time != null ? eaEvent.time.getTime() : System.currentTimeMillis();
 
-        client.execute(() -> {
+        Minecraft.getInstance().execute(() -> {
             final ServerList serverList = getServerList();
             if (serverList == null) {
                 EventUtils.LOGGER.warn("Server list not available, cannot add event server");
@@ -64,15 +62,15 @@ public class EventServerManager {
             final String serverName = EVENT_SERVER_PREFIX + wrapper.title;
 
             // Check if server already exists in list
-            final ServerInfo existing = serverList.get(wrapper.ip);
+            final ServerData existing = serverList.get(wrapper.ip);
             if (existing != null) {
                 EventUtils.LOGGER.debug("Event server already present in server list: '{}' -> '{}'", serverName, wrapper.ip);
                 return;
             }
 
             // Create server info
-            final ServerInfo serverInfo = new ServerInfo(serverName, wrapper.ip, ServerInfo.ServerType.OTHER);
-            serverInfo.setResourcePackPolicy(ServerInfo.ResourcePackPolicy.PROMPT);
+            final ServerData serverInfo = new ServerData(serverName, wrapper.ip, ServerData.Type.OTHER);
+            serverInfo.setResourcePackStatus(ServerData.ServerPackStatus.PROMPT);
 
             // Did event start too long ago?
             final long graceMs = TimeUnit.MINUTES.toMillis(mod.config.event_server_display_minutes);
@@ -92,13 +90,13 @@ public class EventServerManager {
             removalTasks.put(wrapper.id, MiscUtility.IO_SCHEDULER.schedule(() -> removeEventServer(wrapper.id), removalDelay, TimeUnit.MILLISECONDS));
 
             // Persist changes to disk
-            serverList.saveFile();
+            serverList.save();
             EventUtils.LOGGER.debug("Added event server '{}' with IP '{}' to server list, will be removed in {} ms", serverName, wrapper.ip, removalDelay);
         });
     }
 
     public void removeEventServer(@NotNull ObjectId eventId) {
-        final MinecraftClient client = MinecraftClient.getInstance();
+        final Minecraft client = Minecraft.getInstance();
         if (client != null) client.execute(() -> {
             // Cancel removal task
             final ScheduledFuture<?> removalTask = removalTasks.remove(eventId);
@@ -116,11 +114,11 @@ public class EventServerManager {
             }
 
             // Remove from server list
-            serverList.remove(eventServerInfo.serverInfo);
+            serverList.remove(eventServerInfo.serverData);
 
             // Persist removal
-            serverList.saveFile();
-            EventUtils.LOGGER.debug("Removed event server from server list: {}", eventServerInfo.serverInfo.name);
+            serverList.save();
+            EventUtils.LOGGER.debug("Removed event server from server list: {}", eventServerInfo.serverData.name);
         });
     }
 
@@ -136,16 +134,14 @@ public class EventServerManager {
     @Nullable
     private ServerList getServerList() {
         if (gotServerList != null) return gotServerList;
-        final MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null) return null;
-        gotServerList = new ServerList(client);
+        gotServerList = new ServerList(Minecraft.getInstance());
         try {
-            gotServerList.loadFile();
+            gotServerList.load();
         } catch (final Exception e) {
             EventUtils.LOGGER.error("Failed to load server list from file", e);
         }
         return gotServerList;
     }
 
-    private record EventServerInfo(@NotNull ObjectId eventId, @NotNull ServerInfo serverInfo, long eventTime) {}
+    private record EventServerInfo(@NotNull ObjectId eventId, @NotNull ServerData serverData, long eventTime) {}
 }

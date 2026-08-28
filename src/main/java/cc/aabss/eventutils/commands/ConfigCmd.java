@@ -6,7 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -27,7 +27,7 @@ public class ConfigCmd extends EUCommand {
     }
 
     private static void execute(@NotNull CommandContext<FabricClientCommandSource> context) {
-        final MinecraftClient client = context.getSource().getClient();
-        client.send(() -> client.setScreen(ConfigScreen.getConfigScreen(client.currentScreen)));
+        final Minecraft client = context.getSource().getClient();
+        client.execute(() -> client.setScreen(ConfigScreen.getConfigScreen(client.screen)));
     }
 }

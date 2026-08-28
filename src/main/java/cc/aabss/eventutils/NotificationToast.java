@@ -2,17 +2,18 @@ package cc.aabss.eventutils;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.toast.Toast;
-import net.minecraft.client.toast.ToastManager;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-//? if >=1.21.6
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+//? if >=1.21.6 {
 //import net.minecraft.client.gl.RenderPipelines;
+//?}
+import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,35 +23,35 @@ import java.util.List;
 
 
 public class NotificationToast implements Toast {
-    @NotNull private static final Identifier TEXTURE = Identifier.of(BuildProperties.MOD_ID, "toast/notification");
+    @NotNull private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "toast/notification");
 
-    @NotNull private final Text title;
-    @NotNull private final List<OrderedText> lines;
+    @NotNull private final Component title;
+    @NotNull private final List<FormattedCharSequence> lines;
     private final int width;
     private final int height;
     public Visibility visibility;
 
-    public NotificationToast(@NotNull Text title, @Nullable Text description, boolean displayEventInfoInstructions) {
+    public NotificationToast(@NotNull Component title, @Nullable Component description, boolean displayEventInfoInstructions) {
         this.title = title;
 
         lines = new ArrayList<>();
-        if (description != null) lines.add(description.asOrderedText());
-        final OrderedText eventInfoInstructions = displayEventInfoInstructions ? Text.translatable("eventutils.event.toast.info_screen_button", EventUtils.MOD.keybindManager.eventInfoKey.getBoundKeyLocalizedText()).asOrderedText() : null;
+        if (description != null) lines.add(description.getVisualOrderText());
+        final FormattedCharSequence eventInfoInstructions = displayEventInfoInstructions ? Component.translatable("eventutils.event.toast.info_screen_button", EventUtils.MOD.keybindManager.eventInfoKey.getTranslatedKeyMessage()).getVisualOrderText() : null;
         if (eventInfoInstructions != null) lines.add(eventInfoInstructions);
 
-        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+        final Font textRenderer = Minecraft.getInstance().font;
         width = EventUtils.max(
                 160,
-                30 + textRenderer.getWidth(title),
-                eventInfoInstructions != null ? 30 + textRenderer.getWidth(eventInfoInstructions) : 0,
-                description != null ? 30 + textRenderer.getWidth(description) : 0);
+                30 + textRenderer.width(title),
+                eventInfoInstructions != null ? 30 + textRenderer.width(eventInfoInstructions) : 0,
+                description != null ? 30 + textRenderer.width(description) : 0);
         height = 20 + Math.max(lines.size(), 1) * 12;
-        visibility = Visibility.HIDE;
+        visibility = Toast.Visibility.HIDE;
     }
 
     //? if >=1.21.2 {
     @Override
-    public Visibility getVisibility() {
+    public Visibility getWantedVisibility() {
         return visibility;
     }
 
@@ -61,25 +62,25 @@ public class NotificationToast implements Toast {
     //?}
 
     @Override @NotNull
-    public NotificationToast.Type getType() {
+    public NotificationToast.Type getToken() {
         return Type.DEFAULT;
     }
 
     @Override
-    public int getWidth() {
+    public int width() {
         return width;
     }
 
     @Override
-    public int getHeight() {
+    public int height() {
         return height;
     }
 
     @Override
     //? if <1.21.2 {
-    /*public Toast.Visibility draw(DrawContext drawContext, ToastManager manager, long startTime) {
+    /*public Toast.Visibility render(GuiGraphics drawContext, ToastManager manager, long startTime) {
     *///?} else {
-    public void draw(DrawContext drawContext, TextRenderer textRenderer, long startTime) {
+    public void render(GuiGraphics drawContext, Font textRenderer, long startTime) {
     //?}
         if (width == 160 && lines.size() <= 1) {
             //? if <1.21.2 {
@@ -87,7 +88,7 @@ public class NotificationToast implements Toast {
             *///?} else if >=1.21.6 {
             /*drawContext.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
             *///?} else {
-            drawContext.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
+            drawContext.blitSprite(RenderType::guiTextured, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
             //?}
         } else {
             int minHeight = Math.min(4, height - 28);
@@ -97,34 +98,34 @@ public class NotificationToast implements Toast {
         }
 
         //? if <1.21.2
-        /*final TextRenderer textRenderer = manager.getClient().textRenderer;*/
+        /*final Font textRenderer = manager.getClient().font;*/
         if (lines.isEmpty()) {
-            drawContext.drawText(textRenderer, title, 24, 12, Color.YELLOW.getRGB(), false);
+            drawContext.drawString(textRenderer, title, 24, 12, Color.YELLOW.getRGB(), false);
         } else {
-            drawContext.drawText(textRenderer, title, 24, 7, Color.YELLOW.getRGB(), false);
-            for (int i = 0; i < lines.size(); ++i) drawContext.drawText(textRenderer, lines.get(i), 24, 18 + i * 12, -1, false);
+            drawContext.drawString(textRenderer, title, 24, 7, Color.YELLOW.getRGB(), false);
+            for (int i = 0; i < lines.size(); ++i) drawContext.drawString(textRenderer, lines.get(i), 24, 18 + i * 12, -1, false);
         }
         //? if <1.21.2
         /*return startTime >= Type.DEFAULT.displayDuration ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;*/
     }
 
 
-    private void drawPart(@NotNull DrawContext context, int j, int k, int l) {
+    private void drawPart(@NotNull GuiGraphics context, int j, int k, int l) {
         final int m = j == 0 ? 20 : 5;
         final int n = Math.min(60, width - m);
         final int widthN = width - n;
         //? if <=1.21.1 {
-        /*context.drawGuiTexture(TEXTURE, 160, 32, 0, j, 0, k, m, l);
-        for (int o = m; o < widthN; o += 64) context.drawGuiTexture(TEXTURE, 160, 32, 32, j, o, k, Math.min(64, widthN - o), l);
-        context.drawGuiTexture(TEXTURE, 160, 32, 160 - n, j, widthN, k, n, l);
+        /*context.blitSprite(TEXTURE, 160, 32, 0, j, 0, k, m, l);
+        for (int o = m; o < widthN; o += 64) context.blitSprite(TEXTURE, 160, 32, 32, j, o, k, Math.min(64, widthN - o), l);
+        context.blitSprite(TEXTURE, 160, 32, 160 - n, j, widthN, k, n, l);
         *///?} else if >=1.21.6 {
-        /*context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 160, 32, 0, j, 0, k, m, l);
-        for (int o = m; o < widthN; o += 64) context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 160, 32, 32, j, o, k, Math.min(64, widthN - o), l);
-        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, 160, 32, 160 - n, j, widthN, k, n, l);
+        /*context.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 160, 32, 0, j, 0, k, m, l);
+        for (int o = m; o < widthN; o += 64) context.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 160, 32, 32, j, o, k, Math.min(64, widthN - o), l);
+        context.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 160, 32, 160 - n, j, widthN, k, n, l);
         *///?} else {
-        context.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, 160, 32, 0, j, 0, k, m, l);
-        for (int o = m; o < widthN; o += 64) context.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, 160, 32, 32, j, o, k, Math.min(64, widthN - o), l);
-        context.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURE, 160, 32, 160 - n, j, widthN, k, n, l);
+        context.blitSprite(RenderType::guiTextured, TEXTURE, 160, 32, 0, j, 0, k, m, l);
+        for (int o = m; o < widthN; o += 64) context.blitSprite(RenderType::guiTextured, TEXTURE, 160, 32, 32, j, o, k, Math.min(64, widthN - o), l);
+        context.blitSprite(RenderType::guiTextured, TEXTURE, 160, 32, 160 - n, j, widthN, k, n, l);
         //?}
     }
 

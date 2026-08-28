@@ -101,6 +101,10 @@ galaxy {
             minecraftVersionEnd = sc.current.version
             apiTiers.add(FABRIC)
             addAnnoyingApiDependency = false
+
+//            modPublishPlugin {
+//                file(loomx.modJar.map { it.archiveFile })
+//            }
         }
     }
 }
@@ -109,11 +113,7 @@ dependencies {
     minecraft("com.mojang:minecraft:${sc.current.version}")
 
     // Mappings
-    if (is261Plus) {
-        loomx.applyMojangMappings()
-    } else {
-        mappings("net.fabricmc:yarn:${property("deps.yarn_mappings").toString()}:v2")
-    }
+    loomx.applyMojangMappings()
 
     // Library: Java Utilities
     shadowLibrary("xyz.srnyx:java-utilities:$javaUtilitiesVersion")

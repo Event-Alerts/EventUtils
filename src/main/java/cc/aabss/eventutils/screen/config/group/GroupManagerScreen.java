@@ -2,17 +2,17 @@ package cc.aabss.eventutils.screen.config.group;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.Group;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Style;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static net.minecraft.text.Text.literal;
-import static net.minecraft.text.Text.translatable;
+import static net.minecraft.network.chat.Component.literal;
+import static net.minecraft.network.chat.Component.translatable;
 
 
 public class GroupManagerScreen extends Screen {
@@ -40,41 +40,38 @@ public class GroupManagerScreen extends Screen {
             if (y >= height - 60) break;
             i++;
 
-            final ButtonWidget editBtn = ButtonWidget.builder(
-                    literal(group.getName()).fillStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xE0E0E0))),
-                    button -> {
-                        if (client != null) client.setScreen(EditGroupScreen.getScreen(mod, this, group));
-                    }
-            ).dimensions(PADDING, y, width - PADDING * 2 - REMOVE_WIDTH - 4, 20).build();
-            addDrawableChild(editBtn);
+            final Button editBtn = Button.builder(literal(group.getName()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xE0E0E0))), button -> {
+                if (minecraft != null) minecraft.setScreen(EditGroupScreen.getScreen(mod, this, group));
+            }).bounds(PADDING, y, width - PADDING * 2 - REMOVE_WIDTH - 4, 20).build();
+            addRenderableWidget(editBtn);
 
-            addDrawableChild(ButtonWidget.builder(literal("X").formatted(Formatting.RED), button -> {
+            addRenderableWidget(Button.builder(literal("X").withStyle(ChatFormatting.RED), button -> {
                 if (mod.groupManager.selectedGroup == group.getUuid()) mod.groupManager.selectedGroup = null;
 
                 mod.config.groups.remove(group.getUuid());
                 mod.config.save();
-                if (client != null) client.setScreen(new GroupManagerScreen(mod, parent));
-            }).dimensions(width - PADDING - REMOVE_WIDTH, y, REMOVE_WIDTH, 20).build());
+                if (minecraft != null) minecraft.setScreen(new GroupManagerScreen(mod, parent));
+            }).bounds(width - PADDING - REMOVE_WIDTH, y, REMOVE_WIDTH, 20).build());
         }
 
-        final ButtonWidget addBtn = ButtonWidget.builder(translatable("eventutils.config.groups.add"), button -> {
+        final Button addBtn = Button.builder(translatable("eventutils.config.groups.add"), button -> {
             mod.config.upsertGroup(new Group());
-            if (client != null) client.setScreen(new GroupManagerScreen(mod, parent));
-        }).dimensions(width / 2 - BUTTON_WIDTH - 4, height - 32, BUTTON_WIDTH, 20).build();
-        addDrawableChild(addBtn);
+            if (minecraft != null) minecraft.setScreen(new GroupManagerScreen(mod, parent));
+        }).bounds(width / 2 - BUTTON_WIDTH - 4, height - 32, BUTTON_WIDTH, 20).build();
+        addRenderableWidget(addBtn);
 
-        addDrawableChild(ButtonWidget.builder(translatable("gui.done"), button -> goBack())
-                .dimensions(width / 2 + 4, height - 32, BUTTON_WIDTH, 20).build());
+        addRenderableWidget(Button.builder(translatable("gui.done"), button -> goBack())
+                .bounds(width / 2 + 4, height - 32, BUTTON_WIDTH, 20).build());
     }
 
     private void goBack() {
-        if (client != null) client.setScreen(parent);
+        if (minecraft != null) minecraft.setScreen(parent);
     }
 
     @Override
-    public void render(@NotNull DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(@NotNull GuiGraphics context, int mouseX, int mouseY, float delta) {
         context.fill(0, 0, width, height, 0xC0101010);
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xFFFFFF);
+        context.drawCenteredString(font, title, width / 2, 12, 0xFFFFFF);
         super.render(context, mouseX, mouseY, delta);
     }
 

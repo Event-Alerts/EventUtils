@@ -1,13 +1,13 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.accessor.PlayerEntityRenderStateAccessor;
-import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 
-@Mixin(PlayerEntityRenderState.class)
-public abstract class PlayerEntityRenderStateMixin implements PlayerEntityRenderStateAccessor {
+@Mixin(AvatarRenderState.class)
+public abstract class AvatarRenderStateMixin implements PlayerEntityRenderStateAccessor {
 
     @Unique
     private String eventutils$rawName;

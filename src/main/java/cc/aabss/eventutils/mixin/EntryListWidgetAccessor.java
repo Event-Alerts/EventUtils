@@ -1,11 +1,11 @@
 package cc.aabss.eventutils.mixin;
 
-import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.gui.components.AbstractSelectionList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 
-@Mixin(EntryListWidget.class)
+@Mixin(AbstractSelectionList.class)
 public interface EntryListWidgetAccessor {
 	@Invoker("getRowTop")
 	int invokeGetRowTop(int index);

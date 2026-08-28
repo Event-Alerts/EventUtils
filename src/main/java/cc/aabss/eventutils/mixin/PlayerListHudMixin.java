@@ -4,13 +4,13 @@ import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.plustag.IconRenderer;
 import cc.aabss.eventutils.plustag.PlusTag;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.hud.PlayerListHud;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardObjective;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.PlayerTabOverlay;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,38 +24,38 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 
-@Mixin(PlayerListHud.class)
+@Mixin(PlayerTabOverlay.class)
 public abstract class PlayerListHudMixin {
-    @Shadow @Final private MinecraftClient client;
+    @Shadow @Final private Minecraft minecraft;
 
     // We want to cache on both join AND tab open just in-case any players were missed on-join
     @Inject(method = "render", at = @At("HEAD"))
-    private void eventutils$populatePlayersCache(DrawContext context, int scaledWindowWidth, Scoreboard scoreboard, ScoreboardObjective objective, CallbackInfo ci) {
-        if (client.player == null) return;
-        final ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
-        if (networkHandler == null) return;
+    private void eventutils$populatePlayersCache(GuiGraphics guiGraphics, int i, Scoreboard scoreboard, Objective objective, CallbackInfo ci) {
+        if (minecraft.player == null) return;
+        final ClientPacketListener packetListener = minecraft.getConnection();
+        if (packetListener == null) return;
         EventUtils.MOD.cacheManager.players()
-                .get(networkHandler.getListedPlayerListEntries().stream()
+                .get(packetListener.getListedOnlinePlayers().stream()
                         .map(entry -> new VersionedGameProfile(entry.getProfile()).getId())
                         .collect(Collectors.toSet()))
                 .queue();
     }
 
     @Inject(method = "renderLatencyIcon", at = @At("TAIL"), require = 0)
-    private void eventutils$drawPlusTagNextToName(DrawContext context, int width, int x, int y, PlayerListEntry entry, CallbackInfo ci) {
-        drawPlusTagNextToName(context, x, y, entry);
+    private void eventutils$drawPlusTagNextToName(GuiGraphics guiGraphics, int width, int x, int y, PlayerInfo entry, CallbackInfo ci) {
+        drawPlusTagNextToName(guiGraphics, x, y, entry);
     }
 
     // Lunar is super annoying and breaks "renderLatencyIcon" (never called). So we inject into their custom handler for it.
     // We can't add Lunar to classpath so @Inject will show errors. This is expected and okay.
     @Inject(method = "handler$bbk000$lunar$drawPing$v1_20_0", at = @At("TAIL"), require = 0)
-    private void eventutils$drawPlusTagNextToNameLunar(DrawContext context, int width, int x, int y, PlayerListEntry entry, CallbackInfo lunarCi, CallbackInfo ci) {
-        drawPlusTagNextToName(context, x, y, entry);
+    private void eventutils$drawPlusTagNextToNameLunar(GuiGraphics guiGraphics, int width, int x, int y, PlayerInfo entry, CallbackInfo lunarCi, CallbackInfo ci) {
+        drawPlusTagNextToName(guiGraphics, x, y, entry);
     }
 
     @Unique
-    private void drawPlusTagNextToName(DrawContext context, int x, int y, PlayerListEntry entry) {
-        if (client.player == null) return;
+    private void drawPlusTagNextToName(GuiGraphics guiGraphics, int x, int y, PlayerInfo entry) {
+        if (minecraft.player == null) return;
 
         // Bee icons disabled
         if (!EventUtils.MOD.config.bee_icons) return;
@@ -64,21 +64,21 @@ public abstract class PlayerListHudMixin {
         final UUID uuid = new VersionedGameProfile(entry.getProfile()).getId();
 
         // Self
-        if (client.player.getUuid().equals(uuid)) {
-            if (EventUtils.MOD.authManager.player != null) drawIcon(context, x, y, EventUtils.MOD.authManager.player.getPlusTag(), true);
+        if (minecraft.player.getUUID().equals(uuid)) {
+            if (EventUtils.MOD.authManager.player != null) drawIcon(guiGraphics, x, y, EventUtils.MOD.authManager.player.getPlusTag(), true);
             return;
         }
 
         EventUtils.MOD.cacheManager.players().get(uuid).queue(cached -> {
-            if (cached != null) drawIcon(context, x, y, cached.getPlusTag(), cached.isOnline());
+            if (cached != null) drawIcon(guiGraphics, x, y, cached.getPlusTag(), cached.isOnline());
         });
     }
 
     @Unique
-    private static void drawIcon(DrawContext context, int x, int y, @Nullable PlusTag tag, boolean online) {
+    private static void drawIcon(GuiGraphics guiGraphics, int x, int y, @Nullable PlusTag tag, boolean online) {
         final int iconSize = 10;
         final int iconX = x - 10;
-        IconRenderer.draw(context, online ? PlusTag.BEE_GREEN : PlusTag.BEE, iconX, y, iconSize);
-        if (tag != null) IconRenderer.draw(context, tag.textureId, iconX, y, iconSize);
+        IconRenderer.draw(guiGraphics, online ? PlusTag.BEE_GREEN : PlusTag.BEE, iconX, y, iconSize);
+        if (tag != null) IconRenderer.draw(guiGraphics, tag.textureId, iconX, y, iconSize);
     }
 }

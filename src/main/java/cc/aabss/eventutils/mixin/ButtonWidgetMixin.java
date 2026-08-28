@@ -1,25 +1,28 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.*;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.PressableWidget;
-//? if >=1.21.11
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.Button;
+//? if >=1.21.11 {
 //import net.minecraft.client.input.AbstractInput;
-import net.minecraft.text.Text;
+//?}
+import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.minecraft.text.Text.translatable;
+import static net.minecraft.network.chat.Component.translatable;
 
 
-@Mixin(ButtonWidget.class)
-public abstract class ButtonWidgetMixin extends PressableWidget {
-    public ButtonWidgetMixin(int i, int j, int k, int l, Text text) {
+@Mixin(Button.class)
+public abstract class ButtonWidgetMixin extends AbstractButton {
+    public ButtonWidgetMixin(int i, int j, int k, int l, Component text) {
         super(i, j, k, l, text);
     }
 
@@ -36,11 +39,11 @@ public abstract class ButtonWidgetMixin extends PressableWidget {
     private void onPress(CallbackInfo ci) {
     //?}
         if (!EventUtils.MOD.config.confirm_disconnect || !translatable("menu.disconnect").equals(getMessage())) return;
-        final MinecraftClient client = MinecraftClient.getInstance();
-        if (client.world == null || !(client.currentScreen instanceof GameMenuScreen)) return;
+        final Minecraft client = Minecraft.getInstance();
+        if (client.level == null || !(client.screen instanceof PauseScreen)) return;
 
         ci.cancel();
-        final Screen current = client.currentScreen;
+        final Screen current = client.screen;
         client.setScreen(new ConfirmScreen(yes -> {
             if (yes) {
                 //? if >=1.21.11 {

@@ -4,16 +4,15 @@ import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.manager.EventServerManager;
 //? if >=1.21.11 {
 /*import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.Screen;
 import org.spongepowered.asm.mixin.Unique;
 *///? } else {
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.GuiGraphics;
 //?}
-import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
-import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
-import net.minecraft.client.option.ServerList;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
+import net.minecraft.client.multiplayer.ServerList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,43 +20,39 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
-@Mixin(MultiplayerScreen.class)
+@Mixin(JoinMultiplayerScreen.class)
 public class MultiplayerScreenMixin {
-
-    @Shadow private ServerList serverList;
-    @Shadow protected MultiplayerServerListWidget serverListWidget;
+    @Shadow private ServerList servers;
+    @Shadow protected ServerSelectionList serverSelectionList;
 
     @Inject(method = "init", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
         // Store reference to server list for EventServerManager
-        EventUtils.MOD.eventServerManager.gotServerList = serverList;
+        EventUtils.MOD.eventServerManager.gotServerList = servers;
 
         //? if >=1.21.11
         //ScreenEvents.afterRender((Screen) (Object) this).register((screen, context, mouseX, mouseY, delta) -> highlightEventRows(context));
     }
 
     //? if >=1.21.11 {
-    /*@Unique private void highlightEventRows(DrawContext context) {
+    /*@Unique private void highlightEventRows(GuiGraphics context) {
     *///?} else {
     @Inject(method = "render", at = @At("TAIL"))
-    private void highlightEventRows(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void highlightEventRows(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
     //?}
         // Row-by-row highlight for event servers
-        if (serverListWidget == null) return;
-        final int left = serverListWidget.getRowLeft();
-        final int right = left + serverListWidget.getRowWidth();
-        final int servers = serverListWidget.children().size();
+        if (serverSelectionList == null) return;
+        final int left = serverSelectionList.getRowLeft();
+        final int right = left + serverSelectionList.getRowWidth();
+        final int servers = serverSelectionList.children().size();
         for (int i = 0; i < servers; i++) {
-            final MultiplayerServerListWidget.Entry entry = serverListWidget.children().get(i);
-            final Text narration = entry.getNarration();
-            if (narration == null) continue;
-            final String label = narration.getString();
+            final String label = serverSelectionList.children().get(i).getNarration().getString();
             final String normalized = label.replaceAll("§.", "");
             if (!label.contains(EventServerManager.EVENT_SERVER_PREFIX) && !normalized.contains("[Event] ")) continue;
 
-            final int top = ((EntryListWidgetAccessor) serverListWidget).invokeGetRowTop(i);
+            final int top = ((EntryListWidgetAccessor) serverSelectionList).invokeGetRowTop(i);
             final int bottom = (i + 1 < servers)
-                    ? ((EntryListWidgetAccessor) serverListWidget).invokeGetRowTop(i + 1) - 1
+                    ? ((EntryListWidgetAccessor) serverSelectionList).invokeGetRowTop(i + 1) - 1
                     : top + 36;
 
             // Subtle highlight overlay so text/icon remain readable

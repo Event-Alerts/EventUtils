@@ -4,13 +4,13 @@ import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.sdk.EventWrapper;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAFamousEvent;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -27,15 +27,15 @@ public class EventInfoScreen extends Screen {
 
     public EventInfoScreen(@NotNull EventUtils mod, @NotNull EventWrapper event) {
         //? if >=1.21.11 {
-        /*super(Text.translatable(mod.keybindManager.eventInfoKey.getId()));
+        /*super(Component.translatable(mod.keybindManager.eventInfoKey.getId()));
         *///?} else {
-        super(Text.translatable(mod.keybindManager.eventInfoKey.getTranslationKey()));
+        super(Component.translatable(mod.keybindManager.eventInfoKey.getName()));
         //?}
         this.event = event;
     }
 
     @Override
-    public void render(DrawContext drawContext, int i, int j, float f) {
+    public void render(GuiGraphics drawContext, int i, int j, float f) {
         final int boxX = (width - BOX_WIDTH) / 2;
         final int boxY = (height - BOX_HEIGHT) / 2;
         final int startX = boxX + (BOX_WIDTH / 2);
@@ -44,21 +44,21 @@ public class EventInfoScreen extends Screen {
         drawContext.fill(boxX, boxY, boxX + BOX_WIDTH, boxY + BOX_HEIGHT, 0x88000000);
 
         // Draw lines
-        final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+        final Font textRenderer = Minecraft.getInstance().font;
         int startY = boxY + 5;
         for (final String line : event.toInfoScreenText()) {
             // Split long lines into multiple lines
-            if (textRenderer.getWidth(line) > BOX_WIDTH - 10) {
-                final List<OrderedText> splitLines = textRenderer.wrapLines(StringVisitable.plain(line), BOX_WIDTH - 10);
-                for (final OrderedText splitLine : splitLines) {
-                    drawContext.drawCenteredTextWithShadow(textRenderer, splitLine, startX, startY, 0xFFFFFFFF);
+            if (textRenderer.width(line) > BOX_WIDTH - 10) {
+                final List<FormattedCharSequence> splitLines = textRenderer.split(FormattedText.of(line), BOX_WIDTH - 10);
+                for (final FormattedCharSequence splitLine : splitLines) {
+                    drawContext.drawCenteredString(textRenderer, splitLine, startX, startY, 0xFFFFFFFF);
                     startY += 12;
                 }
                 continue;
             }
 
             // Draw line
-            drawContext.drawCenteredTextWithShadow(textRenderer, line, startX, startY, 0xFFFFFFFF);
+            drawContext.drawCenteredString(textRenderer, line, startX, startY, 0xFFFFFFFF);
             startY += 12;
         }
     }

@@ -1,9 +1,9 @@
 package cc.aabss.eventutils.config;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -75,7 +75,7 @@ public class Group extends Stringable {
     @NotNull
     public Set<String> getEntityIds() {
         return entities.stream()
-                .map(entityType -> EntityType.getId(entityType).toString())
+                .map(entityType -> EntityType.getKey(entityType).toString())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
@@ -88,7 +88,7 @@ public class Group extends Stringable {
     @NotNull
     public Group setEntitiesByIds(@NotNull Collection<String> entities) {
         return setEntities(entities.stream()
-                .map(name -> EntityType.get(name).orElse(null))
+                .map(name -> EntityType.byString(name).orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
     }
@@ -146,39 +146,39 @@ public class Group extends Stringable {
         return this;
     }
 
-    public boolean outsideRadius(@Nullable Vec3d position) {
+    public boolean outsideRadius(@Nullable Vec3 position) {
         if (radius == null || position == null) return false;
-        final MinecraftClient client = MinecraftClient.getInstance();
+        final Minecraft client = Minecraft.getInstance();
         if (client.player == null) return true;
         //? if >=1.21.11 {
-        /*final Vec3d clientPosition = client.player.getSyncedPos();
+        /*final Vec3 clientPosition = client.player.trackingPosition();
         *///?} else {
-        final Vec3d clientPosition = client.player.getPos();
+        final Vec3 clientPosition = client.player.position();
          //?}
         return clientPosition.distanceTo(position) > radius;
     }
 
-    public boolean isPlayerVisible(@NotNull String name, @Nullable Vec3d position) {
+    public boolean isPlayerVisible(@NotNull String name, @Nullable Vec3 position) {
         final boolean show = (playerMode == Mode.SHOW) == players.contains(name.toLowerCase());
         return show || outsideRadius(position);
     }
 
-    public boolean isEntityVisible(@NotNull EntityType<?> entityType, @Nullable Vec3d position) {
+    public boolean isEntityVisible(@NotNull EntityType<?> entityType, @Nullable Vec3 position) {
         final boolean show = (entityMode == Mode.SHOW) == entities.contains(entityType);
         return show || outsideRadius(position);
     }
 
-    public boolean isNpcVisible(@Nullable Vec3d position) {
+    public boolean isNpcVisible(@Nullable Vec3 position) {
         return npcMode == Mode.SHOW || outsideRadius(position);
     }
 
     public enum Mode {
-        SHOW(Formatting.GREEN),
-        HIDE(Formatting.RED);
+        SHOW(ChatFormatting.GREEN),
+        HIDE(ChatFormatting.RED);
 
-        @NotNull public final Formatting formatting;
+        @NotNull public final ChatFormatting formatting;
 
-        Mode(@NotNull Formatting formatting) {
+        Mode(@NotNull ChatFormatting formatting) {
             this.formatting = formatting;
         }
     }
@@ -203,7 +203,7 @@ public class Group extends Stringable {
         @NotNull
         public static Set<String> entityIds() {
             return ENTITIES.stream()
-                    .map(entityType -> EntityType.getId(entityType).toString())
+                    .map(entityType -> EntityType.getKey(entityType).toString())
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }

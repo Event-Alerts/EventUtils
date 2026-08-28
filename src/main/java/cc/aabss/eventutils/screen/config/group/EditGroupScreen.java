@@ -11,23 +11,23 @@ import dev.isxander.yacl3.api.controller.DropdownStringControllerBuilder;
 import dev.isxander.yacl3.api.controller.EnumControllerBuilder;
 import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder;
 import dev.isxander.yacl3.api.controller.StringControllerBuilder;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static net.minecraft.text.Text.translatable;
+import static net.minecraft.network.chat.Component.translatable;
 
 
 public class EditGroupScreen {
-    @NotNull private static final List<String> ENTITY_TYPES = Registries.ENTITY_TYPE.stream()
-            .map(entityType -> EntityType.getId(entityType).toString())
+    @NotNull private static final List<String> ENTITY_TYPES = BuiltInRegistries.ENTITY_TYPE.stream()
+            .map(entityType -> EntityType.getKey(entityType).toString())
             .toList();
 
     @NotNull
@@ -61,9 +61,9 @@ public class EditGroupScreen {
                                         .range(1, Group.MAX_RADIUS + 1)
                                         .step(1)
                                         .formatValue(value -> {
-                                            final Text valueText = value > Group.MAX_RADIUS
+                                            final Component valueText = value > Group.MAX_RADIUS
                                                     ? translatable("eventutils.config.groups.radius.infinite")
-                                                    : Text.literal(value.toString());
+                                                    : Component.literal(value.toString());
                                             return translatable("eventutils.config.groups.radius.value", valueText);
                                         }))
                                 .build())
@@ -97,7 +97,7 @@ public class EditGroupScreen {
                                     group.setPlayers(newValue);
                                     mod.config.upsertGroup(group);
                                 })
-                                .initial(new VersionedGameProfile(MinecraftClient.getInstance().getGameProfile()).getName())
+                                .initial(new VersionedGameProfile(Minecraft.getInstance().getGameProfile()).getName())
                                 .controller(StringControllerBuilder::create)
                                 .build())
                         .group(ListOption.<String>createBuilder()
@@ -117,6 +117,6 @@ public class EditGroupScreen {
     private static EnumControllerBuilder<Group.Mode> getModeController(@NotNull Option<Group.Mode> option) {
         return EnumControllerBuilder.create(option)
                 .enumClass(Group.Mode.class)
-                .formatValue(value -> translatable("eventutils.config.groups.mode." + value.name()).formatted(value.formatting));
+                .formatValue(value -> translatable("eventutils.config.groups.mode." + value.name()).withStyle(value.formatting));
     }
 }

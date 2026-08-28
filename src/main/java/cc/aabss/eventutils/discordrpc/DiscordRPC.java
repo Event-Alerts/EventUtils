@@ -7,10 +7,10 @@ import com.jagrosh.discordipc.entities.RichPresence;
 import com.jagrosh.discordipc.entities.pipe.PipeStatus;
 import com.jagrosh.discordipc.exceptions.NoDiscordClientException;
 import gg.eventalerts.sdk.http.action.EAAction;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.session.Session;
-import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.User;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.server.IntegratedServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.srnyx.javautilities.MiscUtility;
@@ -45,7 +45,7 @@ public class DiscordRPC {
         this.client.setListener(new CustomIPCListener(this));
         this.playerUrl = mod.authManager.player != null && mod.authManager.player.player.discord != null && mod.authManager.player.player.discord.id != null
                 ? "https://eventalerts.gg/players/" + mod.authManager.player.player.discord.id
-                : "https://namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuidOrNull();
+                : "https://namemc.com/profile/" + Minecraft.getInstance().getUser().getProfileId();
         refreshConnection();
     }
 
@@ -98,9 +98,9 @@ public class DiscordRPC {
     private EAAction<Presence> getNewPresence() {
         final Presence newPresence = new Presence();
 
-        final MinecraftClient client = MinecraftClient.getInstance();
-        final IntegratedServer clientServer = client.getServer();
-        final ServerInfo multiplayerServer = client.getCurrentServerEntry();
+        final Minecraft client = Minecraft.getInstance();
+        final IntegratedServer clientServer = client.getSingleplayerServer();
+        final ServerData multiplayerServer = client.getCurrentServer();
 
         if (clientServer != null && clientServer.isRunning()) {
             // Singleplayer
@@ -111,7 +111,7 @@ public class DiscordRPC {
         } else if (multiplayerServer != null) {
             // Multiplayer + Event
             newPresence
-                    .largeImage("https://api.mcstatus.io/v2/icon/" + multiplayerServer.address)
+                    .largeImage("https://api.mcstatus.io/v2/icon/" + multiplayerServer.ip)
                     .largeImageUrl("https://eventalerts.gg");
 
             if (mod.inEvent != null) {
@@ -188,9 +188,9 @@ public class DiscordRPC {
         @NotNull public String smallImageUrl = "https://eventalerts.gg/eventutils";
 
         public Presence() {
-            final Session session = MinecraftClient.getInstance().getSession();
-            this.state = "Playing as " + session.getUsername();
-            this.largeImage = "https://mc-heads.net/avatar/" + session.getUuidOrNull();
+            final User session = Minecraft.getInstance().getUser();
+            this.state = "Playing as " + session.getName();
+            this.largeImage = "https://mc-heads.net/avatar/" + session.getProfileId();
         }
 
         public void apply(@NotNull RichPresence.Builder builder) {

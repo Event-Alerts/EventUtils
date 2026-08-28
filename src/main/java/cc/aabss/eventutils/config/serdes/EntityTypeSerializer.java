@@ -3,7 +3,7 @@ package cc.aabss.eventutils.config.serdes;
 import eu.okaeri.configs.schema.GenericsPair;
 import eu.okaeri.configs.serdes.BidirectionalTransformer;
 import eu.okaeri.configs.serdes.SerdesContext;
-import net.minecraft.entity.EntityType;
+import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,11 +16,11 @@ public class EntityTypeSerializer extends BidirectionalTransformer<String, Entit
 
     @Override @Nullable
     public EntityType leftToRight(@NotNull String data, @NotNull SerdesContext serdesContext) {
-        return EntityType.get(data).orElse(null);
+        return EntityType.byString(data).orElse(null);
     }
 
     @Override @NotNull
     public String rightToLeft(@NotNull EntityType data, @NotNull SerdesContext serdesContext) {
-        return EntityType.getId(data).toString();
+        return EntityType.getKey(data).toString();
     }
 }

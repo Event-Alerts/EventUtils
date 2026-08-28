@@ -3,7 +3,7 @@ package cc.aabss.eventutils.plustag;
 import cc.aabss.eventutils.BuildProperties;
 import cc.aabss.eventutils.EventUtils;
 import gg.eventalerts.sdk.object.EAPlayer;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,14 +30,14 @@ public enum PlusTag {
 
     WHITE(player -> player.discord != null && player.minecraft != null);
 
-    @NotNull public static final Identifier BEE = Identifier.of(BuildProperties.MOD_ID, "textures/bee/bee.png");
-    @NotNull public static final Identifier BEE_GREEN = Identifier.of(BuildProperties.MOD_ID, "textures/bee/bee_green.png");
+    @NotNull public static final ResourceLocation BEE = ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "textures/bee/bee.png");
+    @NotNull public static final ResourceLocation BEE_GREEN = ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "textures/bee/bee_green.png");
 
-    @NotNull public final Identifier textureId;
+    @NotNull public final ResourceLocation textureId;
     @NotNull public final Predicate<EAPlayer> isUnlocked;
 
     PlusTag(@NotNull Predicate<EAPlayer> isUnlocked) {
-        this.textureId = Identifier.of(BuildProperties.MOD_ID, "textures/bee/plus/" + name().toLowerCase() + ".png");
+        this.textureId = ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "textures/bee/plus/" + name().toLowerCase() + ".png");
         this.isUnlocked = isUnlocked;
     }
 

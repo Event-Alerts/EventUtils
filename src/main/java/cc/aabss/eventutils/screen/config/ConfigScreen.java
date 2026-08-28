@@ -10,14 +10,14 @@ import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
 import dev.isxander.yacl3.api.controller.EnumDropdownControllerBuilder;
 import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder;
 import dev.isxander.yacl3.api.controller.StringControllerBuilder;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.spi.StandardLevel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static net.minecraft.text.Text.translatable;
+import static net.minecraft.network.chat.Component.translatable;
 
 
 public class ConfigScreen {
@@ -31,7 +31,7 @@ public class ConfigScreen {
                             .name(translatable("eventutils.config.discord.label"))
                             .description(OptionDescription.createBuilder()
                                     .text(translatable("eventutils.config.discord.description"))
-                                    .image(Identifier.of(BuildProperties.MOD_ID, "textures/config/discord_rpc.png"), 351, 165)
+                                    .image(ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "textures/config/discord_rpc.png"), 351, 165)
                                     .build())
                             .binding(EUConfig.Defaults.DISCORD_RPC, () -> config.discord_rpc, newValue -> {
                                 config.discord_rpc = newValue;
@@ -63,7 +63,7 @@ public class ConfigScreen {
                             .name(translatable("eventutils.config.window.label"))
                             .description(OptionDescription.createBuilder()
                                     .text(translatable("eventutils.config.window.description"))
-                                    .image(Identifier.of(BuildProperties.MOD_ID, "textures/config/confirm_exit.png"), 950, 272)
+                                    .image(ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "textures/config/confirm_exit.png"), 950, 272)
                                     .build())
                             .binding(EUConfig.Defaults.CONFIRM_WINDOW_CLOSE, () -> config.confirm_window_close, newValue -> {
                                 config.confirm_window_close = newValue;
@@ -75,7 +75,7 @@ public class ConfigScreen {
                             .name(translatable("eventutils.config.disconnect.label"))
                             .description(OptionDescription.createBuilder()
                                     .text(translatable("eventutils.config.disconnect.description"))
-                                    .image(Identifier.of(BuildProperties.MOD_ID, "textures/config/confirm_disconnect.png"), 972, 295)
+                                    .image(ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "textures/config/confirm_disconnect.png"), 972, 295)
                                     .build())
                             .binding(EUConfig.Defaults.CONFIRM_DISCONNECT, () -> config.confirm_disconnect, newValue -> {
                                 config.confirm_disconnect = newValue;
@@ -87,7 +87,7 @@ public class ConfigScreen {
                             .name(translatable("eventutils.config.bee_icons.label"))
                             .description(OptionDescription.createBuilder()
                                     .text(translatable("eventutils.config.bee_icons.description"))
-                                    .image(Identifier.of(BuildProperties.MOD_ID, "textures/config/bee_icons.png"), 404, 88)
+                                    .image(ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, "textures/config/bee_icons.png"), 404, 88)
                                     .build())
                             .binding(EUConfig.Defaults.BEE_ICONS, () -> config.bee_icons, newValue -> {
                                 config.bee_icons = newValue;
@@ -99,7 +99,7 @@ public class ConfigScreen {
                             .name(translatable("eventutils.config.groups.manage.label"))
                             .description(OptionDescription.of(translatable("eventutils.config.groups.manage.description")))
                             .text(translatable("eventutils.config.groups.manage.button"))
-                            .action((yaclScreen, option) -> MinecraftClient.getInstance().setScreen(new GroupManagerScreen(EventUtils.MOD, yaclScreen)))
+                            .action((yaclScreen, option) -> Minecraft.getInstance().setScreen(new GroupManagerScreen(EventUtils.MOD, yaclScreen)))
                             .build())
                     // Advanced
                     .group(OptionGroup.createBuilder()
