@@ -1,3 +1,4 @@
+import net.fabricmc.loom.task.RemapJarTask
 import xyz.srnyx.gradlegalaxy.utility.inGitHubPublish
 import xyz.srnyx.gradlegalaxy.utility.inGitHubWorkflow
 
@@ -175,10 +176,20 @@ fletchingTable {
 }
 
 tasks {
-    jar { archiveClassifier.set("") }
+    if (is261Plus) {
+        jar { archiveClassifier.set("dev") }
+        shadowJar { archiveClassifier.set("") }
+    } else {
+        jar { archiveClassifier.set("") }
+        shadowJar { archiveClassifier.set("shadow") }
+        named<RemapJarTask>("remapJar") {
+            dependsOn(shadowJar)
+            mustRunAfter(shadowJar)
+            inputFile.set(shadowJar.flatMap { it.archiveFile })
+        }
+    }
 
     shadowJar {
-        archiveClassifier.set("shadow")
         configurations.set(project.configurations.named("shadow").map { listOf(it) })
         mergeServiceFiles()
 
@@ -205,19 +216,13 @@ tasks {
         relocate("org.newsclub.net.unix", "$libsPackage.newsclub.unix")
     }
 
-    remapJar {
-        dependsOn(shadowJar)
-        mustRunAfter(shadowJar)
-        inputFile.set(shadowJar.flatMap { it.archiveFile })
-    }
-
     // Builds the version into a shared folder in `build/libs`
     register<Copy>("buildAndCollect") {
         group = "build"
         description = "Builds the mod and copies the jar to a shared folder"
 
         // loomx.modJar returns the jar task for the applied loom variant
-        from(loomx.modJar.map { it.archiveFile })
+        from((if (is261Plus) shadowJar else loomx.modJar).map { it.archiveFile })
         into(rootProject.layout.buildDirectory.file("libs"))
 
         dependsOn("build")
@@ -227,7 +232,7 @@ tasks {
 loom {
     fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json") // Useful for interface injection
 
-    decompilerOptions.named("vineflower") {
+    if (!is261Plus) decompilerOptions.named("vineflower") {
         options.put("mark-corresponding-synthetics", "1") // Adds names to lambdas - useful for mixins
     }
 
