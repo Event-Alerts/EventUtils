@@ -9,7 +9,7 @@ jobs:
   build:
     uses: srnyx/tools/.github/workflows/publish.yml@main
     with:
-      java: 21
+      java: 25
       task: buildAndCollect publishMods
     secrets:
       MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
