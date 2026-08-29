@@ -197,10 +197,11 @@ fletchingTable {
 tasks {
     if (is261Plus) {
         jar { archiveClassifier.set("dev") }
+        val includeJarsDir = layout.buildDirectory.dir("processIncludeJars").get().asFile
         shadowJar {
             archiveClassifier.set("")
             dependsOn(jar, "processIncludeJars")
-            doLast { graftJarInJarMods(archiveFile.get().asFile, layout.buildDirectory.dir("processIncludeJars").get().asFile) }
+            doLast { JarInJarGrafter.graft(archiveFile.get().asFile, includeJarsDir) }
         }
     } else {
         jar { archiveClassifier.set("") }
@@ -295,22 +296,25 @@ fun DependencyHandler.shadowLibrary(dependency: String) {
     shadow(dependency)
 }
 
-fun graftJarInJarMods(targetJar: File, includeJarsDir: File) {
-    val includeJars = includeJarsDir.listFiles { file -> file.isFile && file.extension == "jar" }?.sorted().orEmpty()
+// object required for configuration cache
+object JarInJarGrafter {
+    fun graft(targetJar: File, includeJarsDir: File) {
+        val includeJars = includeJarsDir.listFiles { file -> file.isFile && file.extension == "jar" }?.sorted().orEmpty()
 
-    FileSystems.newFileSystem(URI.create("jar:${targetJar.toURI()}"), emptyMap<String, Any>()).use { fs ->
-        // Nested Jar-in-Jar mods
-        if (includeJars.isNotEmpty()) {
-            val jarsDir = fs.getPath("META-INF", "jars")
-            Files.createDirectories(jarsDir)
-            for (jarFile in includeJars) Files.copy(jarFile.toPath(), jarsDir.resolve(jarFile.name), StandardCopyOption.REPLACE_EXISTING)
+        FileSystems.newFileSystem(URI.create("jar:${targetJar.toURI()}"), emptyMap<String, Any>()).use { fs ->
+            // Nested Jar-in-Jar mods
+            if (includeJars.isNotEmpty()) {
+                val jarsDir = fs.getPath("META-INF", "jars")
+                Files.createDirectories(jarsDir)
+                for (jarFile in includeJars) Files.copy(jarFile.toPath(), jarsDir.resolve(jarFile.name), StandardCopyOption.REPLACE_EXISTING)
+            }
+
+            // fabric.mod.json `jars` entries
+            val fmjPath = fs.getPath("fabric.mod.json")
+            @Suppress("UNCHECKED_CAST")
+            val fmj = groovy.json.JsonSlurper().parse(Files.readAllBytes(fmjPath)) as MutableMap<String, Any?>
+            fmj["jars"] = includeJars.map { mapOf("file" to "META-INF/jars/${it.name}") }
+            Files.newOutputStream(fmjPath).use { it.write(groovy.json.JsonOutput.toJson(fmj).toByteArray()) }
         }
-
-        // fabric.mod.json `jars` entries
-        val fmjPath = fs.getPath("fabric.mod.json")
-        @Suppress("UNCHECKED_CAST")
-        val fmj = groovy.json.JsonSlurper().parse(Files.readAllBytes(fmjPath)) as MutableMap<String, Any?>
-        fmj["jars"] = includeJars.map { mapOf("file" to "META-INF/jars/${it.name}") }
-        Files.newOutputStream(fmjPath).use { it.write(groovy.json.JsonOutput.toJson(fmj).toByteArray()) }
     }
 }
