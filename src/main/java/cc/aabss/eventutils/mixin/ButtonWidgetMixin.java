@@ -4,18 +4,19 @@ import cc.aabss.eventutils.EventUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Button;
-//? if >=1.21.11 {
-/*import net.minecraft.client.input.InputWithModifiers;
-*///?}
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.NotNull;import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+//? if >=1.21.11 {
+/*import net.minecraft.client.input.InputWithModifiers;
+import org.jetbrains.annotations.NotNull;
+*///?}
 
 import static net.minecraft.network.chat.Component.translatable;
 

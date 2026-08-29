@@ -48,7 +48,7 @@ public class TeleportCmd extends EUCommand {
         // Get last event of type
         final EventWrapper lastEvent = mod.lastEvents.get(type);
         if (lastEvent == null || lastEvent.ip == null) {
-            source.sendError(translatable("eventutils.command.no_event_found", type.name().toLowerCase()));
+            source.sendError(translatable("eventutils.command.no_event_found", type.nameTranslation));
             return;
         }
 
