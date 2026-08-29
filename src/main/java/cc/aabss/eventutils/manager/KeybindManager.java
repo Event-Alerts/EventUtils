@@ -5,9 +5,9 @@ import cc.aabss.eventutils.config.Group;
 import cc.aabss.eventutils.mixin.KeyMappingAccessor;
 import cc.aabss.eventutils.screen.EventInfoScreen;
 import cc.aabss.eventutils.sdk.EventWrapper;
+import cc.aabss.eventutils.versioning.VersionedLocalPlayer;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -15,6 +15,11 @@ import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+//? if >= 26.1 {
+/*import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+*///?} else {
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+//?}
 //? if >=1.21.11 {
 /*import cc.aabss.eventutils.BuildProperties;
 import net.minecraft.resources.Identifier;
@@ -42,17 +47,17 @@ public class KeybindManager {
 
     public KeybindManager(@NotNull EventUtils mod) {
         // Keybindings
-        eventInfoKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        eventInfoKey = register(new KeyMapping(
                 "key.eventutils.eventinfo",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_F9,
                 CATEGORY));
-        final KeyMapping hidePlayersKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        final KeyMapping hidePlayersKey = register(new KeyMapping(
                 "key.eventutils.hideplayers",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_F10,
                 CATEGORY));
-        final KeyMapping testEventKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        final KeyMapping testEventKey = register(new KeyMapping(
                 "key.eventutils.testevent",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_SEMICOLON,
@@ -66,8 +71,9 @@ public class KeybindManager {
             if (windowHandle == null) {
                 //? if >=1.21.11 {
                 /*windowHandle = client.getWindow().handle();
-                //windowHandle = client.getWindow().getWindow();
-                *///?}
+                *///?} else {
+                windowHandle = client.getWindow().getWindow();
+                //?}
             }
 
             // Event info key
@@ -89,7 +95,9 @@ public class KeybindManager {
                     }
 
                     // Action bar
-                    if (client.player != null) client.player.displayClientMessage(translatable("eventutils.no_recent_event.message").withStyle(ChatFormatting.RED), true);
+                    if (client.player != null) {
+                        new VersionedLocalPlayer(client.player).sendActionBar(translatable("eventutils.no_recent_event.message").withStyle(ChatFormatting.RED));
+                    }
                 }
             }
 
@@ -107,7 +115,7 @@ public class KeybindManager {
                     }
 
                     // Action bar
-                    client.player.displayClientMessage(literal("Test event simulated! Check your server list and you should see a toast notification.").withStyle(ChatFormatting.GREEN), true);
+                    new VersionedLocalPlayer(client.player).sendActionBar(literal("Test event simulated! Check your server list and you should see a toast notification.").withStyle(ChatFormatting.GREEN));
                 }
             }
 
@@ -130,9 +138,18 @@ public class KeybindManager {
                 } else {
                     message = translatable("eventutils.hideplayers.view_revealed");
                 }
-                client.player.displayClientMessage(translatable("eventutils.hideplayers.view_prefix").append(message.withStyle(ChatFormatting.GREEN)), true);
+                new VersionedLocalPlayer(client.player).sendActionBar(translatable("eventutils.hideplayers.view_prefix").append(message.withStyle(ChatFormatting.GREEN)));
             }
         });
+    }
+
+    @NotNull
+    private KeyMapping register(@NotNull KeyMapping keyMapping) {
+        //? if >=26.1 {
+        /*return KeyMappingHelper.registerKeyMapping(keyMapping);
+        *///?} else {
+        return KeyBindingHelper.registerKeyBinding(keyMapping);
+        //?}
     }
 
     private boolean canNotPress(@NotNull KeyMapping keyBinding, long cooldownTimeMs) {

@@ -1,6 +1,7 @@
 package cc.aabss.eventutils.mixin;
 
-import cc.aabss.eventutils.accessor.PlayerEntityRenderStateAccessor;
+//? if >=1.21.11 {
+/*import cc.aabss.eventutils.accessor.PlayerEntityRenderStateAccessor;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
@@ -20,3 +21,4 @@ public class AvatarRendererMixin {
         ((PlayerEntityRenderStateAccessor) renderState).eventutils$setRawName(new VersionedGameProfile(player.getGameProfile()).getName());
     }
 }
+*///?}

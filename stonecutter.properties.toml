@@ -18,7 +18,7 @@ library.faststats = "0.29.4"
 
 ["26.1.2"]
 deps.loader="0.19.4"
-deps.fabric_api="0.155.2+26.1.2"
+deps.fabric_api="0.145.4+26.1.2"
 deps.yacl="3.9.2+26.1-fabric"
 deps.modmenu="18.0.0"
 

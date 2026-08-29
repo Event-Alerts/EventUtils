@@ -38,8 +38,12 @@ public abstract class PlayerTabOverlayMixin {
     @Unique private static int eventutils$rendersWithoutHook = 0;
     @Unique private static boolean eventutils$loggedIncompatibleClient = false;
 
+    //? if >=26.1 {
+    /*@Inject(method = "extractRenderState", at = @At("HEAD"))
+    *///?} else {
     @Inject(method = "render", at = @At("HEAD"))
-    private void eventutils$populatePlayersCache(GuiGraphics context, int scaledWindowWidth, Scoreboard scoreboard, Objective objective, CallbackInfo ci) {
+    //?}
+    private void eventutils$populatePlayersCache(GuiGraphics graphics, int screenWidth, Scoreboard scoreboard, Objective displayObjective, CallbackInfo ci) {
         if (minecraft.player == null) return;
         final ClientPacketListener packetListener = minecraft.getConnection();
         if (packetListener == null) return;
@@ -71,11 +75,17 @@ public abstract class PlayerTabOverlayMixin {
     // and every client that shows a vanilla-style tab list.
     // arg 2/3 are the name's x/y; the head, when present, occupies the 8px slot immediately to its left.
     @ModifyArgs(
+        //? if >=26.1 {
+        /*method = "extractRenderState",
+        *///?} else {
         method = "render",
+        //?}
         at = @At(value = "INVOKE",
-            //? if >=1.21.6 {
-            /*target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
-            *///?} else {
+            //? if >=26.1 {
+            /*target = "Lnet/minecraft/client/gui/GuiGraphics;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
+            *///?} else if >=1.21.6 {
+            //target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
+            //?} else {
             target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I"
             //?}
         ),

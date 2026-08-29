@@ -1,7 +1,11 @@
 package cc.aabss.eventutils.versioning;
 
 import cc.aabss.eventutils.BuildProperties;
-import net.minecraft.resources.Identifier;
+//? if >=1.21.11 {
+//import net.minecraft.resources.Identifier;
+//?} else {
+import net.minecraft.resources.ResourceLocation;
+//?}
 import org.jetbrains.annotations.NotNull;
 
 
@@ -11,7 +15,7 @@ public class VersionedIdentifier {
     /*public static Identifier of(@NotNull String path) {
         return Identifier.fromNamespaceAndPath(BuildProperties.MOD_ID, path);
     *///?} else {
-    public ResourceLocation of(@NotNull String path) {
+    public static ResourceLocation of(@NotNull String path) {
         return ResourceLocation.fromNamespaceAndPath(BuildProperties.MOD_ID, path);
     //?}
     }

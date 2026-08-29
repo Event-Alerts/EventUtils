@@ -1,5 +1,6 @@
 package cc.aabss.eventutils;
 
+import cc.aabss.eventutils.versioning.VersionedGuiGraphics;
 import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -8,7 +9,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 //? if >=1.21.6 {
 /*import net.minecraft.resources.Identifier;
@@ -84,33 +85,37 @@ public class NotificationToast implements Toast {
     }
 
     @Override
-    //? if <1.21.2 {
-    /*public Toast.Visibility render(GuiGraphics drawContext, ToastManager manager, long startTime) {
-    *///?} else {
-    public void render(@NotNull GuiGraphics drawContext, @NotNull Font textRenderer, long startTime) {
+    //? if >=26.1 {
+    /*public void extractRenderState(@NotNull GuiGraphics graphics, @NotNull Font font, long fullyVisibleForMs) {
+    *///?} else if >1.21.2 {
+    public void render(@NotNull GuiGraphics graphics, @NotNull Font font, long startTime) {
+    //?} else {
+    //public Toast.Visibility render(GuiGraphics graphics, ToastManager manager, long startTime) {
     //?}
+        final VersionedGuiGraphics vGraphics = new VersionedGuiGraphics(graphics);
+
         if (width == 160 && lines.size() <= 1) {
-            //? if <1.21.2 {
-            /*drawContext.blitSprite(TEXTURE, 0, 0, width, height);
-            *///?} else if >=1.21.6 {
-            /*drawContext.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
-            *///?} else {
-            drawContext.blitSprite(RenderType::guiTextured, TEXTURE, 0, 0, width, height); // work on 1.21.4 and 1.21.5
-            //?}
+            //? if >=1.21.6 {
+            /*graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, width, height);
+            *///?} else if >1.21.2 {
+            graphics.blitSprite(RenderType::guiTextured, TEXTURE, 0, 0, width, height);
+            //?} else {
+            /*graphics.blitSprite(TEXTURE, 0, 0, width, height);
+            *///?}
         } else {
             int minHeight = Math.min(4, height - 28);
-            drawPart(drawContext, 0, 0, 28);
-            for (int i = 28; i < height - minHeight; i += 10) drawPart(drawContext, 16, i, Math.min(16, height - i - minHeight));
-            drawPart(drawContext, 32 - minHeight, height - minHeight, minHeight);
+            drawPart(graphics, 0, 0, 28);
+            for (int i = 28; i < height - minHeight; i += 10) drawPart(graphics, 16, i, Math.min(16, height - i - minHeight));
+            drawPart(graphics, 32 - minHeight, height - minHeight, minHeight);
         }
 
         //? if <1.21.2
-        /*final Font textRenderer = manager.getClient().font;*/
+        /*final Font font = manager.getClient().font;*/
         if (lines.isEmpty()) {
-            drawContext.drawString(textRenderer, title, 24, 12, Color.YELLOW.getRGB(), false);
+            vGraphics.drawString(font, title, 24, 12, Color.YELLOW.getRGB(), false);
         } else {
-            drawContext.drawString(textRenderer, title, 24, 7, Color.YELLOW.getRGB(), false);
-            for (int i = 0; i < lines.size(); ++i) drawContext.drawString(textRenderer, lines.get(i), 24, 18 + i * 12, -1, false);
+            vGraphics.drawString(font, title, 24, 7, Color.YELLOW.getRGB(), false);
+            for (int i = 0; i < lines.size(); ++i) vGraphics.drawString(font, lines.get(i), 24, 18 + i * 12, -1, false);
         }
         //? if <1.21.2
         /*return startTime >= Type.DEFAULT.displayDuration ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;*/

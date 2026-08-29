@@ -2,6 +2,7 @@ package cc.aabss.eventutils.screen;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.sdk.EventWrapper;
+import cc.aabss.eventutils.versioning.VersionedGuiGraphics;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAFamousEvent;
 import net.minecraft.client.Minecraft;
@@ -31,13 +32,19 @@ public class EventInfoScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int i, int j, float f) {
+    //? if >=26.1 {
+    /*public void extractRenderState(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    *///?} else {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    //?}
+        final VersionedGuiGraphics vGraphics = new VersionedGuiGraphics(graphics);
+
         final int boxX = (width - BOX_WIDTH) / 2;
         final int boxY = (height - BOX_HEIGHT) / 2;
         final int startX = boxX + (BOX_WIDTH / 2);
 
         // Draw box
-        drawContext.fill(boxX, boxY, boxX + BOX_WIDTH, boxY + BOX_HEIGHT, 0x88000000);
+        graphics.fill(boxX, boxY, boxX + BOX_WIDTH, boxY + BOX_HEIGHT, 0x88000000);
 
         // Draw lines
         final Font textRenderer = Minecraft.getInstance().font;
@@ -47,14 +54,14 @@ public class EventInfoScreen extends Screen {
             if (textRenderer.width(line) > BOX_WIDTH - 10) {
                 final List<FormattedCharSequence> splitLines = textRenderer.split(FormattedText.of(line), BOX_WIDTH - 10);
                 for (final FormattedCharSequence splitLine : splitLines) {
-                    drawContext.drawCenteredString(textRenderer, splitLine, startX, startY, 0xFFFFFFFF);
+                    vGraphics.drawCenteredString(textRenderer, splitLine, startX, startY, 0xFFFFFFFF);
                     startY += 12;
                 }
                 continue;
             }
 
             // Draw line
-            drawContext.drawCenteredString(textRenderer, line, startX, startY, 0xFFFFFFFF);
+            vGraphics.drawCenteredString(textRenderer, line, startX, startY, 0xFFFFFFFF);
             startY += 12;
         }
     }

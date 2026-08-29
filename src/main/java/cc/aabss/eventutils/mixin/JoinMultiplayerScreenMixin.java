@@ -4,12 +4,10 @@ import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.manager.EventServerManager;
 //? if >=1.21.11 {
 /*import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Unique;
-*///? } else {
+*///?}
 import net.minecraft.client.gui.GuiGraphics;
-//?}
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
 import net.minecraft.client.multiplayer.ServerList;
@@ -30,8 +28,14 @@ public class JoinMultiplayerScreenMixin {
         // Store reference to server list for EventServerManager
         EventUtils.MOD.eventServerManager.gotServerList = servers;
 
-        //? if >=1.21.11
-        //ScreenEvents.afterRender((Screen) (Object) this).register((screen, context, mouseX, mouseY, delta) -> highlightEventRows(context));
+        //? if >=1.21.11 {
+            /*//? if >=26.1 {
+            /^ScreenEvents.afterExtract(
+            ^///?} else {
+            ScreenEvents.afterRender(
+            //?}
+                    (Screen) (Object) this).register((screen, context, mouseX, mouseY, delta) -> highlightEventRows(context));
+        *///?}
     }
 
     //? if >=1.21.11 {

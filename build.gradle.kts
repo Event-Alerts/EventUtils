@@ -1,6 +1,12 @@
 import net.fabricmc.loom.task.RemapJarTask
 import xyz.srnyx.gradlegalaxy.utility.inGitHubPublish
 import xyz.srnyx.gradlegalaxy.utility.inGitHubWorkflow
+import java.io.File
+import java.net.URI
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+
 
 plugins {
     id("dev.kikugie.loom-back-compat")
@@ -65,11 +71,12 @@ galaxy {
     }
 
     minecraft {
-        replacementFiles = setOf("fabric.mod.json", "eventutils.mixin.json")
+        replacementFiles = setOf("fabric.mod.json")
         replacements.putAll(replacements.get() + mapOf(
             "mod_id" to modId,
             "mod_name" to modName,
             "mod_version" to modVersion,
+            "fabric_api_id" to if (is261Plus) "fabric-api" else "fabric",
             "deps_minecraft" to sc.current.version,
             "deps_loader" to loaderVersion,
             "deps_fabric_api" to fabricApiVersion,
@@ -161,6 +168,13 @@ stonecutter {
     swaps["mod_name"] = "\"$modName\""
     swaps["mod_version"] = "\"$modVersion\""
     swaps["mod_version_full"] = "\"$version\""
+
+    // Replacements
+    replacements.string(current.parsed >= "26.1") {
+        replace("ClientCommandManager", "ClientCommands")
+        replace("GuiGraphics", "GuiGraphicsExtractor")
+        replace("net.minecraft.client.renderer.state.CameraRenderState", "net.minecraft.client.renderer.state.level.CameraRenderState")
+    }
 }
 
 fletchingTable {
@@ -180,7 +194,11 @@ fletchingTable {
 tasks {
     if (is261Plus) {
         jar { archiveClassifier.set("dev") }
-        shadowJar { archiveClassifier.set("") }
+        shadowJar {
+            archiveClassifier.set("")
+            dependsOn(jar, "processIncludeJars")
+            doLast { graftJarInJarMods(archiveFile.get().asFile, layout.buildDirectory.dir("processIncludeJars").get().asFile) }
+        }
     } else {
         jar { archiveClassifier.set("") }
         shadowJar { archiveClassifier.set("shadow") }
@@ -264,4 +282,24 @@ fun DependencyHandler.jijLibrary(dependency: String) {
 fun DependencyHandler.shadowLibrary(dependency: String) {
     implementation(dependency)
     shadow(dependency)
+}
+
+fun graftJarInJarMods(targetJar: File, includeJarsDir: File) {
+    val includeJars = includeJarsDir.listFiles { file -> file.isFile && file.extension == "jar" }?.sorted().orEmpty()
+
+    FileSystems.newFileSystem(URI.create("jar:${targetJar.toURI()}"), emptyMap<String, Any>()).use { fs ->
+        // Nested Jar-in-Jar mods
+        if (includeJars.isNotEmpty()) {
+            val jarsDir = fs.getPath("META-INF", "jars")
+            Files.createDirectories(jarsDir)
+            for (jarFile in includeJars) Files.copy(jarFile.toPath(), jarsDir.resolve(jarFile.name), StandardCopyOption.REPLACE_EXISTING)
+        }
+
+        // fabric.mod.json `jars` entries
+        val fmjPath = fs.getPath("fabric.mod.json")
+        @Suppress("UNCHECKED_CAST")
+        val fmj = groovy.json.JsonSlurper().parse(Files.readAllBytes(fmjPath)) as MutableMap<String, Any?>
+        fmj["jars"] = includeJars.map { mapOf("file" to "META-INF/jars/${it.name}") }
+        Files.newOutputStream(fmjPath).use { it.write(groovy.json.JsonOutput.toJson(fmj).toByteArray()) }
+    }
 }

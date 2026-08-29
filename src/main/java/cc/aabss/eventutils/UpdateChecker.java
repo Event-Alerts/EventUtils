@@ -1,5 +1,6 @@
 package cc.aabss.eventutils;
 
+import cc.aabss.eventutils.versioning.VersionedLocalPlayer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -51,7 +52,7 @@ public class UpdateChecker {
                 final MutableComponent hover = translatable("eventutils.updatechecker.hover");
                 final String link = "https://modrinth.com/mod/alerts/version/" + version;
                 final String configCommand = "/eventutils config";
-                client.player.displayClientMessage(
+                new VersionedLocalPlayer(client.player).sendMessage(
                         EventUtils.MESSAGE_PREFIX.copy().append(" §e" + EventUtils.translate("eventutils.updatechecker.new") + "§r §7(" + BuildProperties.MOD_VERSION + " -> v" + version.replace(EventUtils.MC_VERSION + "-", "") + ")" + "\n")
                                 .setStyle(EventUtils.MESSAGE_PREFIX.getStyle()
                                         //? if >=1.21.5 {
@@ -63,10 +64,10 @@ public class UpdateChecker {
                                 //?}
                                 .append(Component.literal("§7§o" + EventUtils.translate("eventutils.updatechecker.config"))
                                         //? if >=1.21.5 {
-                                        /*.setStyle(Style.EMPTY.withClickEvent(new ClickEvent.RunCommand(configCommand)))),
+                                        /*.setStyle(Style.EMPTY.withClickEvent(new ClickEvent.RunCommand(configCommand))))
                                          *///?} else
-                                        .setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, configCommand)))),
-                        false);
+                                        .setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, configCommand))))
+                        );
             });
         });
     }
