@@ -10,9 +10,9 @@ import java.nio.file.StandardCopyOption
 
 plugins {
     id("dev.kikugie.loom-back-compat")
-    id("xyz.srnyx.gradle-galaxy") version "a8227b9"
+    id("xyz.srnyx.gradle-galaxy") version "c265727"
     id("com.gradleup.shadow") version "9.6.1"
-    id("me.modmuss50.mod-publish-plugin") version "675051c"
+    id("me.modmuss50.mod-publish-plugin") version "04fb4ab"
 
     // Fletching Table
     alias(ft.plugins.default)
@@ -85,25 +85,29 @@ galaxy {
 
         platformPublishing {
             modrinth("ZcRRACSs") {
+                file = (if (is261Plus) tasks.shadowJar else loomx.modJar)
+                    .flatMap { it.archiveFile }
+                    .map { it.asFile }
+
                 // Fabric API
                 requires {
-                    id.set("P7dR8mSH")
-                    version.set(fabricApiVersion)
+                    id = "P7dR8mSH"
+                    version = fabricApiVersion
                 }
                 // YetAnotherConfigLib (YACL)
                 requires {
-                    id.set("1eAoo2KR")
-                    version.set(yaclVersion)
+                    id = "1eAoo2KR"
+                    version = yaclVersion
                 }
                 // Text Placeholder API
                 placeholderApiVersion?.let { requires {
-                    id.set("eXts2L7r")
-                    version.set(it)
+                    id = "eXts2L7r"
+                    version = it
                 } }
                 // Mod Menu
                 optional {
-                    id.set("mOgUt4GM")
-                    version.set(modMenuVersion)
+                    id = "mOgUt4GM"
+                    version = modMenuVersion
                 }
             }
 
@@ -111,11 +115,6 @@ galaxy {
             minecraftVersionEnd = sc.current.version
             apiTiers.add(FABRIC)
             addAnnoyingApiDependency = false
-
-            //TODO
-//            modPublishPlugin {
-//                file(loomx.modJar.map { it.archiveFile })
-//            }
         }
     }
 }
@@ -196,25 +195,25 @@ fletchingTable {
 
 tasks {
     if (is261Plus) {
-        jar { archiveClassifier.set("dev") }
+        jar { archiveClassifier = "dev" }
         val includeJarsDir = layout.buildDirectory.dir("processIncludeJars").get().asFile
         shadowJar {
-            archiveClassifier.set("")
+            archiveClassifier = ""
             dependsOn(jar, "processIncludeJars")
             doLast { JarInJarGrafter.graft(archiveFile.get().asFile, includeJarsDir) }
         }
     } else {
-        jar { archiveClassifier.set("") }
-        shadowJar { archiveClassifier.set("shadow") }
+        jar { archiveClassifier = "" }
+        shadowJar { archiveClassifier = "shadow" }
         named<RemapJarTask>("remapJar") {
             dependsOn(shadowJar)
             mustRunAfter(shadowJar)
-            inputFile.set(shadowJar.flatMap { it.archiveFile })
+            inputFile = shadowJar.flatMap { it.archiveFile }
         }
     }
 
     shadowJar {
-        configurations.set(project.configurations.named("shadow").map { listOf(it) })
+        configurations = project.configurations.named("shadow").map { listOf(it) }
         mergeServiceFiles()
 
         val libsPackage = "${project.group}.$modId.libs"
@@ -261,9 +260,9 @@ loom {
     }
 
     runConfigs.all {
-        preferGradleTask.set(true)
+        preferGradleTask = true
         jvmArguments.add("-Dmixin.debug.export=true") // Exports transformed classes for debugging
-        runDirectory.set(file("../../run")) // Shares the run directory between versions
+        runDirectory = file("../../run") // Shares the run directory between versions
     }
 }
 
