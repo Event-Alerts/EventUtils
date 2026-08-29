@@ -6,8 +6,8 @@ import gg.eventalerts.sdk.object.EAPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 //? if >=1.21.11 {
-//import net.minecraft.resources.Identifier;
-//?} else {
+/*import net.minecraft.resources.Identifier;
+*///?} else {
 import net.minecraft.resources.ResourceLocation;
 //?}
 
@@ -36,21 +36,21 @@ public enum PlusTag {
 
 
     //? if >=1.21.11 {
-    //@NotNull public static final Identifier BEE
-    //?} else {
+    /*@NotNull public static final Identifier BEE
+    *///?} else {
     @NotNull public static final ResourceLocation BEE
     //?}
             = VersionedIdentifier.of("textures/bee/bee.png");
     //? if >=1.21.11 {
-    //@NotNull public static final Identifier BEE_GREEN
-    //?} else {
+    /*@NotNull public static final Identifier BEE_GREEN
+    *///?} else {
     @NotNull public static final ResourceLocation BEE_GREEN
     //?}
             = VersionedIdentifier.of("textures/bee/bee_green.png");
 
     //? if >=1.21.11 {
-    //@NotNull public final Identifier textureId;
-    //?} else {
+    /*@NotNull public final Identifier textureId;
+    *///?} else {
     @NotNull public final ResourceLocation textureId;
     //?}
     @NotNull public final Predicate<EAPlayer> isUnlocked;

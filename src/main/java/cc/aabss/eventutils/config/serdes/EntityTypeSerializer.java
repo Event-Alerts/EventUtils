@@ -1,5 +1,6 @@
 package cc.aabss.eventutils.config.serdes;
 
+import cc.aabss.eventutils.versioning.VersionedEntityType;
 import eu.okaeri.configs.schema.GenericsPair;
 import eu.okaeri.configs.serdes.BidirectionalTransformer;
 import eu.okaeri.configs.serdes.SerdesContext;
@@ -16,7 +17,7 @@ public class EntityTypeSerializer extends BidirectionalTransformer<String, Entit
 
     @Override @Nullable
     public EntityType leftToRight(@NotNull String data, @NotNull SerdesContext serdesContext) {
-        return EntityType.byString(data).orElse(null);
+        return VersionedEntityType.getEntityType(data);
     }
 
     @Override @NotNull

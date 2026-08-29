@@ -1,6 +1,7 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.versioning.VersionedClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Button;
@@ -28,33 +29,34 @@ public abstract class ButtonWidgetMixin extends AbstractButton {
     }
 
     //? if >=1.21.11 {
-    /*@Shadow public abstract void onPress(@NotNull InputWithModifiers abstractInput);
+    /*@Shadow public abstract void onPress(@NotNull InputWithModifiers input);
     *///?} else {
     @Shadow public abstract void onPress();
     //?}
 
     @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
     //? if >=1.21.11 {
-    /*public void onPress(InputWithModifiers abstractInput, CallbackInfo ci) {
+    /*public void onPress(InputWithModifiers input, CallbackInfo ci) {
     *///?} else {
     private void onPress(CallbackInfo ci) {
     //?}
         if (!EventUtils.MOD.config.confirm_disconnect || !translatable("menu.disconnect").equals(getMessage())) return;
         final Minecraft client = Minecraft.getInstance();
-        if (client.level == null || !(client.screen instanceof PauseScreen)) return;
+        final VersionedClient vClient = new VersionedClient(client);
+        if (client.level == null || !(vClient.screen() instanceof PauseScreen)) return;
 
         ci.cancel();
-        final Screen current = client.screen;
-        client.setScreen(new ConfirmScreen(yes -> {
+        final Screen current = vClient.screen();
+        vClient.setScreen(new ConfirmScreen(yes -> {
             if (yes) {
                 //? if >=1.21.11 {
-                /*this.onPress(abstractInput);
+                /*this.onPress(input);
                 *///?} else {
                 this.onPress();
                 //?}
                 return;
             }
-            client.setScreen(current);
+            vClient.setScreen(current);
         }, translatable("eventutils.confirm_disconnect.title"), translatable("eventutils.confirm_disconnect.message")));
     }
 }

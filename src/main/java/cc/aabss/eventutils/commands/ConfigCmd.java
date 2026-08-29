@@ -2,6 +2,7 @@ package cc.aabss.eventutils.commands;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.screen.config.ConfigScreen;
+import cc.aabss.eventutils.versioning.VersionedClient;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -28,6 +29,9 @@ public class ConfigCmd extends EUCommand {
 
     private static void execute(@NotNull CommandContext<FabricClientCommandSource> context) {
         final Minecraft client = context.getSource().getClient();
-        client.execute(() -> client.setScreen(ConfigScreen.getConfigScreen(client.screen)));
+        client.execute(() -> {
+            final VersionedClient vClient = new VersionedClient(client);
+            vClient.setScreen(ConfigScreen.getConfigScreen(vClient.screen()));
+        });
     }
 }

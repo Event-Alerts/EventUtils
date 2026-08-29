@@ -2,6 +2,7 @@ package cc.aabss.eventutils.screen.config.group;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.Group;
+import cc.aabss.eventutils.versioning.VersionedClient;
 import cc.aabss.eventutils.versioning.VersionedGraphicsGui;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
@@ -26,13 +27,14 @@ public class GroupManagerScreen extends Screen {
     @Nullable private final Screen parent;
 
     public GroupManagerScreen(@NotNull EventUtils mod, @Nullable Screen parent) {
-        super(translatable("eventutils.config.groups.manage_title"));
+        super(translatable("eventutils.config.groups.manage.label"));
         this.mod = mod;
         this.parent = parent;
     }
 
     @Override
     protected void init() {
+        final VersionedClient vClient = new VersionedClient(minecraft);
         final int listTop = 40;
 
         int i = 0;
@@ -42,7 +44,7 @@ public class GroupManagerScreen extends Screen {
             i++;
 
             final Button editBtn = Button.builder(literal(group.getName()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xE0E0E0))), button -> {
-                if (minecraft != null) minecraft.setScreen(EditGroupScreen.getScreen(mod, this, group));
+                if (minecraft != null) vClient.setScreen(EditGroupScreen.getScreen(mod, this, group));
             }).bounds(PADDING, y, width - PADDING * 2 - REMOVE_WIDTH - 4, 20).build();
             addRenderableWidget(editBtn);
 
@@ -51,13 +53,13 @@ public class GroupManagerScreen extends Screen {
 
                 mod.config.groups.remove(group.getUuid());
                 mod.config.save();
-                if (minecraft != null) minecraft.setScreen(new GroupManagerScreen(mod, parent));
+                if (minecraft != null) vClient.setScreen(new GroupManagerScreen(mod, parent));
             }).bounds(width - PADDING - REMOVE_WIDTH, y, REMOVE_WIDTH, 20).build());
         }
 
         final Button addBtn = Button.builder(translatable("eventutils.config.groups.add"), button -> {
             mod.config.upsertGroup(new Group());
-            if (minecraft != null) minecraft.setScreen(new GroupManagerScreen(mod, parent));
+            if (minecraft != null) vClient.setScreen(new GroupManagerScreen(mod, parent));
         }).bounds(width / 2 - BUTTON_WIDTH - 4, height - 32, BUTTON_WIDTH, 20).build();
         addRenderableWidget(addBtn);
 
@@ -66,7 +68,7 @@ public class GroupManagerScreen extends Screen {
     }
 
     private void goBack() {
-        if (minecraft != null) minecraft.setScreen(parent);
+        if (minecraft != null) new VersionedClient(minecraft).setScreen(parent);
     }
 
     @Override

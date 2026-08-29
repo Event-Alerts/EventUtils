@@ -4,6 +4,7 @@ import cc.aabss.eventutils.config.EventType;
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.EUConfig;
 import cc.aabss.eventutils.screen.config.group.GroupManagerScreen;
+import cc.aabss.eventutils.versioning.VersionedClient;
 import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
@@ -98,7 +99,7 @@ public class ConfigScreen {
                             .name(translatable("eventutils.config.groups.manage.label"))
                             .description(OptionDescription.of(translatable("eventutils.config.groups.manage.description")))
                             .text(translatable("eventutils.config.groups.manage.button"))
-                            .action((yaclScreen, option) -> Minecraft.getInstance().setScreen(new GroupManagerScreen(EventUtils.MOD, yaclScreen)))
+                            .action((yaclScreen, option) -> new VersionedClient(Minecraft.getInstance()).setScreen(new GroupManagerScreen(EventUtils.MOD, yaclScreen)))
                             .build())
                     // Advanced
                     .group(OptionGroup.createBuilder()

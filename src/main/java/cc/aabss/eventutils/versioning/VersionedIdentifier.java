@@ -3,8 +3,8 @@ package cc.aabss.eventutils.versioning;
 import cc.aabss.eventutils.BuildProperties;
 import org.jetbrains.annotations.NotNull;
 //? if >=1.21.11 {
-//import net.minecraft.resources.Identifier;
-//?} else {
+/*import net.minecraft.resources.Identifier;
+*///?} else {
 import net.minecraft.resources.ResourceLocation;
 //?}
 

@@ -1,6 +1,7 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.versioning.VersionedClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -26,16 +27,17 @@ public class MinecraftMixin {
         final long handle = client.getWindow().getWindow();
         //?}
         final GLFWWindowCloseCallback callback = GLFW.glfwSetWindowCloseCallback(handle, win -> client.execute(() -> {
+            final VersionedClient vClient = new VersionedClient(client);
             GLFW.glfwSetWindowShouldClose(handle, false);
-            final Screen current = client.screen;
-            client.setScreen(new ConfirmScreen(
+            final Screen current = vClient.screen();
+            vClient.setScreen(new ConfirmScreen(
                     result -> {
                         if (result) {
                             client.stop();
                             return;
                         }
                         GLFW.glfwSetWindowShouldClose(handle, false);
-                        client.setScreen(current);
+                        vClient.setScreen(current);
                     },
                     translatable("eventutils.confirm_exit.title"),
                     translatable("eventutils.confirm_exit.message")));

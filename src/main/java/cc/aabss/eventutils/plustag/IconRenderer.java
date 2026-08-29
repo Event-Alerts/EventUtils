@@ -3,8 +3,8 @@ package cc.aabss.eventutils.plustag;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 //? if >=1.21.11 {
-//import net.minecraft.resources.Identifier;
-//?} else {
+/*import net.minecraft.resources.Identifier;
+*///?} else {
 import net.minecraft.resources.ResourceLocation;
 //?}
 //? if >=1.21.6 {
@@ -27,8 +27,8 @@ public final class IconRenderer {
     public static void draw(
             @NotNull GuiGraphics context,
             //? if >=1.21.11 {
-            //@NotNull Identifier texture,
-            //?} else {
+            /*@NotNull Identifier texture,
+            *///?} else {
             @NotNull ResourceLocation texture,
             //?}
             int x, int y, int size) {

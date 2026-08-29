@@ -5,6 +5,7 @@ import cc.aabss.eventutils.config.Group;
 import cc.aabss.eventutils.mixin.KeyMappingAccessor;
 import cc.aabss.eventutils.screen.EventInfoScreen;
 import cc.aabss.eventutils.sdk.EventWrapper;
+import cc.aabss.eventutils.versioning.VersionedClient;
 import cc.aabss.eventutils.versioning.VersionedLocalPlayer;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -64,8 +65,10 @@ public class KeybindManager {
                 CATEGORY));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            final VersionedClient vClient = new VersionedClient(client);
+
             // Only allow if no screen or TitleScreen
-            if (client.screen != null && (!(client.screen instanceof TitleScreen))) return;
+            if (vClient.screen() != null && (!(vClient.screen() instanceof TitleScreen))) return;
 
             // Store Minecraft's window
             if (windowHandle == null) {
@@ -83,14 +86,14 @@ public class KeybindManager {
                     EventUtils.LOGGER.debug("Event info key pressed");
 
                     // If screen already open, close it
-                    if (client.screen instanceof EventInfoScreen) {
-                        client.setScreen(null);
+                    if (vClient.screen() instanceof EventInfoScreen) {
+                        vClient.setScreen(null);
                         return;
                     }
 
                     // Open screen
                     if (lastEventForInfoScreen != null) {
-                        client.setScreen(new EventInfoScreen(mod, lastEventForInfoScreen));
+                        vClient.setScreen(new EventInfoScreen(mod, lastEventForInfoScreen));
                         return;
                     }
 

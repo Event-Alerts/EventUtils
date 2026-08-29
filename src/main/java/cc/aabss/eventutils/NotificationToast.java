@@ -13,8 +13,8 @@ import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 //? if >=1.21.11 {
-//import net.minecraft.resources.Identifier;
-//?} else {
+/*import net.minecraft.resources.Identifier;
+*///?} else {
 import net.minecraft.resources.ResourceLocation;
 //?}
 //? if >=1.21.6 {

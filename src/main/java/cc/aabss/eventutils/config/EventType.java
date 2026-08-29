@@ -1,7 +1,8 @@
 package cc.aabss.eventutils.config;
 
 import cc.aabss.eventutils.screen.config.ConfigScreen;
-import cc.aabss.eventutils.versioning.VersionedIdentifier;import dev.isxander.yacl3.api.Option;
+import cc.aabss.eventutils.versioning.VersionedIdentifier;
+import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
 import dev.isxander.yacl3.api.OptionGroup;
 import dev.isxander.yacl3.api.controller.EnumDropdownControllerBuilder;

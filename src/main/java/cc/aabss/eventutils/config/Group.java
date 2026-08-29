@@ -1,5 +1,6 @@
 package cc.aabss.eventutils.config;
 
+import cc.aabss.eventutils.versioning.VersionedEntityType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EntityType;
@@ -8,6 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 import xyz.srnyx.javautilities.parents.Stringable;
+//? if >=26.2 {
+/*import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+*///?}
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -88,7 +93,7 @@ public class Group extends Stringable {
     @NotNull
     public Group setEntitiesByIds(@NotNull Collection<String> entities) {
         return setEntities(entities.stream()
-                .map(name -> EntityType.byString(name).orElse(null))
+                .map(VersionedEntityType::getEntityType)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
     }
