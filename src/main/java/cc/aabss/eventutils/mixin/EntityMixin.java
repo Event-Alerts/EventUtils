@@ -24,7 +24,6 @@ public abstract class EntityMixin {
     @Shadow public abstract Vec3 position();
     //?}
 
-    //TODO inject into canSpawnSprintParticle instead
     @Inject(method = "canSpawnSprintParticle", at = @At("HEAD"), cancellable = true)
     private void canSpawnSprintParticle(CallbackInfoReturnable<Boolean> cir) {
         if (Minecraft.getInstance().player == null) return;

@@ -20,7 +20,7 @@ public class VersionedEntityType {
                 //? if >=26.2 {
                 /*BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.parse(identifier))
                 *///?} else {
-                EntityType.byString(name)
+                EntityType.byString(identifier)
                 //?}
                 .orElse(null);
     }
