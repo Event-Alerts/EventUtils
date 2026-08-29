@@ -38,7 +38,7 @@ public class KeybindManager {
     //? if >=1.21.11 {
     /*@NotNull private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(BuildProperties.MOD_ID, BuildProperties.MOD_ID));
     *///? } else {
-    @NotNull private static final String CATEGORY = "key.category.eventutils";
+    @NotNull private static final String CATEGORY = "key.category.eventutils.eventutils";
     //?}
 
     @Nullable private Long windowHandle;

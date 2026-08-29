@@ -1,7 +1,9 @@
 {
   "key": {
     "category": {
-      "eventutils": "EventUtils"
+      "eventutils": {
+        "eventutils": "EventUtils"
+      }
     },
 
     "eventutils": {

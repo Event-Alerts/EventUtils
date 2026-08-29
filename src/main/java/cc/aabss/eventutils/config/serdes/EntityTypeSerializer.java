@@ -17,7 +17,7 @@ public class EntityTypeSerializer extends BidirectionalTransformer<String, Entit
 
     @Override @Nullable
     public EntityType leftToRight(@NotNull String data, @NotNull SerdesContext serdesContext) {
-        return VersionedEntityType.getEntityType(data);
+        return VersionedEntityType.getEntityTypeByIdentifier(data);
     }
 
     @Override @NotNull

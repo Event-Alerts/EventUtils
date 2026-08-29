@@ -193,7 +193,7 @@ public class EventWrapper {
                 // Send toast
                 final Minecraft client = Minecraft.getInstance();
                 client.execute(() -> {
-                    //? if >26.2 {
+                    //? if >=26.2 {
                     /*client.gui.toastManager()
                     *///? } else if >1.21.1 {
                     client.getToastManager()
