@@ -30,7 +30,7 @@ public final class IconRenderer {
         *///?} else if >=1.21.4 {
         context.blit(RenderType::guiTextured, (ResourceLocation) texture, x, y, 0f, 0f, size, size, TEX_SIZE, TEX_SIZE, TEX_SIZE, TEX_SIZE);
         //?} else {
-        //context.blit((ResourceLocation) texture, x, y, 0f, 0f, size, size, TEX_SIZE, TEX_SIZE);
-        //?}
+        /*context.blit((ResourceLocation) texture, x, y, 0f, 0f, size, size, TEX_SIZE, TEX_SIZE);
+        *///?}
     }
 }

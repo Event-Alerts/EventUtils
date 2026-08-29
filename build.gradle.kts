@@ -263,15 +263,23 @@ loom {
     }
 }
 
-// Register buildActive task
-if (sc.current.isActive) rootProject.tasks.register("buildActive") {
-    group = "build"
-    description = "Builds the mod for the currently active Minecraft version"
+// Register tasks for active version
+if (sc.current.isActive) {
+    rootProject.tasks.register("buildActive") {
+        group = "build"
+        description = "Builds the mod for the currently active Minecraft version"
 
-    // Build mod
-    dependsOn(tasks.named("build"))
-    // Copy built jar to shared folder
-    dependsOn(tasks.named("buildAndCollect"))
+        // Build mod + copy built jar to shared folder
+        dependsOn(tasks.named("build"), tasks.named("buildAndCollect"))
+    }
+
+    rootProject.tasks.register("runActive") {
+        group = "fabric"
+        description = "Runs the mod for the currently active Minecraft version"
+
+        // Run mod
+        dependsOn(tasks.named("runClient"))
+    }
 }
 
 // Custom jijLibrary (modImplementation + include) and shadowLibrary (implementation + shadow) dependency configurations
