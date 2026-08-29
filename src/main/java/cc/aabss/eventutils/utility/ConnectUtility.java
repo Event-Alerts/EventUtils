@@ -44,7 +44,7 @@ public class ConnectUtility {
                 *///?}
 
                 //? if <=1.20.4 {
-                /*ConnectScreen.startConnecting(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true);
+                /*ConnectScreen.startConnecting(screen, client, address, new ServerData("EventUtils Event Server", ip, ServerData.Type.OTHER), true);
                 *///?} else {
                 ConnectScreen.startConnecting(screen, client, address, new ServerData("EventUtils Event Server", ip, ServerData.Type.OTHER), true, null);
                 //?}

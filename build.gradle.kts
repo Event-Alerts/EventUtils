@@ -175,6 +175,9 @@ stonecutter {
         replace("GuiGraphics", "GuiGraphicsExtractor")
         replace("net.minecraft.client.renderer.state.CameraRenderState", "net.minecraft.client.renderer.state.level.CameraRenderState")
     }
+    replacements.string(current.parsed < "1.21") {
+        replace("GenericMessageScreen", "GenericDirtMessageScreen")
+    }
 }
 
 fletchingTable {
