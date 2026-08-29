@@ -35,8 +35,8 @@ public class EntityRenderDispatcherMixin {
     //? if >=1.21.11 {
     /*private void render(EntityRenderState renderState, CameraRenderState cameraRenderState, double x, double y, double z, PoseStack matrixStack, SubmitNodeCollector orderedRenderCommandQueue, CallbackInfo ci) {
     *///?} else if >1.21.4 {
-    //private <E extends Entity> void render(E entity, double x, double y, double z, float tickDelta, PoseStack poseStack, MultiBufferSource multiBufferSource, int light, CallbackInfo ci) {
-    //?} else {
+    /*private <E extends Entity> void render(E entity, double x, double y, double z, float tickDelta, PoseStack poseStack, MultiBufferSource multiBufferSource, int light, CallbackInfo ci) {
+    *///?} else {
     private <E extends Entity> void render(E entity, double x, double y, double z, float tickDelta, float h, PoseStack poseStack, MultiBufferSource multiBufferSource, int light, CallbackInfo ci) {
     //?}
         // Get target position

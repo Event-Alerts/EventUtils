@@ -12,12 +12,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-//? if >=1.21.6 {
-/*import net.minecraft.resources.Identifier;
-import net.minecraft.client.renderer.RenderPipelines;
-*///?} else {
+//? if >=1.21.11 {
+//import net.minecraft.resources.Identifier;
+//?} else {
 import net.minecraft.resources.ResourceLocation;
 //?}
+//? if >=1.21.6 {
+/*import net.minecraft.client.renderer.RenderPipelines;
+*///?}
 //? if <1.21.6 && >1.21.2 {
 import net.minecraft.client.renderer.RenderType;
 //?}
@@ -33,7 +35,7 @@ import java.util.List;
 
 
 public class NotificationToast implements Toast {
-    //? if >=1.21.6 {
+    //? if >=1.21.11 {
     /*@NotNull private static final Identifier TEXTURE
     *///?} else {
     @NotNull private static final ResourceLocation TEXTURE

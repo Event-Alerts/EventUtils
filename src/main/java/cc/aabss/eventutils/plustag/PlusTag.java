@@ -3,6 +3,7 @@ package cc.aabss.eventutils.plustag;
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import gg.eventalerts.sdk.object.EAPlayer;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,10 +30,25 @@ public enum PlusTag {
 
     WHITE(player -> player.discord != null && player.minecraft != null);
 
-    @NotNull public static final Object BEE = VersionedIdentifier.of("textures/bee/bee.png");
-    @NotNull public static final Object BEE_GREEN = VersionedIdentifier.of("textures/bee/bee_green.png");
 
-    @NotNull public final Object textureId;
+    //? if >=1.21.11 {
+    //@NotNull public static final Identifier BEE
+    //?} else {
+    @NotNull public static final ResourceLocation BEE
+    //?}
+            = VersionedIdentifier.of("textures/bee/bee.png");
+    //? if >=1.21.11 {
+    //@NotNull public static final Identifier BEE_GREEN
+    //?} else {
+    @NotNull public static final ResourceLocation BEE_GREEN
+    //?}
+            = VersionedIdentifier.of("textures/bee/bee_green.png");
+
+    //? if >=1.21.11 {
+    //@NotNull public final Identifier textureId;
+    //?} else {
+    @NotNull public final ResourceLocation textureId;
+    //?}
     @NotNull public final Predicate<EAPlayer> isUnlocked;
 
     PlusTag(@NotNull Predicate<EAPlayer> isUnlocked) {

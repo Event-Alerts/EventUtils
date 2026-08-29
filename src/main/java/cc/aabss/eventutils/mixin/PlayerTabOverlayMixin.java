@@ -84,8 +84,8 @@ public abstract class PlayerTabOverlayMixin {
             //? if >=26.1 {
             /*target = "Lnet/minecraft/client/gui/GuiGraphics;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
             *///?} else if >=1.21.6 {
-            //target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
-            //?} else {
+            /*target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
+            *///?} else {
             target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I"
             //?}
         ),
