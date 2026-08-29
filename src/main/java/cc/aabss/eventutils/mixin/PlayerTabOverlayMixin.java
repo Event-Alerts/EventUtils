@@ -4,6 +4,7 @@ import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.plustag.IconRenderer;
 import cc.aabss.eventutils.plustag.PlusTag;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
@@ -18,8 +19,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
+import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -28,33 +32,61 @@ import java.util.stream.Collectors;
 public abstract class PlayerTabOverlayMixin {
     @Shadow @Final private Minecraft minecraft;
 
-    // We want to cache on both join AND tab open just in-case any players were missed on-join
+    // Set true by the per-entry hook below. Used to detect clients (Lunar, Feather, ...) that
+    // replace the vanilla tab list rendering and never hit our injection point.
+    @Unique private static boolean eventutils$iconHookFired = false;
+    @Unique private static int eventutils$rendersWithoutHook = 0;
+    @Unique private static boolean eventutils$loggedIncompatibleClient = false;
+
     @Inject(method = "render", at = @At("HEAD"))
-    private void eventutils$populatePlayersCache(GuiGraphics guiGraphics, int i, Scoreboard scoreboard, Objective objective, CallbackInfo ci) {
+    private void eventutils$populatePlayersCache(GuiGraphics context, int scaledWindowWidth, Scoreboard scoreboard, Objective objective, CallbackInfo ci) {
         if (minecraft.player == null) return;
         final ClientPacketListener packetListener = minecraft.getConnection();
         if (packetListener == null) return;
+        final Collection<PlayerInfo> entries = packetListener.getListedOnlinePlayers();
+
+        // We want to cache on both join AND tab open just in-case any players were missed on-join
         EventUtils.MOD.cacheManager.players()
-                .get(packetListener.getListedOnlinePlayers().stream()
+                .get(entries.stream()
                         .map(entry -> new VersionedGameProfile(entry.getProfile()).getId())
                         .collect(Collectors.toSet()))
                 .queue();
+
+        // If bee icons are on and there are players to draw them on, but our per-entry hook hasn't
+        // fired for a few frames, the client has replaced vanilla tab rendering. Warn once rather
+        // than failing silently. (This HEAD sees the previous frame's hook result.)
+        if (EventUtils.MOD.config.bee_icons && !eventutils$loggedIncompatibleClient && !entries.isEmpty()) {
+            if (eventutils$iconHookFired) {
+                eventutils$rendersWithoutHook = 0;
+            } else if (++eventutils$rendersWithoutHook >= 3) {
+                eventutils$loggedIncompatibleClient = true;
+                EventUtils.LOGGER.warn("[BEE ICONS] Vanilla PlayerListHud rendering not found - an incompatible client (Lunar Client, Feather, ...) has likely replaced it, bee icons will not show!");
+            }
+        }
+        eventutils$iconHookFired = false;
     }
 
-    @Inject(method = "renderLatencyIcon", at = @At("TAIL"), require = 0)
-    private void eventutils$drawPlusTagNextToName(GuiGraphics guiGraphics, int width, int x, int y, PlayerInfo entry, CallbackInfo ci) {
-        drawPlusTagNextToName(guiGraphics, x, y, entry);
-    }
-
-    // Lunar is super annoying and breaks "renderLatencyIcon" (never called). So we inject into their custom handler for it.
-    // We can't add Lunar to classpath so @Inject will show errors. This is expected and okay.
-    @Inject(method = "handler$bbk000$lunar$drawPing$v1_20_0", at = @At("TAIL"), require = 0)
-    private void eventutils$drawPlusTagNextToNameLunar(GuiGraphics guiGraphics, int width, int x, int y, PlayerInfo entry, CallbackInfo lunarCi, CallbackInfo ci) {
-        drawPlusTagNextToName(guiGraphics, x, y, entry);
+    // Anchor to the player-name text draw. Unlike the ping icon (rewritten by Lunar) and the head
+    // blit (only drawn when tab heads are enabled), this call runs once per entry on every version
+    // and every client that shows a vanilla-style tab list.
+    // arg 2/3 are the name's x/y; the head, when present, occupies the 8px slot immediately to its left.
+    @ModifyArgs(
+        method = "render",
+        at = @At(value = "INVOKE",
+            //? if >=1.21.6 {
+            /*target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
+            *///?} else {
+            target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I"
+            //?}
+        ),
+        require = 0)
+    private void eventutils$drawBeeIcon(Args args, @Local(argsOnly = true) GuiGraphics context, @Local PlayerInfo entry) {
+        eventutils$iconHookFired = true;
+        drawPlusTagNextToName(context, args.get(2), args.get(3), entry);
     }
 
     @Unique
-    private void drawPlusTagNextToName(GuiGraphics guiGraphics, int x, int y, PlayerInfo entry) {
+    private void drawPlusTagNextToName(GuiGraphics context, int x, int y, PlayerInfo entry) {
         if (minecraft.player == null) return;
 
         // Bee icons disabled
@@ -65,20 +97,20 @@ public abstract class PlayerTabOverlayMixin {
 
         // Self
         if (minecraft.player.getUUID().equals(uuid)) {
-            if (EventUtils.MOD.authManager.player != null) drawIcon(guiGraphics, x, y, EventUtils.MOD.authManager.player.getPlusTag(), true);
+            if (EventUtils.MOD.authManager.player != null) drawIcon(context, x, y, EventUtils.MOD.authManager.player.getPlusTag(), true);
             return;
         }
 
         EventUtils.MOD.cacheManager.players().get(uuid).queue(cached -> {
-            if (cached != null) drawIcon(guiGraphics, x, y, cached.getPlusTag(), cached.isOnline());
+            if (cached != null) drawIcon(context, x, y, cached.getPlusTag(), cached.isOnline());
         });
     }
 
     @Unique
-    private static void drawIcon(GuiGraphics guiGraphics, int x, int y, @Nullable PlusTag tag, boolean online) {
+    private static void drawIcon(GuiGraphics context, int x, int y, @Nullable PlusTag tag, boolean online) {
         final int iconSize = 10;
-        final int iconX = x - 10;
-        IconRenderer.draw(guiGraphics, online ? PlusTag.BEE_GREEN : PlusTag.BEE, iconX, y, iconSize);
-        if (tag != null) IconRenderer.draw(guiGraphics, tag.textureId, iconX, y, iconSize);
+        final int iconX = x - 10 - iconSize;
+        IconRenderer.draw(context, online ? PlusTag.BEE_GREEN : PlusTag.BEE, iconX, y, iconSize);
+        if (tag != null) IconRenderer.draw(context, tag.textureId, iconX, y, iconSize);
     }
 }
