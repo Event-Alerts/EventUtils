@@ -17,5 +17,5 @@ jobs:
   build:
     uses: srnyx/tools/.github/workflows/build.yml@main
     with:
-      java: 21
+      java: 25
       task: buildAndCollect
