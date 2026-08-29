@@ -1,6 +1,6 @@
 package cc.aabss.eventutils;
 
-import cc.aabss.eventutils.versioning.VersionedGuiGraphics;
+import cc.aabss.eventutils.versioning.VersionedGraphicsGui;
 import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -102,7 +102,7 @@ public class NotificationToast implements Toast {
     /*@NotNull
     public Toast.Visibility render(GuiGraphics graphics, ToastComponent manager, long startTime) {
     *///?}
-        final VersionedGuiGraphics vGraphics = new VersionedGuiGraphics(graphics);
+        final VersionedGraphicsGui vGraphics = new VersionedGraphicsGui(graphics);
 
         if (width == 160 && lines.size() <= 1) {
             //? if >=1.21.6 {

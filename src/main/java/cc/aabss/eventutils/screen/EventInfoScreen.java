@@ -2,7 +2,7 @@ package cc.aabss.eventutils.screen;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.sdk.EventWrapper;
-import cc.aabss.eventutils.versioning.VersionedGuiGraphics;
+import cc.aabss.eventutils.versioning.VersionedGraphicsGui;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAFamousEvent;
 import net.minecraft.client.Minecraft;
@@ -37,7 +37,7 @@ public class EventInfoScreen extends Screen {
     *///?} else {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
     //?}
-        final VersionedGuiGraphics vGraphics = new VersionedGuiGraphics(graphics);
+        final VersionedGraphicsGui vGraphics = new VersionedGraphicsGui(graphics);
 
         final int boxX = (width - BOX_WIDTH) / 2;
         final int boxY = (height - BOX_HEIGHT) / 2;

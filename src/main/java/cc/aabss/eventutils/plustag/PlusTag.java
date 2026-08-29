@@ -3,9 +3,13 @@ package cc.aabss.eventutils.plustag;
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import gg.eventalerts.sdk.object.EAPlayer;
-import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+//? if >=1.21.11 {
+//import net.minecraft.resources.Identifier;
+//?} else {
+import net.minecraft.resources.ResourceLocation;
+//?}
 
 import java.util.function.Predicate;
 

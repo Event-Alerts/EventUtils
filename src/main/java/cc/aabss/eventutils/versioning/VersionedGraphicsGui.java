@@ -7,10 +7,11 @@ import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.NotNull;
 
 
-public class VersionedGuiGraphics {
+// Not named VersionedGuiGraphics to dodge Stonecutter replacements
+public class VersionedGraphicsGui {
     @NotNull private final GuiGraphics graphics;
 
-    public VersionedGuiGraphics(@NotNull GuiGraphics graphics) {
+    public VersionedGraphicsGui(@NotNull GuiGraphics graphics) {
         this.graphics = graphics;
     }
 
@@ -20,7 +21,7 @@ public class VersionedGuiGraphics {
         *///? } else {
         graphics.drawString(
         //?}
-                font, text, x, y, color);
+                font, text, x, y, color, shadow);
     }
 
     public void drawString(@NotNull Font font, @NotNull FormattedCharSequence text, int x, int y, int color, boolean shadow) {

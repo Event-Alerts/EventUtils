@@ -2,7 +2,7 @@ package cc.aabss.eventutils.screen.config.group;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.Group;
-import cc.aabss.eventutils.versioning.VersionedGuiGraphics;
+import cc.aabss.eventutils.versioning.VersionedGraphicsGui;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -75,7 +75,7 @@ public class GroupManagerScreen extends Screen {
     *///?} else {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
     //?}
-        final VersionedGuiGraphics vGraphics = new VersionedGuiGraphics(graphics);
+        final VersionedGraphicsGui vGraphics = new VersionedGraphicsGui(graphics);
         graphics.fill(0, 0, width, height, 0xC0101010);
         vGraphics.drawCenteredString(font, title, width / 2, 12, 0xFFFFFF);
         //? if >=26.1 {
