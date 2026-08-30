@@ -3,6 +3,7 @@ package cc.aabss.eventutils.mixin;
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.plustag.IconRenderer;
 import cc.aabss.eventutils.plustag.PlusTag;
+import cc.aabss.eventutils.sdk.EnrichedPlayer;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
@@ -12,6 +13,7 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,13 +25,18 @@ import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
+import java.time.Duration;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 
 @Mixin(PlayerTabOverlay.class)
 public abstract class PlayerTabOverlayMixin {
+    // Setting higher will delay icons showing up for players joining. Good range: 2-6 seconds
+    @Unique @NotNull private static final Duration BATCH_POPULATE_DELAY = Duration.ofSeconds(5);
+
     @Shadow @Final private Minecraft minecraft;
 
     // Set true by the per-entry hook below. Used to detect clients (Lunar, Feather, ...) that
@@ -37,6 +44,7 @@ public abstract class PlayerTabOverlayMixin {
     @Unique private static boolean eventutils$iconHookFired = false;
     @Unique private static int eventutils$rendersWithoutHook = 0;
     @Unique private static boolean eventutils$loggedIncompatibleClient = false;
+    @Unique @Nullable private static Long lastBatchPopulate = null;
 
     //? if >=26.1 {
     /*@Inject(method = "extractRenderState", at = @At("HEAD"))
@@ -49,12 +57,16 @@ public abstract class PlayerTabOverlayMixin {
         if (packetListener == null) return;
         final Collection<PlayerInfo> entries = packetListener.getListedOnlinePlayers();
 
-        // We want to cache on both join AND tab open just in-case any players were missed on-join
-        EventUtils.MOD.cacheManager.players()
-                .get(entries.stream()
-                        .map(entry -> new VersionedGameProfile(entry.getProfile()).getId())
-                        .collect(Collectors.toSet()))
-                .queue();
+        // We want to cache on both join AND tab open just in-case any players were missed on-join.
+        // This also batch-fetches new players that join within the BATCH_POPULATE_DELAY.
+        if (lastBatchPopulate == null || System.currentTimeMillis() - lastBatchPopulate > BATCH_POPULATE_DELAY.toMillis()) {
+            lastBatchPopulate = System.currentTimeMillis();
+            EventUtils.MOD.cacheManager.players()
+                    .get(entries.stream()
+                            .map(entry -> new VersionedGameProfile(entry.getProfile()).getId())
+                            .collect(Collectors.toSet()))
+                    .queue();
+        }
 
         // If bee icons are on and there are players to draw them on, but our per-entry hook hasn't
         // fired for a few frames, the client has replaced vanilla tab rendering. Warn once rather
@@ -92,18 +104,15 @@ public abstract class PlayerTabOverlayMixin {
         require = 0)
     private void eventutils$drawBeeIcon(Args args, @Local(argsOnly = true) GuiGraphics context, @Local PlayerInfo entry) {
         eventutils$iconHookFired = true;
-        drawPlusTagNextToName(context, args.get(2), args.get(3), entry);
-    }
-
-    @Unique
-    private void drawPlusTagNextToName(GuiGraphics context, int x, int y, PlayerInfo entry) {
         if (minecraft.player == null) return;
 
         // Bee icons disabled
         if (!EventUtils.MOD.config.bee_icons) return;
 
-        // Get UUID
+        // Get UUID and x/y
         final UUID uuid = new VersionedGameProfile(entry.getProfile()).getId();
+        final int x = args.get(2);
+        final int y = args.get(3);
 
         // Self
         if (minecraft.player.getUUID().equals(uuid)) {
@@ -111,9 +120,9 @@ public abstract class PlayerTabOverlayMixin {
             return;
         }
 
-        EventUtils.MOD.cacheManager.players().get(uuid).queue(cached -> {
-            if (cached != null) drawIcon(context, x, y, cached.getPlusTag(), cached.isOnline());
-        });
+        // Don't fetch, only get from cache. Rely on batch-fetch in eventutils$populatePlayersCache.
+        final Optional<EnrichedPlayer> cached = EventUtils.MOD.cacheManager.players().peek(uuid);
+        if (cached != null) cached.ifPresent(player -> drawIcon(context, x, y, player.getPlusTag(), player.isOnline()));
     }
 
     @Unique
