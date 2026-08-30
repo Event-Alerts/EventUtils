@@ -16,13 +16,17 @@ public class VersionedEntityType {
      */
     @Nullable
     public static <T extends Entity> EntityType<T> getEntityTypeByIdentifier(@NotNull String identifier) {
-        return (EntityType<T>)
-                //? if >=26.2 {
-                /*BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.parse(identifier))
-                *///?} else {
-                EntityType.byString(identifier)
-                //?}
-                .orElse(null);
+        try {
+            return (EntityType<T>)
+                    //? if >=26.2 {
+                    /*BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.parse(identifier))
+                    *///?} else {
+                    EntityType.byString(identifier)
+                     //?}
+                    .orElse(null);
+        } catch (final Exception e) {
+            return null;
+        }
     }
 
     /**
