@@ -6,7 +6,7 @@ mod.group = "cc.aabss"
 loomx.loom_version = "1.17-SNAPSHOT"
 loomx.loom_remap_plugin = "fabric-loom"
 
-deps.loader = "0.19.4"
+deps.loader = "0.19.0"
 
 library.java_utilities = "0c7c450"
 library.semver4j = "6.0.0"
