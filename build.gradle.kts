@@ -10,7 +10,7 @@ import java.nio.file.StandardCopyOption
 
 plugins {
     id("dev.kikugie.loom-back-compat")
-    id("xyz.srnyx.gradle-galaxy") version "c265727"
+    id("xyz.srnyx.gradle-galaxy") version "56c48b7"
     id("com.gradleup.shadow") version "9.6.1"
     id("me.modmuss50.mod-publish-plugin") version "04fb4ab"
 
@@ -62,7 +62,7 @@ galaxy {
         if (javaUtilitiesVersion == "snapshot" || sdkVersion == "snapshot" || okaeriConfigsVersion == "snapshot") add(MAVEN_LOCAL)
 
         add(
-            "https://maven.gnomecraft.net/releases/", "https://maven.nucleoid.xyz/",
+            GNOMECRAFT_RELEASES, NUCLEOID,
             OKAERI_RELEASES, OKAERI_SNAPSHOTS,
             SRNYX_RELEASES, SRNYX_SNAPSHOTS,
             FABRIC, SHEDANIEL, ISXANDER,

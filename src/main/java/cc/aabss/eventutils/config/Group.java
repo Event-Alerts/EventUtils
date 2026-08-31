@@ -1,6 +1,8 @@
 package cc.aabss.eventutils.config;
 
+import cc.aabss.eventutils.stats.Statable;
 import cc.aabss.eventutils.versioning.VersionedEntityType;
+import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EntityType;
@@ -16,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-public class Group extends Stringable {
+public class Group extends Stringable implements Statable {
     public static final int MAX_RADIUS = 100;
 
     @NotNull private transient UUID uuid;
@@ -184,6 +186,19 @@ public class Group extends Stringable {
         Mode(@NotNull ChatFormatting formatting) {
             this.formatting = formatting;
         }
+    }
+
+    @Override @Nullable
+    public JsonObject toStat() {
+        final JsonObject json = new JsonObject();
+        json.addProperty("name", getName());
+        json.addProperty("players_size", players.size());
+        json.addProperty("entities_size", entities.size());
+        json.addProperty("player_mode", playerMode.name());
+        json.addProperty("entity_mode", entityMode.name());
+        json.addProperty("npc_mode", npcMode.name());
+        json.addProperty("radius", radius);
+        return json;
     }
 
     // Collections/Maps need to have methods to create new instances of the collection!

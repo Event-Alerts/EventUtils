@@ -37,7 +37,7 @@ public class KeybindManager {
     private static final long DEFAULT_COOLDOWN_TIME_MS = 500;
     //? if >=1.21.11 {
     /*@NotNull private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(BuildProperties.MOD_ID, BuildProperties.MOD_ID));
-    *///? } else {
+    *///?} else {
     @NotNull private static final String CATEGORY = "key.category.eventutils.eventutils";
     //?}
 

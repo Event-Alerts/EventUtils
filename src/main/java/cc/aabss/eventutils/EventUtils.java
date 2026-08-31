@@ -16,6 +16,7 @@ import cc.aabss.eventutils.manager.GroupManager;
 import cc.aabss.eventutils.manager.KeybindManager;
 import cc.aabss.eventutils.sdk.EnrichedEvent;
 import cc.aabss.eventutils.sdk.EventWrapper;
+import cc.aabss.eventutils.stats.Stats;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import cc.aabss.eventutils.websocket.listener.EventCancelledListener;
 import cc.aabss.eventutils.websocket.listener.EventPostedListener;
