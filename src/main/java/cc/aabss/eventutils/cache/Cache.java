@@ -17,29 +17,37 @@ public abstract class Cache<K, V> {
     @NotNull protected final ConcurrentMap<K, Optional<V>> cache = new ConcurrentHashMap<>();
     @NotNull protected final ConcurrentMap<K, CompletableFuture<V>> inFlight = new ConcurrentHashMap<>();
 
-    @NotNull @CheckReturnValue
-    public EAAction<V> get(@NotNull K uuid) {
-        // Is cached
-        final Optional<V> cached = cache.get(uuid);
-        EventUtils.LOGGER.trace("[CACHE] hit for key {}: {}", uuid, cached);
-        if (cached != null) return EAAction.completed(cached.orElse(null));
-
-        // Not cached yet, fetch
-        EventUtils.LOGGER.trace("[CACHE] miss for key {}", uuid);
-        return fetch(uuid);
+    /**
+     * @return  {@link Optional#of} if cached with value, {@link Optional#empty()} if cached with <b>no</b> value, {@code null} if not cached
+     */
+    @Nullable
+    public Optional<V> peek(@NotNull K key) {
+        return cache.get(key);
     }
 
     @NotNull @CheckReturnValue
-    public EAAction<Set<V>> get(@NotNull Collection<K> uuids) {
+    public EAAction<V> get(@NotNull K key) {
+        // Is cached
+        final Optional<V> cached = cache.get(key);
+        EventUtils.LOGGER.trace("[CACHE] hit for key {}: {}", key, cached);
+        if (cached != null) return EAAction.completed(cached.orElse(null));
+
+        // Not cached yet, fetch
+        EventUtils.LOGGER.trace("[CACHE] miss for key {}", key);
+        return fetch(key);
+    }
+
+    @NotNull @CheckReturnValue
+    public EAAction<Set<V>> get(@NotNull Collection<K> keys) {
         // Get cached vs missing values
         final Set<V> cached = new HashSet<>();
         final Set<K> missing = new HashSet<>();
-        for (final K uuid : uuids) {
-            final Optional<V> player = cache.get(uuid);
+        for (final K key : keys) {
+            final Optional<V> player = cache.get(key);
             if (player != null) {
                 player.ifPresent(cached::add);
             } else {
-                missing.add(uuid);
+                missing.add(key);
             }
         }
         EventUtils.LOGGER.trace("[CACHE] hits: {}", cached);

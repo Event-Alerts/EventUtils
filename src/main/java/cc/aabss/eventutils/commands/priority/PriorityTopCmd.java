@@ -7,13 +7,13 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -44,12 +44,12 @@ public class PriorityTopCmd extends EUCommand {
 
     private static void execute(@NotNull CommandContext<FabricClientCommandSource> context, int page) {
         final FabricClientCommandSource source = context.getSource();
-        final MinecraftClient client = source.getClient();
-        client.send(() -> {
+        final Minecraft client = source.getClient();
+        client.execute(() -> {
             // Get names
             final List<String> namesSorted = PriorityCommon.getNamesSorted(client);
             if (namesSorted == null || client.player == null) {
-                source.sendFeedback(Text.translatable("eventutils.command.prioritytop.emptypage"));
+                source.sendFeedback(Component.translatable("eventutils.command.prioritytop.emptypage"));
                 return;
             }
 
@@ -57,7 +57,7 @@ public class PriorityTopCmd extends EUCommand {
             final int totalPlayers = namesSorted.size();
             final int totalPages = (int) Math.ceil((double) totalPlayers / PLAYERS_PER_PAGE);
             if (page > totalPages || page < 1) {
-                source.sendFeedback(Text.translatable("eventutils.command.prioritytop.notapage", EventUtils.ERROR_MESSAGE_PREFIX, "§f" + totalPages));
+                source.sendFeedback(Component.translatable("eventutils.command.prioritytop.notapage", EventUtils.ERROR_MESSAGE_PREFIX, "§f" + totalPages));
                 return;
             }
 
@@ -66,7 +66,7 @@ public class PriorityTopCmd extends EUCommand {
             final int start = pageIndex * PLAYERS_PER_PAGE;
             final int end = Math.min(start + PLAYERS_PER_PAGE, totalPlayers);
             final String clientName = client.player.getName().getString().toLowerCase();
-            final MutableText text = Text.translatable("eventutils.command.prioritytop.page", EventUtils.MESSAGE_PREFIX, "§6" + page, "§6" + totalPages);
+            final MutableComponent text = Component.translatable("eventutils.command.prioritytop.page", EventUtils.MESSAGE_PREFIX, "§6" + page, "§6" + totalPages);
             for (int i = start; i < end; i++) {
                 final String name = namesSorted.get(i);
                 final boolean isLocalPlayer = name.equalsIgnoreCase(clientName);
@@ -82,21 +82,21 @@ public class PriorityTopCmd extends EUCommand {
                         if (isLocalPlayer) {
                             yield Style.EMPTY.withColor(TextColor.fromRgb(0x9AED47));
                         }
-                        yield Style.EMPTY.withColor(TextColor.fromFormatting(Formatting.WHITE));
+                        yield Style.EMPTY.withColor(TextColor.fromLegacyFormat(ChatFormatting.WHITE));
                     }
                 };
 
-                final MutableText item = Text.literal(String.format("%s%d - %s\n", boldModifier, placement, isLocalPlayer ? name + " (You)" : name)).fillStyle(colorModifier);
+                final MutableComponent item = Component.literal(String.format("%s%d - %s\n", boldModifier, placement, isLocalPlayer ? name + " (You)" : name)).withStyle(colorModifier);
                 text.append(item);
             }
             source.sendFeedback(text);
 
-            MutableText lastpage = Text.literal("");
-            MutableText nextpage = Text.literal("");
+            MutableComponent lastpage = Component.literal("");
+            MutableComponent nextpage = Component.literal("");
 
             if (page > 1) {
                 final String command = "/eventutils prioritytop " + (page - 1);
-                lastpage = Text.translatable("eventutils.command.prioritytop.lastpage", page - 1).setStyle(Style.EMPTY.withClickEvent(
+                lastpage = Component.translatable("eventutils.command.prioritytop.lastpage", page - 1).setStyle(Style.EMPTY.withClickEvent(
                         //? if <=1.21.4 {
                           new ClickEvent(ClickEvent.Action.RUN_COMMAND, command)
                         //?} else {
@@ -106,7 +106,7 @@ public class PriorityTopCmd extends EUCommand {
             }
 
             if (page + 1 <= totalPages) {
-                nextpage = Text.translatable(
+                nextpage = Component.translatable(
                         "eventutils.command.prioritytop.nextpage",
                         page + 1
                 ).setStyle(
@@ -119,7 +119,7 @@ public class PriorityTopCmd extends EUCommand {
             }
 
             if (!lastpage.getString().isEmpty() || !nextpage.getString().isEmpty()) {
-                source.sendFeedback(Text.translatable("eventutils.command.prioritytop.pagebutton", EventUtils.MESSAGE_PREFIX, lastpage, nextpage));
+                source.sendFeedback(Component.translatable("eventutils.command.prioritytop.pagebutton", EventUtils.MESSAGE_PREFIX, lastpage, nextpage));
             }
         });
     }

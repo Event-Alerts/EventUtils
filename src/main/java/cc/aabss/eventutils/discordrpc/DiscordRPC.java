@@ -7,10 +7,10 @@ import com.jagrosh.discordipc.entities.RichPresence;
 import com.jagrosh.discordipc.entities.pipe.PipeStatus;
 import com.jagrosh.discordipc.exceptions.NoDiscordClientException;
 import gg.eventalerts.sdk.http.action.EAAction;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.session.Session;
-import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.User;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.server.IntegratedServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.srnyx.javautilities.MiscUtility;
@@ -44,8 +44,8 @@ public class DiscordRPC {
         this.mod = mod;
         this.client.setListener(new CustomIPCListener(this));
         this.playerUrl = mod.authManager.player != null && mod.authManager.player.player.discord != null && mod.authManager.player.player.discord.id != null
-                ? "https://eventalerts.gg/players/" + mod.authManager.player.player.discord.id
-                : "https://namemc.com/profile/" + MinecraftClient.getInstance().getSession().getUuidOrNull();
+                ? utm("https://eventalerts.gg/players/" + mod.authManager.player.player.discord.id, "player")
+                : "https://namemc.com/profile/" + Minecraft.getInstance().getUser().getProfileId();
         refreshConnection();
     }
 
@@ -98,9 +98,9 @@ public class DiscordRPC {
     private EAAction<Presence> getNewPresence() {
         final Presence newPresence = new Presence();
 
-        final MinecraftClient client = MinecraftClient.getInstance();
-        final IntegratedServer clientServer = client.getServer();
-        final ServerInfo multiplayerServer = client.getCurrentServerEntry();
+        final Minecraft client = Minecraft.getInstance();
+        final IntegratedServer clientServer = client.getSingleplayerServer();
+        final ServerData multiplayerServer = client.getCurrentServer();
 
         if (clientServer != null && clientServer.isRunning()) {
             // Singleplayer
@@ -111,8 +111,8 @@ public class DiscordRPC {
         } else if (multiplayerServer != null) {
             // Multiplayer + Event
             newPresence
-                    .largeImage("https://api.mcstatus.io/v2/icon/" + multiplayerServer.address)
-                    .largeImageUrl("https://eventalerts.gg");
+                    .largeImage("https://api.mcstatus.io/v2/icon/" + multiplayerServer.ip)
+                    .largeImageUrl(utm("https://eventalerts.gg", "large_image"));
 
             if (mod.inEvent != null) {
                 // Event
@@ -120,7 +120,7 @@ public class DiscordRPC {
                 status = Status.EVENT;
 
                 // Event info (details)
-                final String eventUrl = "https://eventalerts.gg/events/" + (mod.inEvent.event.id != null ? mod.inEvent.event.id : "");
+                final String eventUrl = utm("https://eventalerts.gg/events/" + (mod.inEvent.event.id != null ? mod.inEvent.event.id : ""), "event");
                 newPresence
                         .details("Playing in " + Objects.requireNonNullElse(mod.inEvent.event.title, "an event"))
                         .detailsUrl(eventUrl)
@@ -138,7 +138,7 @@ public class DiscordRPC {
                             if (hostName == null && host.discord != null) hostName = host.discord.username;
 
                             // EA players URL (Discord ID) -> NameMC Minecraft UUID -> event URL
-                            String hostUrl = host.discord != null && host.discord.id != null ? "https://eventalerts.gg/players/" + host.discord.id : null;
+                            String hostUrl = host.discord != null && host.discord.id != null ? utm("https://eventalerts.gg/players/" + host.discord.id, "host") : null;
                             if (hostUrl == null && host.minecraft != null && host.minecraft.uuid != null) hostUrl = "https://namemc.com/profile/" + host.minecraft.uuid;
                             if (hostUrl == null) hostUrl = eventUrl;
 
@@ -177,7 +177,7 @@ public class DiscordRPC {
      */
     private class Presence {
         @NotNull public String details = "Waiting for an event...";
-        @NotNull public String detailsUrl = "https://eventalerts.gg";
+        @NotNull public String detailsUrl = utm("https://eventalerts.gg", "details");
         @NotNull public String state;
         @NotNull public String stateUrl = playerUrl;
         @NotNull public String largeImage;
@@ -185,12 +185,12 @@ public class DiscordRPC {
         @NotNull public String largeImageUrl = stateUrl;
         @NotNull public String smallImage = "logo";
         @NotNull public String smallImageText = "EventUtils " + BuildProperties.MOD_VERSION;
-        @NotNull public String smallImageUrl = "https://eventalerts.gg/eventutils";
+        @NotNull public String smallImageUrl = utm("https://eventalerts.gg/eventutils", "small_image");
 
         public Presence() {
-            final Session session = MinecraftClient.getInstance().getSession();
-            this.state = "Playing as " + session.getUsername();
-            this.largeImage = "https://mc-heads.net/avatar/" + session.getUuidOrNull();
+            final User session = Minecraft.getInstance().getUser();
+            this.state = "Playing as " + session.getName();
+            this.largeImage = "https://mc-heads.net/avatar/" + session.getProfileId();
         }
 
         public void apply(@NotNull RichPresence.Builder builder) {
@@ -272,5 +272,9 @@ public class DiscordRPC {
             this.smallImageUrl = smallImageUrl;
             return this;
         }
+    }
+
+    private static String utm(@NotNull String url, @NotNull String content) {
+        return url + (url.contains("?") ? "&" : "?") + "utm_source=discord&utm_medium=rpc&utm_campaign=eventutils&utm_content=" + content;
     }
 }

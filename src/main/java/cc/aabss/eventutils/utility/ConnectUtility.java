@@ -1,12 +1,12 @@
 package cc.aabss.eventutils.utility;
 
 import cc.aabss.eventutils.EventUtils;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.MessageScreen;
-import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
-import net.minecraft.client.network.ServerAddress;
-import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ConnectScreen;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,35 +19,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static net.minecraft.text.Text.translatable;
+import static net.minecraft.network.chat.Component.translatable;
 
 
 public class ConnectUtility {
     public static void connect(@NotNull String ip) {
-        final MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null) return;
-        final ServerInfo currentServer = client.getCurrentServerEntry();
-        if (currentServer != null && currentServer.address.equalsIgnoreCase(ip)) return;
+        final Minecraft client = Minecraft.getInstance();
+        final ServerData currentServer = client.getCurrentServer();
+        if (currentServer != null && currentServer.ip.equalsIgnoreCase(ip)) return;
 
         // Update metric
         EventUtils.MOD.stats.eventsJoined.incrementAndGet();
 
         final TitleScreen screen = new TitleScreen();
-        final ServerAddress address = ServerAddress.parse(ip);
+        final ServerAddress address = ServerAddress.parseString(ip);
         client.execute(() -> {
             try {
                 //? if >=1.21.11 {
-                /*client.disconnect(new MessageScreen(translatable("multiplayer.disconnect.generic")), false, false);
+                /*client.disconnect(new GenericMessageScreen(translatable("multiplayer.disconnect.generic")), false, false);
                 *///?} else if >=1.21 {
-                client.disconnect(new MessageScreen(translatable("multiplayer.disconnect.generic")), false);
+                client.disconnect(new GenericMessageScreen(translatable("multiplayer.disconnect.generic")), false);
                 //?} else {
-                /*client.disconnect(new MessageScreen(translatable("multiplayer.disconnect.generic")));
+                /*client.disconnect(new GenericMessageScreen(translatable("multiplayer.disconnect.generic")));
                 *///?}
 
                 //? if <=1.20.4 {
-                /*ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true);
+                /*ConnectScreen.startConnecting(screen, client, address, new ServerData("EventUtils Event Server", ip, ServerData.Type.OTHER), true);
                 *///?} else {
-                ConnectScreen.connect(screen, client, address, new ServerInfo("EventUtils Event Server", ip, ServerInfo.ServerType.OTHER), true, null);
+                ConnectScreen.startConnecting(screen, client, address, new ServerData("EventUtils Event Server", ip, ServerData.Type.OTHER), true, null);
                 //?}
             } catch (final Exception e) {
                 EventUtils.LOGGER.error("Failed to connect to server: {}", e.getMessage());

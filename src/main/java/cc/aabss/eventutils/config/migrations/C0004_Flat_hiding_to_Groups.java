@@ -3,7 +3,7 @@ package cc.aabss.eventutils.config.migrations;
 import cc.aabss.eventutils.config.Group;
 import eu.okaeri.configs.migrate.builtin.NamedMigration;
 import eu.okaeri.configs.schema.GenericsDeclaration;
-import net.minecraft.entity.EntityType;
+import net.minecraft.world.entity.EntityType;
 
 import java.util.List;
 import java.util.UUID;

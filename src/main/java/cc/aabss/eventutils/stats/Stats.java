@@ -1,10 +1,18 @@
-package cc.aabss.eventutils;
+package cc.aabss.eventutils.stats;
 
+import cc.aabss.eventutils.BuildProperties;
+import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.stats.gson.StatsGson;
+import com.google.gson.JsonObject;
 import dev.faststats.ErrorTracker;
 import dev.faststats.data.Metric;
+import dev.faststats.data.SourceId;
 import dev.faststats.fabric.FabricContext;
+import eu.okaeri.configs.OkaeriConfig;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -29,8 +37,8 @@ public class Stats {
                         eventsJoined.set(0);
                     });
 
-                    // Config TODO: take from annoying api FastStatsLoader.config(...) and StatsGson (adapters too)
-//                    factory.addMetric(Metric.object("config", mod.config::getJson));
+                    // Config
+                    factory.addMetric(config("config", () -> mod.config));
 
                     // WebSocket
                     factory.addMetric(Metric.bool("socket_open", () -> mod.webSocket.isOpen()));
@@ -47,5 +55,13 @@ public class Stats {
                     return factory.create();
                 })
                 .create();
+    }
+
+    @NotNull
+    public static Metric<JsonObject> config(@NotNull @SourceId String id, @NotNull Callable<@Nullable OkaeriConfig> callable) {
+        return Metric.object(id, () -> {
+            final OkaeriConfig config = callable.call();
+            return config == null ? null : StatsGson.GSON.toJsonTree(config, OkaeriConfig.class).getAsJsonObject();
+        });
     }
 }

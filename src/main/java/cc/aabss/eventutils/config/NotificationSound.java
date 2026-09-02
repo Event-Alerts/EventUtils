@@ -1,16 +1,15 @@
 package cc.aabss.eventutils.config;
 
-import cc.aabss.eventutils.BuildProperties;
+import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import dev.isxander.yacl3.api.NameableEnum;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import static net.minecraft.text.Text.translatable;
+import static net.minecraft.network.chat.Component.translatable;
 
 
 public enum NotificationSound implements NameableEnum {
@@ -27,11 +26,11 @@ public enum NotificationSound implements NameableEnum {
     TIME_OF_WAR;
 
     public void play() {
-        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvent.of(Identifier.of(BuildProperties.MOD_ID, "notification." + name().toLowerCase())), 1, 1));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvent.createVariableRangeEvent(VersionedIdentifier.of("notification." + name().toLowerCase())), 1, 1));
     }
 
     @Override @NotNull @Contract(" -> new")
-    public Text getDisplayName() {
+    public Component getDisplayName() {
         return translatable("eventutils.sound." + name().toLowerCase());
     }
 }

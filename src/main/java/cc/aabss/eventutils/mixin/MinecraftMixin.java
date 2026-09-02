@@ -1,9 +1,10 @@
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.screen.Screen;
+import cc.aabss.eventutils.versioning.VersionedClient;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.Screen;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,27 +12,32 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.minecraft.text.Text.translatable;
+import static net.minecraft.network.chat.Component.translatable;
 
 
-@Mixin(MinecraftClient.class)
-public class ClientMixin {
+@Mixin(Minecraft.class)
+public class MinecraftMixin {
     @Inject(method = "run", at = @At("HEAD"))
     private void onRun(CallbackInfo ci) {
         if (!EventUtils.MOD.config.confirm_window_close) return;
-        final MinecraftClient client = MinecraftClient.getInstance();
-        final long handle = client.getWindow().getHandle();
+        final Minecraft client = Minecraft.getInstance();
+        //? if >=1.21.11 {
+        /*final long handle = client.getWindow().handle();
+        *///?} else {
+        final long handle = client.getWindow().getWindow();
+        //?}
         final GLFWWindowCloseCallback callback = GLFW.glfwSetWindowCloseCallback(handle, win -> client.execute(() -> {
+            final VersionedClient vClient = new VersionedClient(client);
             GLFW.glfwSetWindowShouldClose(handle, false);
-            final Screen current = client.currentScreen;
-            client.setScreen(new ConfirmScreen(
+            final Screen current = vClient.screen();
+            vClient.setScreen(new ConfirmScreen(
                     result -> {
                         if (result) {
-                            client.scheduleStop();
+                            client.stop();
                             return;
                         }
                         GLFW.glfwSetWindowShouldClose(handle, false);
-                        client.setScreen(current);
+                        vClient.setScreen(current);
                     },
                     translatable("eventutils.confirm_exit.title"),
                     translatable("eventutils.confirm_exit.message")));

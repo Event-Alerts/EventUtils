@@ -8,8 +8,8 @@ import gg.eventalerts.sdk.http.exception.EAHttpResponseException;
 import gg.eventalerts.sdk.http.object.body.EUOnlineAuthBody;
 import gg.eventalerts.sdk.http.object.body.EUOnlineAuthUpdateBody;
 import gg.eventalerts.sdk.http.object.response.EUOnlineAuthResponse;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.session.Session;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.User;
 import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,9 +40,9 @@ public class AuthManager {
         if (heartbeat != null) heartbeat.cancel(false);
 
         // Get session and access token
-        final Session session = MinecraftClient.getInstance().getSession();
+        final User session = Minecraft.getInstance().getUser();
         final String accessToken = session.getAccessToken();
-        if (accessToken == null || accessToken.equals("FabricMC")) { // Development/offline environment
+        if (accessToken.equals("FabricMC")) { // Development/offline environment
             player = null;
             return EAAction.completed(null);
         }
@@ -50,8 +50,8 @@ public class AuthManager {
         // POST auth
         final EUOnlineAuthBody body = new EUOnlineAuthBody(
                 session.getAccessToken(),
-                session.getUuidOrNull(),
-                session.getUsername(),
+                session.getProfileId(),
+                session.getName(),
                 BuildProperties.MOD_VERSION,
                 Objects.requireNonNullElse(EventUtils.MC_VERSION, "unknown"));
         return mod.http.players.eventUtils.postOnlineAuth(body)

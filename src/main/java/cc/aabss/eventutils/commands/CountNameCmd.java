@@ -7,10 +7,10 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,15 +46,15 @@ public class CountNameCmd extends EUCommand {
     }
 
     @Nullable
-    private static List<String> getFilteredNames(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull MinecraftClient client, @NotNull String filter) {
+    private static List<String> getFilteredNames(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull Minecraft client, @NotNull String filter) {
         // No players available
-        if (client.world == null || client.player == null || client.getNetworkHandler() == null) {
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", EventUtils.ERROR_MESSAGE_PREFIX, Text.literal(filter).formatted(Formatting.DARK_RED)));
+        if (client.level == null || client.player == null || client.getConnection() == null) {
+            context.getSource().sendFeedback(Component.translatable("eventutils.command.countname.noplayers", EventUtils.ERROR_MESSAGE_PREFIX, Component.literal(filter).withStyle(ChatFormatting.DARK_RED)));
             return null;
         }
 
         // Filter names based on config and "isNPC"
-        final List<String> namesFiltered = client.getNetworkHandler().getPlayerList().stream()
+        final List<String> namesFiltered = client.getConnection().getListedOnlinePlayers().stream()
                 .map(entry -> new VersionedGameProfile(entry.getProfile()))
                 .filter(profile -> !EventUtils.isNpc(profile.getId()))
                 .map(VersionedGameProfile::getName)
@@ -63,7 +63,7 @@ public class CountNameCmd extends EUCommand {
 
         // No names after filtering
         if (namesFiltered.isEmpty()) {
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.noplayers", EventUtils.ERROR_MESSAGE_PREFIX, Text.literal(filter).formatted(Formatting.DARK_RED)));
+            context.getSource().sendFeedback(Component.translatable("eventutils.command.countname.noplayers", EventUtils.ERROR_MESSAGE_PREFIX, Component.literal(filter).withStyle(ChatFormatting.DARK_RED)));
             return null;
         }
 
@@ -71,34 +71,34 @@ public class CountNameCmd extends EUCommand {
     }
 
     private static void count(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull String filter) {
-        final MinecraftClient client = context.getSource().getClient();
-        client.send(() -> {
+        final Minecraft client = context.getSource().getClient();
+        client.execute(() -> {
             // Get names
             final List<String> namesFiltered = getFilteredNames(context, client, filter);
             if (namesFiltered == null) return;
 
             // Reply
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.count", EventUtils.MESSAGE_PREFIX, "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Text.translatable("eventutils.word.plural").formatted(Formatting.YELLOW) : "", Text.literal(filter).formatted(Formatting.GOLD)));
+            context.getSource().sendFeedback(Component.translatable("eventutils.command.countname.count", EventUtils.MESSAGE_PREFIX, "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Component.translatable("eventutils.word.plural").withStyle(ChatFormatting.YELLOW) : "", Component.literal(filter).withStyle(ChatFormatting.GOLD)));
         });
     }
 
     private static void list(@NotNull CommandContext<FabricClientCommandSource> context, @NotNull String filter) {
-        final MinecraftClient client = context.getSource().getClient();
-        client.send(() -> {
+        final Minecraft client = context.getSource().getClient();
+        client.execute(() -> {
             // Get names
             final List<String> namesFiltered = getFilteredNames(context, client, filter);
             if (namesFiltered == null) return;
 
             // Build player list
-            final MutableText playerList = Text.literal("");
+            final MutableComponent playerList = Component.literal("");
             for (int i = 0; i < namesFiltered.size(); i++) {
-                playerList.append(Text.literal(namesFiltered.get(i)).formatted(Formatting.GOLD));
+                playerList.append(Component.literal(namesFiltered.get(i)).withStyle(ChatFormatting.GOLD));
                 // Add comma if not last
-                if (i < namesFiltered.size() - 1) playerList.append(Text.literal(", ").formatted(Formatting.YELLOW));
+                if (i < namesFiltered.size() - 1) playerList.append(Component.literal(", ").withStyle(ChatFormatting.YELLOW));
             }
 
             // Reply
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.countname.list", EventUtils.MESSAGE_PREFIX, "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Text.translatable("eventutils.word.plural").formatted(Formatting.YELLOW) : "", Text.literal(filter).formatted(Formatting.GOLD), playerList));
+            context.getSource().sendFeedback(Component.translatable("eventutils.command.countname.list", EventUtils.MESSAGE_PREFIX, "§6" + namesFiltered.size(), namesFiltered.size() != 1 ? Component.translatable("eventutils.word.plural").withStyle(ChatFormatting.YELLOW) : "", Component.literal(filter).withStyle(ChatFormatting.GOLD), playerList));
         });
     }
 }

@@ -11,7 +11,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static net.minecraft.text.Text.translatable;
+import static net.minecraft.network.chat.Component.translatable;
 
 
 public class TeleportCmd extends EUCommand {
@@ -48,7 +48,7 @@ public class TeleportCmd extends EUCommand {
         // Get last event of type
         final EventWrapper lastEvent = mod.lastEvents.get(type);
         if (lastEvent == null || lastEvent.ip == null) {
-            source.sendError(translatable("eventutils.command.no_event_found", type.name().toLowerCase()));
+            source.sendError(translatable("eventutils.command.no_event_found", type.nameTranslation));
             return;
         }
 

@@ -4,9 +4,9 @@ import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.config.Group;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import com.mojang.authlib.GameProfile;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,11 +52,11 @@ public class GroupManager {
     }
 
     private boolean isSelf(@NotNull String name) {
-        final MinecraftClient client = MinecraftClient.getInstance();
-        return client != null && client.player != null && client.player.getName().getString().equalsIgnoreCase(name);
+        final Minecraft client = Minecraft.getInstance();
+        return client.player != null && client.player.getName().getString().equalsIgnoreCase(name);
     }
 
-    public boolean isPlayerVisible(@NotNull GameProfile profile, @Nullable Vec3d position) {
+    public boolean isPlayerVisible(@NotNull GameProfile profile, @Nullable Vec3 position) {
         // All visible
         final Group group = getSelectedGroup();
         if (group == null) return true;
@@ -72,7 +72,7 @@ public class GroupManager {
         return group.isPlayerVisible(versionedProfile.getName(), position);
     }
 
-    public boolean isPlayerVisible(@Nullable String name, @Nullable Vec3d position) {
+    public boolean isPlayerVisible(@Nullable String name, @Nullable Vec3 position) {
         // All visible
         final Group group = getSelectedGroup();
         if (group == null) return true;
@@ -87,7 +87,7 @@ public class GroupManager {
         return group.isPlayerVisible(name, position);
     }
 
-    public boolean isEntityVisible(@NotNull EntityType<?> entityType, @Nullable Vec3d position) {
+    public boolean isEntityVisible(@NotNull EntityType<?> entityType, @Nullable Vec3 position) {
         // All visible
         final Group group = getSelectedGroup();
         if (group == null) return true;

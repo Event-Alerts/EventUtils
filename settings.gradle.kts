@@ -12,11 +12,24 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
+dependencyResolutionManagement {
+    repositories {
+        maven("https://maven.kikugie.dev/releases/")
+        maven("https://maven.kikugie.dev/snapshots/")
+    }
+
+    versionCatalogs {
+        create("ft") { from("dev.kikugie.fletching-table:fletching-table.catalog:0.2-SNAPSHOT") }
+    }
+}
+
 rootProject.name = "EventUtils"
 
 stonecutter {
     create(rootProject) {
         versions(
+            "26.2",
+            "26.1.2",
             "1.21.11",
             "1.21.6",
             "1.21.5",

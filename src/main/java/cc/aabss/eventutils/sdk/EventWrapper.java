@@ -9,8 +9,8 @@ import cc.aabss.eventutils.utility.ConnectUtility;
 import cc.aabss.eventutils.utility.MarkdownSanitizer;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAFamousEvent;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -180,22 +180,29 @@ public class EventWrapper {
 
             // toast
             if (!toastSent && settings.toasts) {
-                final MinecraftClient client = MinecraftClient.getInstance();
-                if (client != null) {
-                    // Get title
-                    final String prizeTranslation = prize != null ? "eventutils.event.toast.prize.text" : "eventutils.event.toast.prize.none";
-                    final Text title = Text.translatable("eventutils.event.toast.title", eventType.nameTranslation, Text.translatable(prizeTranslation, prize)).formatted(eventType.color);
+                // Get title
+                final String prizeTranslation = prize != null ? "eventutils.event.toast.prize.text" : "eventutils.event.toast.prize.none";
+                final Component title = Component.translatable("eventutils.event.toast.title", eventType.nameTranslation, Component.translatable(prizeTranslation, prize)).withStyle(eventType.color);
 
-                    // Get description
-                    final Text description = ip != null ? Text.translatable("eventutils.event.teleport.text", Text.translatable("eventutils.event.teleport.command", eventType.name().toLowerCase()).formatted(eventType.color)) : null;
+                // Get description
+                final Component description = ip != null ? Component.translatable("eventutils.event.teleport.text", Component.translatable("eventutils.event.teleport.command", eventType.name().toLowerCase()).withStyle(eventType.color)) : null;
 
-                    // Update metric
-                    mod.stats.eventToastsReceived.incrementAndGet();
+                // Update metric
+                mod.stats.eventToastsReceived.incrementAndGet();
 
-                    // Send toast
-                    client.execute(() -> client.getToastManager().add(new NotificationToast(title, description, ip != null)));
-                    toastSent = true;
-                }
+                // Send toast
+                final Minecraft client = Minecraft.getInstance();
+                client.execute(() -> {
+                    //? if >=26.2 {
+                    /*client.gui.toastManager()
+                    *///? } else if >1.21.1 {
+                    client.getToastManager()
+                    //?} else {
+                    /*client.getToasts()
+                    *///?}
+                            .addToast(new NotificationToast(title, description, ip != null));
+                });
+                toastSent = true;
             }
 
             // sound

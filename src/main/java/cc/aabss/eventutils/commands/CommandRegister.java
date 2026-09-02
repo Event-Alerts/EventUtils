@@ -7,7 +7,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -25,7 +25,7 @@ public class CommandRegister {
         final LiteralCommandNode<FabricClientCommandSource> main = ClientCommandManager
                 .literal("eventutils")
                 .executes(context -> {
-                    context.getSource().sendError(Text.translatable("eventutils.command.unknown"));
+                    context.getSource().sendError(Component.translatable("eventutils.command.unknown"));
                     return 0;
                 })
                 .build();

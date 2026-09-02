@@ -1,11 +1,15 @@
 package cc.aabss.eventutils.plustag;
 
-import cc.aabss.eventutils.BuildProperties;
 import cc.aabss.eventutils.EventUtils;
+import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import gg.eventalerts.sdk.object.EAPlayer;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+//? if >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} else {
+import net.minecraft.resources.ResourceLocation;
+//?}
 
 import java.util.function.Predicate;
 
@@ -30,14 +34,29 @@ public enum PlusTag {
 
     WHITE(player -> player.discord != null && player.minecraft != null);
 
-    @NotNull public static final Identifier BEE = Identifier.of(BuildProperties.MOD_ID, "textures/bee/bee.png");
-    @NotNull public static final Identifier BEE_GREEN = Identifier.of(BuildProperties.MOD_ID, "textures/bee/bee_green.png");
 
-    @NotNull public final Identifier textureId;
+    //? if >=1.21.11 {
+    /*@NotNull public static final Identifier BEE
+    *///?} else {
+    @NotNull public static final ResourceLocation BEE
+    //?}
+            = VersionedIdentifier.of("textures/bee/bee.png");
+    //? if >=1.21.11 {
+    /*@NotNull public static final Identifier BEE_GREEN
+    *///?} else {
+    @NotNull public static final ResourceLocation BEE_GREEN
+    //?}
+            = VersionedIdentifier.of("textures/bee/bee_green.png");
+
+    //? if >=1.21.11 {
+    /*@NotNull public final Identifier textureId;
+    *///?} else {
+    @NotNull public final ResourceLocation textureId;
+    //?}
     @NotNull public final Predicate<EAPlayer> isUnlocked;
 
     PlusTag(@NotNull Predicate<EAPlayer> isUnlocked) {
-        this.textureId = Identifier.of(BuildProperties.MOD_ID, "textures/bee/plus/" + name().toLowerCase() + ".png");
+        this.textureId = VersionedIdentifier.of("textures/bee/plus/" + name().toLowerCase() + ".png");
         this.isUnlocked = isUnlocked;
     }
 

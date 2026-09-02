@@ -1,14 +1,15 @@
 package cc.aabss.eventutils;
 
+import cc.aabss.eventutils.versioning.VersionedLocalPlayer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +19,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 
-import static net.minecraft.text.Text.translatable;
+import static net.minecraft.network.chat.Component.translatable;
 
 
 /**
@@ -41,17 +42,17 @@ public class UpdateChecker {
         if (!mod.config.update_checker) return;
 
         // Ensure client in-game
-        final MinecraftClient client = MinecraftClient.getInstance();
+        final Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
 
         fetchLatestVersion().thenAccept(version -> {
             // Only notify if not on latest
-            if (version != null) client.send(() -> {
+            if (version != null) client.execute(() -> {
                 if (client.player == null) return;
-                final MutableText hover = translatable("eventutils.updatechecker.hover");
+                final MutableComponent hover = translatable("eventutils.updatechecker.hover");
                 final String link = "https://modrinth.com/mod/alerts/version/" + version;
                 final String configCommand = "/eventutils config";
-                client.player.sendMessage(
+                new VersionedLocalPlayer(client.player).sendMessage(
                         EventUtils.MESSAGE_PREFIX.copy().append(" §e" + EventUtils.translate("eventutils.updatechecker.new") + "§r §7(" + BuildProperties.MOD_VERSION + " -> v" + version.replace(EventUtils.MC_VERSION + "-", "") + ")" + "\n")
                                 .setStyle(EventUtils.MESSAGE_PREFIX.getStyle()
                                         //? if >=1.21.5 {
@@ -61,12 +62,12 @@ public class UpdateChecker {
                                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover))
                                         .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link)))
                                 //?}
-                                .append(Text.literal("§7§o" + EventUtils.translate("eventutils.updatechecker.config"))
+                                .append(Component.literal("§7§o" + EventUtils.translate("eventutils.updatechecker.config"))
                                         //? if >=1.21.5 {
-                                        /*.setStyle(Style.EMPTY.withClickEvent(new ClickEvent.RunCommand(configCommand)))),
+                                        /*.setStyle(Style.EMPTY.withClickEvent(new ClickEvent.RunCommand(configCommand))))
                                          *///?} else
-                                        .setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, configCommand)))),
-                        false);
+                                        .setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, configCommand))))
+                        );
             });
         });
     }

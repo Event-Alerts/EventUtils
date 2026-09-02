@@ -16,11 +16,12 @@ import cc.aabss.eventutils.manager.GroupManager;
 import cc.aabss.eventutils.manager.KeybindManager;
 import cc.aabss.eventutils.sdk.EnrichedEvent;
 import cc.aabss.eventutils.sdk.EventWrapper;
+import cc.aabss.eventutils.stats.Stats;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import cc.aabss.eventutils.websocket.listener.EventCancelledListener;
 import cc.aabss.eventutils.websocket.listener.EventPostedListener;
 import cc.aabss.eventutils.websocket.listener.FamousEventPostedListener;
-import dev.kikugie.fletching_table.annotation.fabric.Entrypoint;
+import dev.kikugie.fletching_table.fabric.Entrypoint;
 import eu.okaeri.configs.json.gson.JsonGsonConfigurer;
 import eu.okaeri.configs.serdes.commons.SerdesCommons;
 import gg.eventalerts.sdk.http.EAHTTP;
@@ -34,15 +35,15 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Language;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,16 +68,16 @@ import java.util.stream.Collectors;
 public class EventUtils implements ClientModInitializer {
     @NotNull private static final Duration IN_EVENT_TIME = Duration.ofHours(12);
     @NotNull public static final String QUEUE_TEXT = "\n\n Per-server ranks get a higher priority in their respective queues. To receive such a rank, purchase one at\n store.invadedlands.net.\n\nTo leave a queue, use the command: /leavequeue.\n";
-    @NotNull public static final MutableText MESSAGE_PREFIX = Text.literal(BuildProperties.MOD_NAME)
-            .formatted(Formatting.BOLD)
-            .fillStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xF5AA42)))
-            .append(Text.literal("§r »")
-                    .fillStyle(Style.EMPTY.withBold(false).withColor(TextColor.fromRgb(0xB57C2F))));
-    @NotNull public static final MutableText ERROR_MESSAGE_PREFIX = Text.literal(BuildProperties.MOD_NAME)
-            .formatted(Formatting.BOLD)
-            .formatted(Formatting.RED)
-            .append(Text.literal("§r§4 »")
-                    .fillStyle(Style.EMPTY.withBold(false)));
+    @NotNull public static final MutableComponent MESSAGE_PREFIX = Component.literal(BuildProperties.MOD_NAME)
+            .withStyle(ChatFormatting.BOLD)
+            .withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xF5AA42)))
+            .append(Component.literal("§r »")
+                    .withStyle(Style.EMPTY.withBold(false).withColor(TextColor.fromRgb(0xB57C2F))));
+    @NotNull public static final MutableComponent ERROR_MESSAGE_PREFIX = Component.literal(BuildProperties.MOD_NAME)
+            .withStyle(ChatFormatting.BOLD)
+            .withStyle(ChatFormatting.RED)
+            .append(Component.literal("§r§4 »")
+                    .withStyle(Style.EMPTY.withBold(false)));
 
     /**
      * Only use if it is absolutely impossible to access the mod instance through other (safer) means
@@ -187,19 +188,19 @@ public class EventUtils implements ClientModInitializer {
             // Delay some stuff to wait for server info to be fully loaded
             MiscUtility.IO_SCHEDULER.schedule(() -> {
                 // Populate players cache
-                final ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
-                if (networkHandler != null) cacheManager
+                final ClientPacketListener packetListener = client.getConnection();
+                if (packetListener != null) cacheManager
                         .players()
-                        .get(networkHandler.getListedPlayerListEntries().stream()
+                        .get(packetListener.getListedOnlinePlayers().stream()
                                 .map(entry -> new VersionedGameProfile(entry.getProfile()).getId())
                                 .collect(Collectors.toSet()))
                         .queue();
 
                 // inEvent
-                final ServerInfo server = client.getCurrentServerEntry();
-                EventUtils.LOGGER.debug("[JOIN] server={}", server != null ? server.address : "null");
+                final ServerData server = client.getCurrentServer();
+                EventUtils.LOGGER.debug("[JOIN] server={}", server != null ? server.ip : "null");
                 if (server != null) {
-                    final String ip = server.address.toLowerCase();
+                    final String ip = server.ip.toLowerCase();
                     LOGGER.debug("[JOIN] retrieving event ip={}", ip);
                     http.events.retrieveMany(1, null, Map.of(
                                     "match", "any",
@@ -252,18 +253,18 @@ public class EventUtils implements ClientModInitializer {
         ClientReceiveMessageEvents.MODIFY_GAME.register(((text, overlay) -> {
             if (config.simple_queue_message && text.getString().contains(QUEUE_TEXT)) {
                 final String original = text.getString();
-                final MutableText resultText = Text.literal("");
+                final MutableComponent resultComponent = Component.literal("");
                 final Matcher matcher = java.util.regex.Pattern
                         .compile("([\\w -]+?Queue Position)\\s*:\\s*(\\d+)/(\\d+)")
                         .matcher(original);
                 while (matcher.find()) {
-                    if (!resultText.getSiblings().isEmpty()) resultText.append("\n");
-                    resultText.append(Text.literal(matcher.group(1)).formatted(Formatting.GOLD).append(": ")
-                            .append(Text.literal(matcher.group(2)).formatted(Formatting.YELLOW))
-                            .append(Text.literal("/").formatted(Formatting.GOLD))
-                            .append(Text.literal(matcher.group(3)).formatted(Formatting.YELLOW)));
+                    if (!resultComponent.getSiblings().isEmpty()) resultComponent.append("\n");
+                    resultComponent.append(Component.literal(matcher.group(1)).withStyle(ChatFormatting.GOLD).append(": ")
+                            .append(Component.literal(matcher.group(2)).withStyle(ChatFormatting.YELLOW))
+                            .append(Component.literal("/").withStyle(ChatFormatting.GOLD))
+                            .append(Component.literal(matcher.group(3)).withStyle(ChatFormatting.YELLOW)));
                 }
-                if (!resultText.getSiblings().isEmpty()) return resultText;
+                if (!resultComponent.getSiblings().isEmpty()) return resultComponent;
             }
             // May need to manipulate later
             return text;
@@ -311,8 +312,8 @@ public class EventUtils implements ClientModInitializer {
     }
 
     public static boolean isNpc(@NotNull UUID uuid) {
-        final ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
-        return networkHandler != null && networkHandler.getPlayerListEntry(uuid) == null;
+        final ClientPacketListener packetListener = Minecraft.getInstance().getConnection();
+        return packetListener != null && packetListener.getPlayerInfo(uuid) == null;
     }
 
     public static boolean isNpc(@Nullable String name) {
@@ -320,8 +321,8 @@ public class EventUtils implements ClientModInitializer {
         if (name == null || name.isEmpty() || !name.matches("^[a-zA-Z0-9_]{3,16}$")) return true;
 
         // Check if name in player-list
-        final ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
-        return networkHandler != null && networkHandler.getPlayerList().stream()
+        final ClientPacketListener packetListener = Minecraft.getInstance().getConnection();
+        return packetListener != null && packetListener.getListedOnlinePlayers().stream()
                 .noneMatch(entry -> new VersionedGameProfile(entry.getProfile()).getName().equalsIgnoreCase(name));
     }
 
@@ -334,7 +335,7 @@ public class EventUtils implements ClientModInitializer {
 
     @NotNull
     public static String translate(@NotNull String key) {
-        return Language.getInstance().get(key);
+        return Language.getInstance().getOrDefault(key);
     }
 
     /**

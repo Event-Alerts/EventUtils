@@ -1,5 +1,6 @@
 package cc.aabss.eventutils.config;
 
+import cc.aabss.eventutils.stats.Stat;
 import eu.okaeri.configs.OkaeriConfig;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.spi.StandardLevel;
@@ -15,18 +16,43 @@ public class EUConfig extends OkaeriConfig {
     public static final int MIN_EVENT_SERVER_DISPLAY_MINUTES = 1;
     public static final int MAX_EVENT_SERVER_DISPLAY_MINUTES = 15;
 
+
+    @Stat
     public boolean discord_rpc = Defaults.DISCORD_RPC;
+
+    @Stat
     public boolean simple_queue_message = Defaults.SIMPLE_QUEUE_MESSAGE;
+
+    @Stat
     public boolean update_checker = Defaults.UPDATE_CHECKER;
+
+    @Stat
     public boolean confirm_window_close = Defaults.CONFIRM_WINDOW_CLOSE;
+
+    @Stat
     public boolean confirm_disconnect = Defaults.CONFIRM_DISCONNECT;
+
+    @Stat
     @NotNull public String default_famous_ip = Defaults.DEFAULT_FAMOUS_IP;
+
+    @Stat
     public boolean bee_icons = Defaults.BEE_ICONS;
-    @Range(from = MIN_EVENT_SERVER_DISPLAY_MINUTES, to = MAX_EVENT_SERVER_DISPLAY_MINUTES) public int event_server_display_minutes = Defaults.EVENT_SERVER_DISPLAY_MINUTES;
+
+    @Range(from = MIN_EVENT_SERVER_DISPLAY_MINUTES, to = MAX_EVENT_SERVER_DISPLAY_MINUTES) @Stat
+    public int event_server_display_minutes = Defaults.EVENT_SERVER_DISPLAY_MINUTES;
+
+    @Stat
     @NotNull public Map<UUID, Group> groups = Defaults.groups();
+
+    @Stat
     @NotNull public Map<EventType, EventSettings> event_settings = Defaults.eventSettings();
+
+    @Stat
     public boolean developer_mode = Defaults.DEVELOPER_MODE;
+
+    @Stat
     @NotNull public StandardLevel log_level = Defaults.LOG_LEVEL;
+
 
     @NotNull
     public List<String> getGroupNames() {

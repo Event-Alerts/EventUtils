@@ -1,14 +1,24 @@
+import net.fabricmc.loom.task.RemapJarTask
 import xyz.srnyx.gradlegalaxy.utility.inGitHubPublish
 import xyz.srnyx.gradlegalaxy.utility.inGitHubWorkflow
+import java.io.File
+import java.net.URI
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+
 
 plugins {
     id("dev.kikugie.loom-back-compat")
-    id("xyz.srnyx.gradle-galaxy") version "a8227b9"
+    id("xyz.srnyx.gradle-galaxy") version "56c48b7"
     id("com.gradleup.shadow") version "9.6.1"
-    id("me.modmuss50.mod-publish-plugin") version "675051c"
-    id("dev.kikugie.fletching-table.fabric") version "0.1.0-alpha.22"
-    kotlin("jvm") version "2.4.10" // For Fletching Table
-    id("com.google.devtools.ksp") version "2.3.10" // For Fletching Table
+    id("me.modmuss50.mod-publish-plugin") version "04fb4ab"
+
+    // Fletching Table
+    alias(ft.plugins.default)
+    alias(ft.plugins.fabric)
+    alias(ft.plugins.mixin)
+    alias(ft.plugins.lang)
 }
 
 group = "cc.aabss"
@@ -52,7 +62,7 @@ galaxy {
         if (javaUtilitiesVersion == "snapshot" || sdkVersion == "snapshot" || okaeriConfigsVersion == "snapshot") add(MAVEN_LOCAL)
 
         add(
-            "https://maven.gnomecraft.net/releases/", "https://maven.nucleoid.xyz/",
+            GNOMECRAFT_RELEASES, NUCLEOID,
             OKAERI_RELEASES, OKAERI_SNAPSHOTS,
             SRNYX_RELEASES, SRNYX_SNAPSHOTS,
             FABRIC, SHEDANIEL, ISXANDER,
@@ -66,6 +76,7 @@ galaxy {
             "mod_id" to modId,
             "mod_name" to modName,
             "mod_version" to modVersion,
+            "fabric_api_id" to if (is261Plus) "fabric-api" else "fabric",
             "deps_minecraft" to sc.current.version,
             "deps_loader" to loaderVersion,
             "deps_fabric_api" to fabricApiVersion,
@@ -74,25 +85,29 @@ galaxy {
 
         platformPublishing {
             modrinth("ZcRRACSs") {
+                file = (if (is261Plus) tasks.shadowJar else loomx.modJar)
+                    .flatMap { it.archiveFile }
+                    .map { it.asFile }
+
                 // Fabric API
                 requires {
-                    id.set("P7dR8mSH")
-                    version.set(fabricApiVersion)
+                    id = "P7dR8mSH"
+                    version = fabricApiVersion
                 }
                 // YetAnotherConfigLib (YACL)
                 requires {
-                    id.set("1eAoo2KR")
-                    version.set(yaclVersion)
+                    id = "1eAoo2KR"
+                    version = yaclVersion
                 }
                 // Text Placeholder API
                 placeholderApiVersion?.let { requires {
-                    id.set("eXts2L7r")
-                    version.set(it)
+                    id = "eXts2L7r"
+                    version = it
                 } }
                 // Mod Menu
                 optional {
-                    id.set("mOgUt4GM")
-                    version.set(modMenuVersion)
+                    id = "mOgUt4GM"
+                    version = modMenuVersion
                 }
             }
 
@@ -108,11 +123,7 @@ dependencies {
     minecraft("com.mojang:minecraft:${sc.current.version}")
 
     // Mappings
-    if (is261Plus) {
-        loomx.applyMojangMappings()
-    } else {
-        mappings("net.fabricmc:yarn:${property("deps.yarn_mappings").toString()}:v2")
-    }
+    loomx.applyMojangMappings()
 
     // Library: Java Utilities
     shadowLibrary("xyz.srnyx:java-utilities:$javaUtilitiesVersion")
@@ -156,30 +167,53 @@ stonecutter {
     swaps["mod_name"] = "\"$modName\""
     swaps["mod_version"] = "\"$modVersion\""
     swaps["mod_version_full"] = "\"$version\""
+
+    // Replacements
+    replacements.string(current.parsed >= "26.1") {
+        replace("ClientCommandManager", "ClientCommands")
+        replace("GuiGraphics", "GuiGraphicsExtractor")
+        replace("net.minecraft.client.renderer.state.CameraRenderState", "net.minecraft.client.renderer.state.level.CameraRenderState")
+    }
+    replacements.string(current.parsed < "1.21") {
+        replace("GenericMessageScreen", "GenericDirtMessageScreen")
+    }
 }
 
 fletchingTable {
-    fabric {
-        entrypointMappings.put("modmenu", "com.terraformersmc.modmenu.api.ModMenuApi")
+    fabric.configure("main") {
+        entrypoint("modmenu", "com.terraformersmc.modmenu.api.ModMenuApi")
     }
 
-    mixins.create("main") {
-        mixin("default", "eventutils.mixins.json") {
+    mixins.configure("main") {
+        mixin("eventutils.mixins.json") {
             env("client")
         }
     }
 
-    lang.create("main") {
-        patterns.add("assets/$modId/lang/**")
-    }
+    lang.configure("main") {}
 }
 
 tasks {
-    jar { archiveClassifier.set("") }
+    if (is261Plus) {
+        jar { archiveClassifier = "dev" }
+        val includeJarsDir = layout.buildDirectory.dir("processIncludeJars").get().asFile
+        shadowJar {
+            archiveClassifier = ""
+            dependsOn(jar, "processIncludeJars")
+            doLast { JarInJarGrafter.graft(archiveFile.get().asFile, includeJarsDir) }
+        }
+    } else {
+        jar { archiveClassifier = "" }
+        shadowJar { archiveClassifier = "shadow" }
+        named<RemapJarTask>("remapJar") {
+            dependsOn(shadowJar)
+            mustRunAfter(shadowJar)
+            inputFile = shadowJar.flatMap { it.archiveFile }
+        }
+    }
 
     shadowJar {
-        archiveClassifier.set("shadow")
-        configurations.set(project.configurations.named("shadow").map { listOf(it) })
+        configurations = project.configurations.named("shadow").map { listOf(it) }
         mergeServiceFiles()
 
         val libsPackage = "${project.group}.$modId.libs"
@@ -205,19 +239,13 @@ tasks {
         relocate("org.newsclub.net.unix", "$libsPackage.newsclub.unix")
     }
 
-    remapJar {
-        dependsOn(shadowJar)
-        mustRunAfter(shadowJar)
-        inputFile.set(shadowJar.flatMap { it.archiveFile })
-    }
-
     // Builds the version into a shared folder in `build/libs`
     register<Copy>("buildAndCollect") {
         group = "build"
         description = "Builds the mod and copies the jar to a shared folder"
 
         // loomx.modJar returns the jar task for the applied loom variant
-        from(loomx.modJar.map { it.archiveFile })
+        from((if (is261Plus) shadowJar else loomx.modJar).map { it.archiveFile })
         into(rootProject.layout.buildDirectory.file("libs"))
 
         dependsOn("build")
@@ -227,26 +255,34 @@ tasks {
 loom {
     fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json") // Useful for interface injection
 
-    decompilerOptions.named("vineflower") {
+    if (!is261Plus) decompilerOptions.named("vineflower") {
         options.put("mark-corresponding-synthetics", "1") // Adds names to lambdas - useful for mixins
     }
 
     runConfigs.all {
-        preferGradleTask.set(true)
+        preferGradleTask = true
         jvmArguments.add("-Dmixin.debug.export=true") // Exports transformed classes for debugging
-        runDirectory.set(file("../../run")) // Shares the run directory between versions
+        runDirectory = file("../../run") // Shares the run directory between versions
     }
 }
 
-// Register buildActive task
-if (sc.current.isActive) rootProject.tasks.register("buildActive") {
-    group = "build"
-    description = "Builds the mod for the currently active Minecraft version"
+// Register tasks for active version
+if (sc.current.isActive) {
+    rootProject.tasks.register("buildActive") {
+        group = "build"
+        description = "Builds the mod for the currently active Minecraft version"
 
-    // Build mod
-    dependsOn(tasks.named("build"))
-    // Copy built jar to shared folder
-    dependsOn(tasks.named("buildAndCollect"))
+        // Build mod + copy built jar to shared folder
+        dependsOn(tasks.named("build"), tasks.named("buildAndCollect"))
+    }
+
+    rootProject.tasks.register("runActive") {
+        group = "fabric"
+        description = "Runs the mod for the currently active Minecraft version"
+
+        // Run mod
+        dependsOn(tasks.named("runClient"))
+    }
 }
 
 // Custom jijLibrary (modImplementation + include) and shadowLibrary (implementation + shadow) dependency configurations
@@ -257,4 +293,27 @@ fun DependencyHandler.jijLibrary(dependency: String) {
 fun DependencyHandler.shadowLibrary(dependency: String) {
     implementation(dependency)
     shadow(dependency)
+}
+
+// object required for configuration cache
+object JarInJarGrafter {
+    fun graft(targetJar: File, includeJarsDir: File) {
+        val includeJars = includeJarsDir.listFiles { file -> file.isFile && file.extension == "jar" }?.sorted().orEmpty()
+
+        FileSystems.newFileSystem(URI.create("jar:${targetJar.toURI()}"), emptyMap<String, Any>()).use { fs ->
+            // Nested Jar-in-Jar mods
+            if (includeJars.isNotEmpty()) {
+                val jarsDir = fs.getPath("META-INF", "jars")
+                Files.createDirectories(jarsDir)
+                for (jarFile in includeJars) Files.copy(jarFile.toPath(), jarsDir.resolve(jarFile.name), StandardCopyOption.REPLACE_EXISTING)
+            }
+
+            // fabric.mod.json `jars` entries
+            val fmjPath = fs.getPath("fabric.mod.json")
+            @Suppress("UNCHECKED_CAST")
+            val fmj = groovy.json.JsonSlurper().parse(Files.readAllBytes(fmjPath)) as MutableMap<String, Any?>
+            fmj["jars"] = includeJars.map { mapOf("file" to "META-INF/jars/${it.name}") }
+            Files.newOutputStream(fmjPath).use { it.write(groovy.json.JsonOutput.toJson(fmj).toByteArray()) }
+        }
+    }
 }

@@ -8,11 +8,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -29,8 +29,8 @@ public class PriorityCmd extends EUCommand {
                 .literal("priority")
                 .then(ClientCommandManager.argument("player", StringArgumentType.word())
                         .suggests((context, builder) -> {
-                            final ClientPlayNetworkHandler networkHandler = context.getSource().getClient().getNetworkHandler();
-                            if (networkHandler != null) for (final PlayerListEntry player : networkHandler.getPlayerList()) {
+                            final ClientPacketListener packetListener = context.getSource().getClient().getConnection();
+                            if (packetListener != null) for (final PlayerInfo player : packetListener.getListedOnlinePlayers()) {
                                 final VersionedGameProfile profile = new VersionedGameProfile(player.getProfile());
                                 if (!EventUtils.isNpc(profile.getId())) builder.suggest(profile.getName());
                             }
@@ -48,26 +48,26 @@ public class PriorityCmd extends EUCommand {
     }
 
     private static void execute(@NotNull CommandContext<FabricClientCommandSource> context, String name) {
-        final MinecraftClient client = context.getSource().getClient();
-        client.send(() -> {
+        final Minecraft client = context.getSource().getClient();
+        client.execute(() -> {
             // Get names
             final List<String> namesSorted = PriorityCommon.getNamesSorted(client);
             if (namesSorted == null || client.player == null) {
-                context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.noplayer", EventUtils.ERROR_MESSAGE_PREFIX));
+                context.getSource().sendFeedback(Component.translatable("eventutils.command.priority.noplayer", EventUtils.ERROR_MESSAGE_PREFIX));
                 return;
             }
 
             final String nameLower = name.toLowerCase();
             for (final String playerName : namesSorted) if (nameLower.equals(playerName.toLowerCase())) {
                 if (playerName.equalsIgnoreCase(client.player.getName().getString())) {
-                    context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.self", EventUtils.MESSAGE_PREFIX, "§6#" + (namesSorted.indexOf(playerName) + 1)));
+                    context.getSource().sendFeedback(Component.translatable("eventutils.command.priority.self", EventUtils.MESSAGE_PREFIX, "§6#" + (namesSorted.indexOf(playerName) + 1)));
                 } else {
-                    context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.player", EventUtils.MESSAGE_PREFIX, Text.literal(playerName).formatted(Formatting.YELLOW), "§6#" + (namesSorted.indexOf(playerName) + 1)));
+                    context.getSource().sendFeedback(Component.translatable("eventutils.command.priority.player", EventUtils.MESSAGE_PREFIX, Component.literal(playerName).withStyle(ChatFormatting.YELLOW), "§6#" + (namesSorted.indexOf(playerName) + 1)));
                 }
 
                 return;
             }
-            context.getSource().sendFeedback(Text.translatable("eventutils.command.priority.noplayer", EventUtils.ERROR_MESSAGE_PREFIX));
+            context.getSource().sendFeedback(Component.translatable("eventutils.command.priority.noplayer", EventUtils.ERROR_MESSAGE_PREFIX));
         });
     }
 }

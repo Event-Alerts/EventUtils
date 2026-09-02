@@ -6,7 +6,7 @@ mod.group = "cc.aabss"
 loomx.loom_version = "1.17-SNAPSHOT"
 loomx.loom_remap_plugin = "fabric-loom"
 
-deps.loader = "0.18.4"
+deps.loader = "0.19.0"
 
 library.java_utilities = "0c7c450"
 library.semver4j = "6.0.0"
@@ -16,45 +16,47 @@ library.discord_ipc = "0.11.3"
 library.faststats = "0.29.4"
 
 
+["26.2"]
+deps.fabric_api="0.152.1+26.2"
+deps.yacl="3.9.4+26.2-fabric"
+deps.modmenu="20.0.0"
+
+["26.1.2"]
+deps.fabric_api="0.145.4+26.1.2"
+deps.yacl="3.9.2+26.1-fabric"
+deps.modmenu="18.0.0"
+
 ["1.21.11"]
-mixins = "eventutils-1.21.11.mixin.json"
-deps.yarn_mappings="1.21.11+build.1"
 deps.fabric_api="0.141.0+1.21.11"
 deps.yacl="3.8.1+1.21.11-fabric"
 deps.modmenu="17.0.0"
 
 ["1.21.6"]
-deps.yarn_mappings="1.21.6+build.1"
 deps.fabric_api="0.128.2+1.21.6"
 deps.yacl="3.7.1+1.21.6-fabric"
 deps.modmenu="15.0.0"
 
 ["1.21.5"]
-deps.yarn_mappings="1.21.5+build.1"
 deps.fabric_api="0.128.2+1.21.5"
 deps.yacl="3.7.1+1.21.5-fabric"
 deps.modmenu="14.0.0"
 
 ["1.21.4"]
-deps.yarn_mappings="1.21.4+build.7"
 deps.fabric_api="0.114.0+1.21.4"
 deps.yacl="3.6.2+1.21.4-fabric"
 deps.modmenu="13.0.0"
 
 ["1.21.1"]
-deps.yarn_mappings="1.21.1+build.3"
 deps.fabric_api="0.102.0+1.21.1"
 deps.yacl="3.6.0+1.21-fabric"
 deps.modmenu="11.0.3"
 
 ["1.21"]
-deps.yarn_mappings="1.21+build.9"
 deps.fabric_api="0.102.0+1.21"
 deps.yacl="3.6.0+1.21-fabric"
 deps.modmenu="11.0.3"
 
 ["1.20.4"]
-deps.yarn_mappings="1.20.4+build.3"
 deps.fabric_api="0.97.1+1.20.4"
 deps.yacl="3.6.0+1.20.4-fabric"
 deps.modmenu="9.2.0"
