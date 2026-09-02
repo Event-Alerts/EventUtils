@@ -13,7 +13,7 @@ library.semver4j = "6.0.0"
 library.sdk = "743106e"
 library.okaeri_configs = "df8ae69"
 library.discord_ipc = "0.11.3"
-library.faststats = "0.29.4"
+library.faststats = "0.30.0"
 
 
 ["26.2"]

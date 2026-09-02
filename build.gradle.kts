@@ -140,11 +140,14 @@ dependencies {
     shadowLibrary("io.github.cdagaming:DiscordIPC:${property("library.discord_ipc")}")
     // Library: FastStats (1.16.1-1.17.1, 1.18-1.21.8, 1.21.9-1.21.11, 26.1-26.3)
     when {
-        sc.current.version >= "1.16.1" && sc.current.version <= "1.17.1" -> "1.16.1-1.17.1"
-        sc.current.version >= "1.18" && sc.current.version <= "1.21.8" -> "1.18-1.21.8"
-        sc.current.version >= "1.21.9" && sc.current.version <= "1.21.11" -> "1.21.9-1.21.11"
-        sc.current.version >= "26.1" && sc.current.version <= "26.3" -> "26.1-26.3"
-        else -> null
+        sc.current.parsed >= "1.16.1" && sc.current.parsed <= "1.17.1" -> "1.16.1-1.17.1"
+        sc.current.parsed >= "1.18" && sc.current.parsed <= "1.21.8" -> "1.18-1.21.8"
+        sc.current.parsed >= "1.21.9" && sc.current.parsed <= "1.21.11" -> "1.21.9-1.21.11"
+        sc.current.parsed >= "26.1" && sc.current.parsed <= "26.3" -> "26.1-26.3"
+        else -> {
+            logger.warn("Unsupported Minecraft version for FastStats: ${sc.current.version}")
+            null
+        }
     }?.let { jijLibrary("dev.faststats.metrics:fabric:${property("library.faststats")}+mc$it") }
 
     // Fabric
