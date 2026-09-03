@@ -128,8 +128,12 @@ dependencies {
     // Library: Java Utilities
     shadowLibrary("xyz.srnyx:java-utilities:$javaUtilitiesVersion")
     // Library: Semver4j
-    shadowLibrary("org.semver4j:semver4j:${property("library.semver4j")}")
+    jijLibrary("org.semver4j:semver4j:${property("library.semver4j")}")
     // Library: Event Alerts SDK
+    jijLibrary("com.google.code.gson:gson:${property("library.gson")}")
+    jijLibrary("org.mongodb:bson:${property("library.bson")}")
+    jijLibrary("org.java-websocket:Java-WebSocket:${property("library.java_websocket")}")
+    jijLibrary("org.slf4j:slf4j-api:${property("library.slf4j")}") // For Java-WebSocket
     shadowLibrary("gg.eventalerts.sdk:http:$sdkVersion")
     shadowLibrary("gg.eventalerts.sdk:websocket:$sdkVersion")
     // Library: Okaeri Configs
@@ -137,7 +141,7 @@ dependencies {
     shadowLibrary("eu.okaeri:okaeri-configs-json-gson:$okaeriConfigsVersion")
     shadowLibrary("eu.okaeri:okaeri-configs-serdes-commons:$okaeriConfigsVersion")
     // Library: JDiscordIPC (https://github.com/jagrosh/DiscordIPC/pull/24/changes)
-    shadowLibrary("io.github.cdagaming:DiscordIPC:${property("library.discord_ipc")}")
+    jijLibrary("io.github.cdagaming:DiscordIPC:${property("library.discord_ipc")}")
     // Library: FastStats (1.16.1-1.17.1, 1.18-1.21.8, 1.21.9-1.21.11, 26.1-26.3)
     when {
         sc.current.parsed >= "1.16.1" && sc.current.parsed <= "1.17.1" -> "1.16.1-1.17.1"
@@ -148,7 +152,7 @@ dependencies {
             logger.warn("Unsupported Minecraft version for FastStats: ${sc.current.version}")
             null
         }
-    }?.let { jijLibrary("dev.faststats.metrics:fabric:${property("library.faststats")}+mc$it") }
+    }?.let { jijLibraryMod("dev.faststats.metrics:fabric:${property("library.faststats")}+mc$it") }
 
     // Fabric
     modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
@@ -219,27 +223,23 @@ tasks {
         configurations = project.configurations.named("shadow").map { listOf(it) }
         mergeServiceFiles()
 
+        exclude("META-INF/maven/**")
+        exclude("META-INF/native-image/**")
+        exclude("META-INF/proguard/**")
+
         val libsPackage = "${project.group}.$modId.libs"
         // Java Utilities
         relocate("xyz.srnyx.javautilities", "$libsPackage.javautilities")
-        // Semver4j
-        relocate("org.semver4j", "$libsPackage.semver4j")
         // Event Alerts SDK
-        exclude("org/bson/codecs/**")
+        exclude("com/google/errorprone/**")
+        exclude("com/google/gson/**") // JIJ
+        exclude("org/bson/**") // JIJ
+        exclude("org/java_websocket/**") // JIJ
+        exclude("org/slf4j/**") // JIJ (Java-WebSocket)
         relocate("gg.eventalerts.sdk", "$libsPackage.eventalerts.sdk")
-        relocate("com.google.errorprone", "$libsPackage.errorprone")
-        relocate("com.google.gson", "$libsPackage.gson")
-        relocate("org.bson", "$libsPackage.bson")
-        relocate("org.java_websocket", "$libsPackage.java_websocket")
-        relocate("org.slf4j", "$libsPackage.slf4j")
         // Okaeri Configs
         exclude("org/jspecify/annotations/**")
         relocate("eu.okaeri", "$libsPackage.okaeri")
-        // JDiscordIPC
-        relocate("com.jagrosh.discordipc", "$libsPackage.discordipc")
-        relocate("net.lenni0451.reflect", "$libsPackage.lenni0451.reflect")
-        relocate("org.newsclub.lib.junixsocket", "$libsPackage.junixsocket")
-        relocate("org.newsclub.net.unix", "$libsPackage.newsclub.unix")
     }
 
     // Builds the version into a shared folder in `build/libs`
@@ -288,8 +288,12 @@ if (sc.current.isActive) {
     }
 }
 
-// Custom jijLibrary (modImplementation + include) and shadowLibrary (implementation + shadow) dependency configurations
+// Custom jijLibrary ((mod)Implementation + include) and shadowLibrary (implementation + shadow) dependency configurations
 fun DependencyHandler.jijLibrary(dependency: String) {
+    implementation(dependency)
+    include(dependency)
+}
+fun DependencyHandler.jijLibraryMod(dependency: String) {
     modImplementation(dependency)
     include(dependency)
 }
