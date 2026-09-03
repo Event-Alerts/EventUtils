@@ -13,3 +13,4 @@ jobs:
       task: buildAndCollect publishMods
     secrets:
       MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+      CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
