@@ -182,6 +182,33 @@
         "label": "Bee icons",
         "description": "Toggle the bee icons for Event Alerts players in the player list"
       },
+      "discord_link": {
+        "label": "Link Discord account",
+        "description": "Link your Discord account to Event Alerts. Opens your browser to authorize, then finishes automatically.",
+        "button": {
+          "unlinked": "Not linked yet!",
+          "linked": "Linked to %s"
+        },
+
+        "toast": {
+          "linked": "Discord account linked!",
+          "failed": "Discord linking failed",
+          "denied": "Discord linking was cancelled or denied",
+          "timeout": "Discord linking timed out",
+          "port": "Could not open a local port for the callback",
+          "start": "Could not reach Event Alerts to start linking",
+          "reauth": "Linked, but re-authentication failed – restart your game",
+
+          "access_denied": "Access denied",
+          "bad_state": "Invalid state parameter in OAuth URL",
+          "missing_code": "Missing code parameter in OAuth URL",
+          "token_exchange": "Failed to exchange OAuth code for access token",
+          "discord_user": "Failed to get Discord user from access token",
+          "player_not_found": "Could not find player that Discord account",
+          "discord_already_linked": "That Discord account is already linked to another Minecraft account",
+          "merge_failed": "Failed to merge existing accounts"
+        }
+      },
 
       "groups": {
         "category": "Groups",

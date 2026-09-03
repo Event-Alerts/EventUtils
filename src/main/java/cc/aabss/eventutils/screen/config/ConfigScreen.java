@@ -25,111 +25,124 @@ public class ConfigScreen {
     public static Screen getConfigScreen(@Nullable Screen parent) {
         final EUConfig config = EventUtils.MOD.config;
         final YetAnotherConfigLib.Builder builder = YetAnotherConfigLib.createBuilder()
-            .title(translatable("eventutils.config.title"))
-            .category(ConfigCategory.createBuilder().name(translatable("eventutils.config.general"))
-                    .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.discord.label"))
-                            .description(OptionDescription.createBuilder()
-                                    .text(translatable("eventutils.config.discord.description"))
-                                    .image(VersionedIdentifier.of("textures/config/discord_rpc.png"), 351, 165)
-                                    .build())
-                            .binding(EUConfig.Defaults.DISCORD_RPC, () -> config.discord_rpc, newValue -> {
-                                config.discord_rpc = newValue;
-                                config.save();
-                                EventUtils.MOD.discordRPC.refreshConnection();
-                            })
-                            .controller(ConfigScreen::getBooleanBuilder)
-                            .build())
-                    .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.queue.label"))
-                            .description(OptionDescription.of(translatable("eventutils.config.queue.description")))
-                            .binding(EUConfig.Defaults.SIMPLE_QUEUE_MESSAGE, () -> config.simple_queue_message, newValue -> {
-                                config.simple_queue_message = newValue;
-                                config.save();
-                            })
-                            .controller(ConfigScreen::getBooleanBuilder)
-                            .build())
-                    .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.update.label"))
-                            .description(OptionDescription.of(translatable("eventutils.config.update.description")))
-                            .binding(EUConfig.Defaults.UPDATE_CHECKER, () -> config.update_checker, newValue -> {
-                                config.update_checker = newValue;
-                                config.save();
-                                EventUtils.MOD.updateChecker.notifyUpdate();
-                            })
-                            .controller(ConfigScreen::getBooleanBuilder)
-                            .build())
-                    .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.window.label"))
-                            .description(OptionDescription.createBuilder()
-                                    .text(translatable("eventutils.config.window.description"))
-                                    .image(VersionedIdentifier.of("textures/config/confirm_exit.png"), 950, 272)
-                                    .build())
-                            .binding(EUConfig.Defaults.CONFIRM_WINDOW_CLOSE, () -> config.confirm_window_close, newValue -> {
-                                config.confirm_window_close = newValue;
-                                config.save();
-                            })
-                            .controller(ConfigScreen::getBooleanBuilder)
-                            .build())
-                    .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.disconnect.label"))
-                            .description(OptionDescription.createBuilder()
-                                    .text(translatable("eventutils.config.disconnect.description"))
-                                    .image(VersionedIdentifier.of("textures/config/confirm_disconnect.png"), 972, 295)
-                                    .build())
-                            .binding(EUConfig.Defaults.CONFIRM_DISCONNECT, () -> config.confirm_disconnect, newValue -> {
-                                config.confirm_disconnect = newValue;
-                                config.save();
-                            })
-                            .controller(ConfigScreen::getBooleanBuilder)
-                            .build())
-                    .option(Option.<Boolean>createBuilder()
-                            .name(translatable("eventutils.config.bee_icons.label"))
-                            .description(OptionDescription.createBuilder()
-                                    .text(translatable("eventutils.config.bee_icons.description"))
-                                    .image(VersionedIdentifier.of("textures/config/bee_icons.png"), 404, 88)
-                                    .build())
-                            .binding(EUConfig.Defaults.BEE_ICONS, () -> config.bee_icons, newValue -> {
-                                config.bee_icons = newValue;
-                                config.save();
-                            })
-                            .controller(ConfigScreen::getBooleanBuilder)
-                            .build())
-                    .option(ButtonOption.createBuilder()
-                            .name(translatable("eventutils.config.groups.manage.label"))
-                            .description(OptionDescription.of(translatable("eventutils.config.groups.manage.description")))
-                            .text(translatable("eventutils.config.groups.manage.button"))
-                            .action((yaclScreen, option) -> new VersionedClient(Minecraft.getInstance()).setScreen(new GroupManagerScreen(EventUtils.MOD, yaclScreen)))
-                            .build())
-                    // Advanced
-                    .group(OptionGroup.createBuilder()
-                            .name(translatable("eventutils.config.advanced.category"))
-                            .collapsed(true)
-                            .option(Option.<Boolean>createBuilder()
-                                    .name(translatable("eventutils.config.advanced.developer_mode.label"))
-                                    .description(OptionDescription.of(translatable("eventutils.config.advanced.developer_mode.description")))
-                                    .binding(EUConfig.Defaults.DEVELOPER_MODE, () -> config.developer_mode, newValue -> {
-                                        config.developer_mode = newValue;
-                                        config.save();
-                                        EventUtils.MOD.updateLogLevel();
-                                        EventUtils.MOD.setupSdk("Developer Mode enabled/disabled");
-                                        EventUtils.MOD.cacheManager.clearAll();
-                                        EventUtils.MOD.authManager.authenticate().queue();
-                                    })
-                                    .controller(ConfigScreen::getBooleanBuilder)
-                                    .build())
-                            .option(Option.<StandardLevel>createBuilder()
-                                    .name(translatable("eventutils.config.advanced.log_level.label"))
-                                    .description(OptionDescription.of(translatable("eventutils.config.advanced.log_level.description")))
-                                    .binding(EUConfig.Defaults.LOG_LEVEL, () -> config.log_level, newValue -> {
-                                        config.log_level = newValue;
-                                        config.save();
-                                        EventUtils.MOD.updateLogLevel();
-                                    })
-                                    .controller(EnumDropdownControllerBuilder::create)
-                                    .build())
-                            .build())
-                    .build());
+            .title(translatable("eventutils.config.title"));
+
+        // General
+        final ConfigCategory.Builder generalCategory = ConfigCategory.createBuilder().name(translatable("eventutils.config.general"))
+                .option(Option.<Boolean>createBuilder()
+                        .name(translatable("eventutils.config.discord.label"))
+                        .description(OptionDescription.createBuilder()
+                                .text(translatable("eventutils.config.discord.description"))
+                                .image(VersionedIdentifier.of("textures/config/discord_rpc.png"), 351, 165)
+                                .build())
+                        .binding(EUConfig.Defaults.DISCORD_RPC, () -> config.discord_rpc, newValue -> {
+                            config.discord_rpc = newValue;
+                            config.save();
+                            EventUtils.MOD.discordRPC.refreshConnection();
+                        })
+                        .controller(ConfigScreen::getBooleanBuilder)
+                        .build())
+                .option(Option.<Boolean>createBuilder()
+                        .name(translatable("eventutils.config.queue.label"))
+                        .description(OptionDescription.of(translatable("eventutils.config.queue.description")))
+                        .binding(EUConfig.Defaults.SIMPLE_QUEUE_MESSAGE, () -> config.simple_queue_message, newValue -> {
+                            config.simple_queue_message = newValue;
+                            config.save();
+                        })
+                        .controller(ConfigScreen::getBooleanBuilder)
+                        .build())
+                .option(Option.<Boolean>createBuilder()
+                        .name(translatable("eventutils.config.update.label"))
+                        .description(OptionDescription.of(translatable("eventutils.config.update.description")))
+                        .binding(EUConfig.Defaults.UPDATE_CHECKER, () -> config.update_checker, newValue -> {
+                            config.update_checker = newValue;
+                            config.save();
+                            EventUtils.MOD.updateChecker.notifyUpdate();
+                        })
+                        .controller(ConfigScreen::getBooleanBuilder)
+                        .build())
+                .option(Option.<Boolean>createBuilder()
+                        .name(translatable("eventutils.config.window.label"))
+                        .description(OptionDescription.createBuilder()
+                                .text(translatable("eventutils.config.window.description"))
+                                .image(VersionedIdentifier.of("textures/config/confirm_exit.png"), 950, 272)
+                                .build())
+                        .binding(EUConfig.Defaults.CONFIRM_WINDOW_CLOSE, () -> config.confirm_window_close, newValue -> {
+                            config.confirm_window_close = newValue;
+                            config.save();
+                        })
+                        .controller(ConfigScreen::getBooleanBuilder)
+                        .build())
+                .option(Option.<Boolean>createBuilder()
+                        .name(translatable("eventutils.config.disconnect.label"))
+                        .description(OptionDescription.createBuilder()
+                                .text(translatable("eventutils.config.disconnect.description"))
+                                .image(VersionedIdentifier.of("textures/config/confirm_disconnect.png"), 972, 295)
+                                .build())
+                        .binding(EUConfig.Defaults.CONFIRM_DISCONNECT, () -> config.confirm_disconnect, newValue -> {
+                            config.confirm_disconnect = newValue;
+                            config.save();
+                        })
+                        .controller(ConfigScreen::getBooleanBuilder)
+                        .build())
+                .option(Option.<Boolean>createBuilder()
+                        .name(translatable("eventutils.config.bee_icons.label"))
+                        .description(OptionDescription.createBuilder()
+                                .text(translatable("eventutils.config.bee_icons.description"))
+                                .image(VersionedIdentifier.of("textures/config/bee_icons.png"), 404, 88)
+                                .build())
+                        .binding(EUConfig.Defaults.BEE_ICONS, () -> config.bee_icons, newValue -> {
+                            config.bee_icons = newValue;
+                            config.save();
+                        })
+                        .controller(ConfigScreen::getBooleanBuilder)
+                        .build())
+                .option(ButtonOption.createBuilder()
+                        .name(translatable("eventutils.config.groups.manage.label"))
+                        .description(OptionDescription.of(translatable("eventutils.config.groups.manage.description")))
+                        .text(translatable("eventutils.config.groups.manage.button"))
+                        .action((yaclScreen, option) -> new VersionedClient(Minecraft.getInstance()).setScreen(new GroupManagerScreen(EventUtils.MOD, yaclScreen)))
+                        .build());
+        // Discord link
+        if (EventUtils.MOD.authManager.player != null) generalCategory.option(ButtonOption.createBuilder()
+                .name(translatable("eventutils.config.discord_link.label"))
+                .description(OptionDescription.of(translatable("eventutils.config.discord_link.description")))
+                .text(EventUtils.MOD.authManager.player.player.discord != null
+                        ? translatable("eventutils.config.discord_link.button.linked", EventUtils.MOD.authManager.player.player.discord.username)
+                        : translatable("eventutils.config.discord_link.button.unlinked"))
+                .action((yaclScreen, option) -> EventUtils.MOD.discordLinkManager.startLink(
+                        yaclScreen,
+                        () -> new VersionedClient(Minecraft.getInstance()).setScreen(getConfigScreen(parent))))
+                .build());
+        // Advanced
+        generalCategory.group(OptionGroup.createBuilder()
+                .name(translatable("eventutils.config.advanced.category"))
+                .collapsed(true)
+                .option(Option.<Boolean>createBuilder()
+                        .name(translatable("eventutils.config.advanced.developer_mode.label"))
+                        .description(OptionDescription.of(translatable("eventutils.config.advanced.developer_mode.description")))
+                        .binding(EUConfig.Defaults.DEVELOPER_MODE, () -> config.developer_mode, newValue -> {
+                            config.developer_mode = newValue;
+                            config.save();
+                            EventUtils.MOD.updateLogLevel();
+                            EventUtils.MOD.setupSdk("Developer Mode enabled/disabled");
+                            EventUtils.MOD.cacheManager.clearAll();
+                            EventUtils.MOD.authManager.authenticate().queue();
+                        })
+                        .controller(ConfigScreen::getBooleanBuilder)
+                        .build())
+                .option(Option.<StandardLevel>createBuilder()
+                        .name(translatable("eventutils.config.advanced.log_level.label"))
+                        .description(OptionDescription.of(translatable("eventutils.config.advanced.log_level.description")))
+                        .binding(EUConfig.Defaults.LOG_LEVEL, () -> config.log_level, newValue -> {
+                            config.log_level = newValue;
+                            config.save();
+                            EventUtils.MOD.updateLogLevel();
+                        })
+                        .controller(EnumDropdownControllerBuilder::create)
+                        .build())
+                .build());
+        builder.category(generalCategory.build());
 
         // Events
         final ConfigCategory.Builder alertsCategory = ConfigCategory.createBuilder()

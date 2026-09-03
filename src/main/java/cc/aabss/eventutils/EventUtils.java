@@ -10,6 +10,7 @@ import cc.aabss.eventutils.config.serdes.EventSettingsSerializer;
 import cc.aabss.eventutils.config.serdes.GroupSerializer;
 import cc.aabss.eventutils.discordrpc.DiscordRPC;
 import cc.aabss.eventutils.manager.AuthManager;
+import cc.aabss.eventutils.manager.DiscordLinkManager;
 import cc.aabss.eventutils.cache.CacheManager;
 import cc.aabss.eventutils.manager.EventServerManager;
 import cc.aabss.eventutils.manager.GroupManager;
@@ -95,6 +96,7 @@ public class EventUtils implements ClientModInitializer {
     public EAWebSocket webSocket;
     @NotNull public final CacheManager cacheManager = new CacheManager(this);
     @NotNull public final AuthManager authManager = new AuthManager(this);
+    @NotNull public final DiscordLinkManager discordLinkManager = new DiscordLinkManager(this);
     @NotNull public final UpdateChecker updateChecker = new UpdateChecker(this);
     @NotNull public final Stats stats = new Stats(this);
     public DiscordRPC discordRPC;
@@ -175,6 +177,7 @@ public class EventUtils implements ClientModInitializer {
         // Game closed
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             authManager.shutdown();
+            discordLinkManager.cancel();
             discordRPC.close();
             eventServerManager.removeAllEventServers();
             webSocket.shutdown("Game closed");
