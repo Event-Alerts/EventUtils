@@ -62,6 +62,7 @@ galaxy {
         if (javaUtilitiesVersion == "snapshot" || sdkVersion == "snapshot" || okaeriConfigsVersion == "snapshot") add(MAVEN_LOCAL)
 
         add(
+            "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1",
             GNOMECRAFT_RELEASES, NUCLEOID,
             OKAERI_RELEASES, OKAERI_SNAPSHOTS,
             SRNYX_RELEASES, SRNYX_SNAPSHOTS,
@@ -177,6 +178,9 @@ dependencies {
     modImplementation("dev.isxander:yet-another-config-lib:$yaclVersion")
     modImplementation("com.terraformersmc:modmenu:$modMenuVersion")
     placeholderApiVersion?.let { modImplementation("eu.pb4:placeholder-api:$it") }
+
+    // Dev
+    modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
 }
 
 base.archivesName = modName
