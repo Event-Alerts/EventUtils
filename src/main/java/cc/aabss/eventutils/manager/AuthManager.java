@@ -35,6 +35,10 @@ public class AuthManager {
         this.mod = mod;
     }
 
+    public boolean isAuthenticated() {
+        return player != null;
+    }
+
     @NotNull @CheckReturnValue
     public EAAction<EUOnlineAuthResponse> authenticate() {
         if (heartbeat != null) heartbeat.cancel(false);
@@ -84,7 +88,7 @@ public class AuthManager {
         if (heartbeat != null) heartbeat.cancel(false);
         heartbeat = MiscUtility.IO_SCHEDULER.schedule(() -> {
             // Not authenticated (shouldn't happen)
-            if (player == null) {
+            if (!isAuthenticated()) {
                 EventUtils.LOGGER.warn("[AUTH] Heartbeat failed, reauthenticating");
                 authenticate().queue();
                 return;
@@ -125,7 +129,7 @@ public class AuthManager {
         heartbeat = null;
 
         // Mark as offline with Event Alerts
-        if (player != null) mod.http.players.eventUtils.postOnlineUpdate(new EUOnlineAuthUpdateBody(false)).queue(
+        if (isAuthenticated()) mod.http.players.eventUtils.postOnlineUpdate(new EUOnlineAuthUpdateBody(false)).queue(
                 response -> EventUtils.LOGGER.debug("[AUTH] Marked offline"),
                 t -> EventUtils.LOGGER.error("[AUTH] Failed to mark offline", t));
     }
