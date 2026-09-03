@@ -84,10 +84,17 @@ galaxy {
             "deps_modmenu" to modMenuVersion))
 
         platformPublishing {
+            minecraftVersionStart = sc.current.version
+            minecraftVersionEnd = sc.current.version
+            apiTiers.add(FABRIC)
+            addAnnoyingApiDependency = false
+
+            val mainFile = (if (is261Plus) tasks.shadowJar else loomx.modJar)
+                .flatMap { it.archiveFile }
+                .map { it.asFile }
             modrinth("ZcRRACSs") {
-                file = (if (is261Plus) tasks.shadowJar else loomx.modJar)
-                    .flatMap { it.archiveFile }
-                    .map { it.asFile }
+                file = mainFile
+                environment = CLIENT_ONLY
 
                 // Fabric API
                 requires {
@@ -110,11 +117,19 @@ galaxy {
                     version = modMenuVersion
                 }
             }
+            curseforge("1679681") {
+                file = mainFile
+                client = true
 
-            minecraftVersionStart = sc.current.version
-            minecraftVersionEnd = sc.current.version
-            apiTiers.add(FABRIC)
-            addAnnoyingApiDependency = false
+                // Fabric API
+                requires { slug = "fabric-api" }
+                // YetAnotherConfigLib (YACL)
+                requires { slug = "yacl" }
+                // Text Placeholder API
+                placeholderApiVersion?.let { requires { slug = "text-placeholder-api" } }
+                // Mod Menu
+                optional { slug = "modmenu" }
+            }
         }
     }
 }
