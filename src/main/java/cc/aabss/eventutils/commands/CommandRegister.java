@@ -19,7 +19,6 @@ public class CommandRegister {
         final LiteralCommandNode<FabricClientCommandSource> priority = new PriorityCmd(mod).build();
         final LiteralCommandNode<FabricClientCommandSource> priorityTop = new PriorityTopCmd(mod).build();
         final LiteralCommandNode<FabricClientCommandSource> countName = new CountNameCmd(mod).build();
-        final LiteralCommandNode<FabricClientCommandSource> groupMsg = new GroupMsgCmd(mod).build();
 
         // Root
         final LiteralCommandNode<FabricClientCommandSource> main = ClientCommandManager
@@ -31,13 +30,11 @@ public class CommandRegister {
                 .build();
 
         // Build command tree
-        dispatcher.getRoot().addChild(groupMsg);
         dispatcher.getRoot().addChild(main);
         main.addChild(config);
         main.addChild(teleport);
         main.addChild(priority);
         main.addChild(priorityTop);
         main.addChild(countName);
-        main.addChild(groupMsg);
     }
 }
