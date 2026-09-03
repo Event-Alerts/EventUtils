@@ -286,6 +286,9 @@ loom {
         jvmArguments.add("-Dmixin.debug.export=true") // Exports transformed classes for debugging
         runDirectory = file("../../run") // Shares the run directory between versions
     }
+
+    // Enable debug/trace logs
+    log4jConfigs.from(rootProject.file("log4j-dev.xml"))
 }
 
 // Register tasks for active version
