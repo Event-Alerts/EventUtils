@@ -191,17 +191,7 @@ public class EventWrapper {
                 mod.stats.eventToastsReceived.incrementAndGet();
 
                 // Send toast
-                final Minecraft client = Minecraft.getInstance();
-                client.execute(() -> {
-                    //? if >=26.2 {
-                    /*client.gui.toastManager()
-                    *///? } else if >1.21.1 {
-                    client.getToastManager()
-                    //?} else {
-                    /*client.getToasts()
-                    *///?}
-                            .addToast(new NotificationToast(title, description, ip != null));
-                });
+                Minecraft.getInstance().execute(() -> new NotificationToast(title, description, ip != null).show());
                 toastSent = true;
             }
 

@@ -66,6 +66,18 @@ public class NotificationToast implements Toast {
         visibility = Toast.Visibility.HIDE;
     }
 
+    public void show() {
+        final Minecraft client = Minecraft.getInstance();
+        //? if >=26.2 {
+        /*client.gui.toastManager()
+         *///? } else if >1.21.1 {
+        client.getToastManager()
+        //?} else {
+        /*client.getToasts()
+         *///?}
+                .addToast(this);
+    }
+
     //? if >=1.21.2 {
     @Override @NotNull
     public Visibility getWantedVisibility() {
