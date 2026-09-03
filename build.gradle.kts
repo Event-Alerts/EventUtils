@@ -10,7 +10,7 @@ import java.nio.file.StandardCopyOption
 
 plugins {
     id("dev.kikugie.loom-back-compat")
-    id("xyz.srnyx.gradle-galaxy") version "56c48b7"
+    id("xyz.srnyx.gradle-galaxy") version "c99868f"
     id("com.gradleup.shadow") version "9.6.1"
     id("me.modmuss50.mod-publish-plugin") version "04fb4ab"
 
