@@ -193,10 +193,7 @@ public class DiscordLinkManager {
     }
 
     private void toast(@NotNull String titleKey, @Nullable String descriptionKey) {
-        Minecraft.getInstance().execute(() -> new NotificationToast(
-                Component.translatable(titleKey),
-                descriptionKey != null ? Component.translatable(descriptionKey) : null,
-                false).show());
+        Minecraft.getInstance().execute(() -> NotificationToast.show(Component.translatable(titleKey), descriptionKey != null ? Component.translatable(descriptionKey) : null));
     }
 
     @NotNull
