@@ -66,6 +66,10 @@ public class NotificationToast implements Toast {
         visibility = Toast.Visibility.HIDE;
     }
 
+    public NotificationToast(@NotNull Component title, @Nullable Component description) {
+        this(title, description, false);
+    }
+
     public void show() {
         final Minecraft client = Minecraft.getInstance();
         //? if >=26.2 {
@@ -76,6 +80,10 @@ public class NotificationToast implements Toast {
         /*client.getToasts()
          *///?}
                 .addToast(this);
+    }
+
+    public static void show(@NotNull Component title, @Nullable Component description) {
+        new NotificationToast(title, description).show();
     }
 
     //? if >=1.21.2 {
