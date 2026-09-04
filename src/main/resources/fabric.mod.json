@@ -18,7 +18,8 @@
     "minecraft": ">=${deps_minecraft}",
     "fabricloader": ">=${deps_loader}",
     "${fabric_api_id}": ">=${deps_fabric_api}",
-    "yet_another_config_lib_v3": ">=${deps_yacl}"
+    "yet_another_config_lib_v3": ">=${deps_yacl}",
+    "owo": ">=${deps_owo_lib}"
   },
   "suggests": {
     "modmenu": ">=${deps_modmenu}"

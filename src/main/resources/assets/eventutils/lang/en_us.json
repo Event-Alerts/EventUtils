@@ -145,6 +145,89 @@
       }
     },
 
+    "menu": {
+      "config": "Config",
+      "discord_link": "Link Discord account",
+      "event_builder": "Post an event"
+    },
+
+    "event_builder": {
+      "title": "Event Builder",
+      "category": {
+        "main": "Main"
+      },
+
+      "success": {
+        "title": "Event posted!",
+        "description": "The event has been created and posted to Event Alerts"
+      },
+
+      "error": {
+        "invalid_time": {
+          "title": "Invalid time",
+          "description": "The specified time is invalid: %s"
+        },
+
+        "post": {
+          "title": "Failed to post event"
+        }
+      },
+
+      "actions": {
+        "label": "Actions",
+        "description": "Post the event, load a preset, etc.",
+
+        "post": {
+          "label": "Post Event",
+          "description": "Post the event to Event Alerts",
+          "button": "Post Event",
+
+          "toast": {
+            "title": "Posting event...",
+            "description": "This may take a few seconds"
+          }
+        }
+      },
+
+      "values": {
+        "label": "Event Values",
+        "description": "The actual values of the event",
+
+        "title": {
+          "label": "*Title",
+          "description": "REQUIRED: The title of the event"
+        },
+        "time": {
+          "label": "*Time",
+          "description": "REQUIRED: How long from now until the event starts (e.g. 2h 30m)"
+        },
+        "ip": {
+          "label": "*IP",
+          "description": "REQUIRED: The IP address players should connect to"
+        },
+        "version": {
+          "label": "*Version",
+          "description": "REQUIRED: The Minecraft version required to join the event"
+        },
+        "description": {
+          "label": "Description",
+          "description": "A description of the event"
+        },
+        "prize": {
+          "label": "Prize",
+          "description": "The prize players can win from the event"
+        },
+        "platforms": {
+          "label": "Platforms",
+          "description": "The platform(s) supported by the event"
+        },
+        "max_players": {
+          "label": "Max Players",
+          "description": "The maximum number of players that can participate in the event"
+        }
+      }
+    },
+
     "config": {
       "title": "EventUtils Mod Config",
       "general": "General",
@@ -208,6 +291,11 @@
           "discord_already_linked": "That Discord account is already linked to another Minecraft account",
           "merge_failed": "Failed to merge existing accounts"
         }
+      },
+      "event_builder": {
+        "label": "Event Builder",
+        "description": "Build and post a new Event Alerts event straight from Minecraft",
+        "button": "Open a new builder"
       },
 
       "groups": {
