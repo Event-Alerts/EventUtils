@@ -22,6 +22,10 @@ public class EnrichedPlayer extends Stringable {
         return player.minecraft != null && player.minecraft.eventUtils != null;
     }
 
+    public boolean isDiscordLinked() {
+        return player.discord != null;
+    }
+
     @Nullable
     public PlusTag getPlusTag() {
         if (!plusTagResolved) {
