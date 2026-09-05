@@ -3,11 +3,11 @@ package cc.aabss.eventutils;
 import cc.aabss.eventutils.commands.CommandRegister;
 import cc.aabss.eventutils.config.EUConfig;
 import cc.aabss.eventutils.config.EventType;
-import cc.aabss.eventutils.config.Group;
 import cc.aabss.eventutils.config.migrations.*;
 import cc.aabss.eventutils.config.serdes.EntityTypeSerializer;
 import cc.aabss.eventutils.config.serdes.EventSettingsSerializer;
 import cc.aabss.eventutils.config.serdes.GroupSerializer;
+import cc.aabss.eventutils.config.serdes.GroupsSerializer;
 import cc.aabss.eventutils.discordrpc.DiscordRPC;
 import cc.aabss.eventutils.manager.AuthManager;
 import cc.aabss.eventutils.manager.DiscordLinkManager;
@@ -120,7 +120,8 @@ public class EventUtils implements ClientModInitializer {
                             // Custom serdes
                             new EntityTypeSerializer(),
                             new EventSettingsSerializer(),
-                            new GroupSerializer());
+                            new GroupSerializer(),
+                            new GroupsSerializer());
 
                     opt.bindFile(new File(FabricLoader.getInstance().getConfigDir().toFile(), "eventutils.json"));
                     opt.removeOrphans(true);
@@ -137,18 +138,6 @@ public class EventUtils implements ClientModInitializer {
 
         // Clamp event_server_display_minutes
         config.setEventServerDisplayMinutes(config.event_server_display_minutes);
-        // Add UUIDs to Groups
-        for (final Map.Entry<UUID, Group> entry : config.groups.entrySet()) entry.getValue().setUuid(entry.getKey());
-        // Validate groups (unique names)
-        boolean updated = false;
-        final Set<String> groupNames = new HashSet<>();
-        for (final Group group : new HashSet<>(config.groups.values())) {
-            if (groupNames.add(group.getName().toLowerCase())) continue;
-            EventUtils.LOGGER.error("Removing duplicate group: {}", group);
-            config.groups.remove(group.getUuid());
-            updated = true;
-        }
-        if (updated) config.save(); // Save if a group was removed
 
         // Need to wait for config to be loaded
         updateLogLevel();
