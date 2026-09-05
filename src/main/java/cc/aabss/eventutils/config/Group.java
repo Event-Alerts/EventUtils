@@ -37,6 +37,18 @@ public class Group extends Stringable implements Statable {
         this.uuid = UUID.randomUUID();
     }
 
+    @Override
+    public int hashCode() {
+        return uuid.hashCode();
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Group group)) return false;
+        return uuid.equals(group.uuid);
+    }
+
     @NotNull
     public UUID getUuid() {
         return uuid;
