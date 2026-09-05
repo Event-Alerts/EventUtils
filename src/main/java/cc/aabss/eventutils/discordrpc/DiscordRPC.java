@@ -77,7 +77,11 @@ public class DiscordRPC {
     }
 
     public void close() {
-        client.close();
+        try {
+            client.close();
+        } catch (final IllegalStateException ignored) {
+            // Not connected, ignore
+        }
     }
 
     public void refresh() {
