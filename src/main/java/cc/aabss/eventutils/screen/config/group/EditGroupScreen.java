@@ -39,10 +39,10 @@ public class EditGroupScreen {
                                 .name(translatable("eventutils.config.groups.name.label"))
                                 .binding(group.getUuid().toString(), group::getName, newValue -> {
                                     // Check if group with NEW name already exists
-                                    if (!newValue.equals(group.getName()) && mod.config.getGroupByName(newValue) != null) return;
+                                    if (!newValue.equals(group.getName()) && mod.config.groups.getByName(newValue) != null) return;
 
                                     group.setName(newValue);
-                                    mod.config.upsertGroup(group);
+                                    mod.config.save();
                                 })
                                 .controller(StringControllerBuilder::create)
                                 .build())
@@ -55,7 +55,7 @@ public class EditGroupScreen {
                                             if (newValue > Group.MAX_RADIUS) newValue = null;
 
                                             group.setRadius(newValue);
-                                            mod.config.upsertGroup(group);
+                                            mod.config.save();
                                         })
                                 .controller(opt -> IntegerSliderControllerBuilder.create(opt)
                                         .range(1, Group.MAX_RADIUS + 1)
@@ -71,7 +71,7 @@ public class EditGroupScreen {
                                 .name(translatable("eventutils.config.groups.player_mode.label"))
                                 .binding(Group.Defaults.PLAYER_MODE, group::getPlayerMode, newValue -> {
                                     group.setPlayerMode(newValue);
-                                    mod.config.upsertGroup(group);
+                                    mod.config.save();
                                 })
                                 .controller(EditGroupScreen::getModeController)
                                 .build())
@@ -79,7 +79,7 @@ public class EditGroupScreen {
                                 .name(translatable("eventutils.config.groups.entity_mode.label"))
                                 .binding(Group.Defaults.ENTITY_MODE, group::getEntityMode, newValue -> {
                                     group.setEntityMode(newValue);
-                                    mod.config.upsertGroup(group);
+                                    mod.config.save();
                                 })
                                 .controller(EditGroupScreen::getModeController)
                                 .build())
@@ -87,7 +87,7 @@ public class EditGroupScreen {
                                 .name(translatable("eventutils.config.groups.npc_mode.label"))
                                 .binding(Group.Defaults.NPC_MODE, group::getNpcMode, newValue -> {
                                     group.setNpcMode(newValue);
-                                    mod.config.upsertGroup(group);
+                                    mod.config.save();
                                 })
                                 .controller(EditGroupScreen::getModeController)
                                 .build())
@@ -95,7 +95,7 @@ public class EditGroupScreen {
                                 .name(translatable("eventutils.config.groups.players.label"))
                                 .binding(new ArrayList<>(Group.Defaults.players()), () -> new ArrayList<>(group.getPlayers()), newValue -> {
                                     group.setPlayers(newValue);
-                                    mod.config.upsertGroup(group);
+                                    mod.config.save();
                                 })
                                 .initial(new VersionedGameProfile(Minecraft.getInstance().getGameProfile()).getName())
                                 .controller(StringControllerBuilder::create)
@@ -104,7 +104,7 @@ public class EditGroupScreen {
                                 .name(translatable("eventutils.config.groups.entities.label"))
                                 .binding(new ArrayList<>(Group.Defaults.entityIds()), () -> new ArrayList<>(group.getEntityIds()), newValue -> {
                                     group.setEntitiesByIds(newValue);
-                                    mod.config.upsertGroup(group);
+                                    mod.config.save();
                                 })
                                 .initial("minecraft:bee")
                                 .controller(option -> DropdownStringControllerBuilder.create(option).values(ENTITY_TYPES))

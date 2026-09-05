@@ -38,28 +38,28 @@ public class GroupManagerScreen extends Screen {
         final int listTop = 40;
 
         int i = 0;
-        for (final Group group : mod.config.groups.values()) {
+        for (final Group group : mod.config.groups.groups) {
             final int y = listTop + i * ROW_HEIGHT;
             if (y >= height - 60) break;
             i++;
 
             final Button editBtn = Button.builder(literal(group.getName()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xE0E0E0))), button -> {
-                if (minecraft != null) vClient.setScreen(EditGroupScreen.getScreen(mod, this, group));
+                vClient.setScreen(EditGroupScreen.getScreen(mod, this, group));
             }).bounds(PADDING, y, width - PADDING * 2 - REMOVE_WIDTH - 4, 20).build();
             addRenderableWidget(editBtn);
 
             addRenderableWidget(Button.builder(literal("X").withStyle(ChatFormatting.RED), button -> {
-                if (mod.groupManager.selectedGroup == group.getUuid()) mod.groupManager.selectedGroup = null;
+                if (mod.groupManager.selectedGroup == group) mod.groupManager.selectedGroup = null;
 
                 mod.config.groups.remove(group.getUuid());
                 mod.config.save();
-                if (minecraft != null) vClient.setScreen(new GroupManagerScreen(mod, parent));
+                vClient.setScreen(new GroupManagerScreen(mod, parent));
             }).bounds(width - PADDING - REMOVE_WIDTH, y, REMOVE_WIDTH, 20).build());
         }
 
         final Button addBtn = Button.builder(translatable("eventutils.config.groups.add"), button -> {
-            mod.config.upsertGroup(new Group());
-            if (minecraft != null) vClient.setScreen(new GroupManagerScreen(mod, parent));
+            mod.config.groups.groups.add(new Group());
+            vClient.setScreen(new GroupManagerScreen(mod, parent));
         }).bounds(width / 2 - BUTTON_WIDTH - 4, height - 32, BUTTON_WIDTH, 20).build();
         addRenderableWidget(addBtn);
 

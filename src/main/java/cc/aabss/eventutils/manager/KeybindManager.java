@@ -1,7 +1,6 @@
 package cc.aabss.eventutils.manager;
 
 import cc.aabss.eventutils.EventUtils;
-import cc.aabss.eventutils.config.Group;
 import cc.aabss.eventutils.mixin.KeyMappingAccessor;
 import cc.aabss.eventutils.screen.EventInfoScreen;
 import cc.aabss.eventutils.sdk.EventWrapper;
@@ -135,9 +134,8 @@ public class KeybindManager {
 
                 // Action bar
                 final MutableComponent message;
-                final Group group = mod.groupManager.getSelectedGroup();
-                if (group != null) {
-                    message = literal(group.getName());
+                if (mod.groupManager.selectedGroup != null) {
+                    message = literal(mod.groupManager.selectedGroup.getName());
                 } else {
                     message = translatable("eventutils.hideplayers.view_revealed");
                 }

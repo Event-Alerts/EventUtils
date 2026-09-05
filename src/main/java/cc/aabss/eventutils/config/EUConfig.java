@@ -5,7 +5,6 @@ import eu.okaeri.configs.OkaeriConfig;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.spi.StandardLevel;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 import java.util.*;
@@ -42,7 +41,7 @@ public class EUConfig extends OkaeriConfig {
     public int event_server_display_minutes = Defaults.EVENT_SERVER_DISPLAY_MINUTES;
 
     @Stat
-    @NotNull public Map<UUID, Group> groups = Defaults.groups();
+    @NotNull public Groups groups = Defaults.groups();
 
     @Stat
     @NotNull public Map<EventType, EventSettings> event_settings = Defaults.eventSettings();
@@ -53,29 +52,6 @@ public class EUConfig extends OkaeriConfig {
     @Stat
     @NotNull public StandardLevel log_level = Defaults.LOG_LEVEL;
 
-
-    @NotNull
-    public List<String> getGroupNames() {
-        return groups.values().stream()
-                .map(Group::getName)
-                .toList();
-    }
-
-    @Nullable
-    public Group getGroupByName(@NotNull String name) {
-        return groups.values().stream()
-                .filter(group -> group.getName().equalsIgnoreCase(name))
-                .findFirst()
-                .orElse(null);
-    }
-
-    /**
-     * If a group with the same UUID already exists, it will be replaced
-     */
-    public void upsertGroup(@NotNull Group group) {
-        groups.put(group.getUuid(), group);
-        save();
-    }
 
     @NotNull
     public EventSettings getEventSettings(@NotNull EventType type) {
@@ -106,7 +82,7 @@ public class EUConfig extends OkaeriConfig {
         @NotNull public static final String DEFAULT_FAMOUS_IP = "play.invadedlands.net";
         public static final boolean BEE_ICONS = true;
         public static final int EVENT_SERVER_DISPLAY_MINUTES = 5;
-        @NotNull private static final Map<UUID, Group> GROUPS = Map.of(UUID.randomUUID(), new Group().setName("Hide All Players"));
+        @NotNull private static final Groups GROUPS = new Groups(new Group().setName("Hide All Players"));
 
         @NotNull private static final Map<EventType, EventSettings> EVENT_SETTINGS = Arrays.stream(EventType.values())
                 .collect(Collectors.toMap(type -> type, type -> new EventSettings(), (a, b) -> a, () -> new EnumMap<>(EventType.class)));
@@ -115,8 +91,8 @@ public class EUConfig extends OkaeriConfig {
         @NotNull public static final StandardLevel LOG_LEVEL = Level.INFO.getStandardLevel();
 
         @NotNull
-        public static Map<UUID, Group> groups() {
-            return new HashMap<>(GROUPS);
+        public static Groups groups() {
+            return new Groups(GROUPS);
         }
         @NotNull
         public static Map<EventType, EventSettings> eventSettings() {
