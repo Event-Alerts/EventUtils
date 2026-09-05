@@ -7,7 +7,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -28,10 +27,6 @@ public class PostCmd extends EUCommand {
     }
 
     private static void execute(@NotNull CommandContext<FabricClientCommandSource> context) {
-        final Minecraft client = context.getSource().getClient();
-        client.execute(() -> {
-            final VersionedClient vClient = new VersionedClient(client);
-            vClient.setScreen(new EventBuilder(vClient.screen()));
-        });
+        new EventBuilder(new VersionedClient(context.getSource().getClient()).screen()).open();
     }
 }

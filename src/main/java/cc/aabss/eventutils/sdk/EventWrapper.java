@@ -22,6 +22,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static net.minecraft.network.chat.Component.translatable;
+
 
 public class EventWrapper {
     @NotNull private final EventUtils mod;
@@ -181,11 +183,11 @@ public class EventWrapper {
             // toast
             if (!toastSent && settings.toasts) {
                 // Get title
-                final String prizeTranslation = prize != null ? "eventutils.event.toast.prize.text" : "eventutils.event.toast.prize.none";
-                final Component title = Component.translatable("eventutils.event.toast.title", eventType.nameTranslation, Component.translatable(prizeTranslation, prize)).withStyle(eventType.color);
+                final Component prizeTranslatable = prize != null ? translatable("eventutils.event.toast.prize.text", prize) : translatable("eventutils.event.toast.prize.none");
+                final Component title = translatable("eventutils.event.toast.title", eventType.nameTranslation, prizeTranslatable).withStyle(eventType.color);
 
                 // Get description
-                final Component description = ip != null ? Component.translatable("eventutils.event.teleport.text", Component.translatable("eventutils.event.teleport.command", eventType.name().toLowerCase()).withStyle(eventType.color)) : null;
+                final Component description = ip != null ? translatable("eventutils.event.teleport.text", translatable("eventutils.event.teleport.command", eventType.name().toLowerCase()).withStyle(eventType.color)) : null;
 
                 // Update metric
                 mod.stats.eventToastsReceived.incrementAndGet();

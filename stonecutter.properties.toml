@@ -14,10 +14,10 @@ library.gson = "2.14.0"
 library.bson = "5.7.0"
 library.java_websocket = "1.6.0"
 library.slf4j = "2.0.15"
-library.sdk = "2dcb1b4"
+library.sdk = "snapshot"
 library.okaeri_configs = "df8ae69"
 library.discord_ipc = "0.11.3"
-library.faststats = "0.30.0"
+library.faststats = "0.30.1"
 
 
 ["26.2"]

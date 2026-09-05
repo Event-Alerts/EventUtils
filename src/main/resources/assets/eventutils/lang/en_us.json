@@ -147,14 +147,15 @@
 
     "menu": {
       "config": "Config",
+      "group_manager": "Group manager",
       "discord_link": "Link Discord account",
       "event_builder": "Post an event"
     },
 
     "event_builder": {
-      "title": "Event Builder",
-      "category": {
-        "main": "Main"
+      "confirm_close": {
+        "title": "Confirm Close",
+        "description": "Are you sure you want to close the Event Builder? All values will be reset."
       },
 
       "success": {
@@ -163,13 +164,21 @@
       },
 
       "error": {
+        "partner_servers": {
+          "title": "Failed to get Partner Servers",
+          "description": "%s"
+        },
+        "preset": {
+          "title": "Failed to get preset",
+          "description": "%s"
+        },
         "invalid_time": {
           "title": "Invalid time",
           "description": "The specified time is invalid: %s"
         },
-
         "post": {
-          "title": "Failed to post event"
+          "title": "Failed to post event",
+          "description": "%s"
         }
       },
 
@@ -177,10 +186,19 @@
         "label": "Actions",
         "description": "Post the event, load a preset, etc.",
 
+        "custom": {
+          "custom": "Switch to builder",
+          "builder": "Switch to custom",
+          "description": "Whether this event is a custom event or not"
+        },
         "post": {
           "label": "Post Event",
           "description": "Post the event to Event Alerts",
-          "button": "Post Event",
+
+          "confirm": {
+            "title": "Confirm Post",
+            "description": "Are you sure you want to post this event?"
+          },
 
           "toast": {
             "title": "Posting event...",
@@ -193,20 +211,29 @@
         "label": "Event Values",
         "description": "The actual values of the event",
 
+        "partner_server": {
+          "label": "Partner Server",
+          "description": "The server to post this event for",
+          "community": "COMMUNITY EVENT"
+        },
+        "roles": {
+          "label": "Ping Roles",
+          "description": "The roles to ping for this event"
+        },
         "title": {
-          "label": "*Title",
+          "label": "Title",
           "description": "REQUIRED: The title of the event"
         },
         "time": {
-          "label": "*Time",
+          "label": "Time",
           "description": "REQUIRED: How long from now until the event starts (e.g. 2h 30m)"
         },
         "ip": {
-          "label": "*IP",
+          "label": "IP",
           "description": "REQUIRED: The IP address players should connect to"
         },
         "version": {
-          "label": "*Version",
+          "label": "Version",
           "description": "REQUIRED: The Minecraft version required to join the event"
         },
         "description": {

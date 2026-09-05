@@ -2,6 +2,7 @@ package cc.aabss.eventutils.screen;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.screen.config.ConfigScreen;
+import cc.aabss.eventutils.screen.config.group.GroupManagerScreen;
 import cc.aabss.eventutils.sdk.EnrichedPlayer;
 import cc.aabss.eventutils.versioning.VersionedClient;
 import io.wispforest.owo.ui.component.Components;
@@ -46,6 +47,12 @@ public class MenuScreen extends ScreenWithParent<FlowLayout> {
                 })
                 .horizontalSizing(Sizing.expand()));
 
+        buttons.child(Components
+                .button(translatable("eventutils.menu.group_manager").withStyle(ChatFormatting.YELLOW), button -> {
+                    new VersionedClient(Minecraft.getInstance()).setScreen(new GroupManagerScreen(EventUtils.MOD, this));
+                })
+                .horizontalSizing(Sizing.expand()));
+
         if (player != null) {
             if (!player.isDiscordLinked()) buttons.child(Components
                     .button(translatable("eventutils.menu.discord_link").withStyle(ChatFormatting.AQUA), button -> {
@@ -55,7 +62,7 @@ public class MenuScreen extends ScreenWithParent<FlowLayout> {
 
             if (player.isDiscordLinked()) buttons.child(Components
                     .button(translatable("eventutils.menu.event_builder").withStyle(ChatFormatting.GREEN), button -> {
-                        new VersionedClient(Minecraft.getInstance()).setScreen(new EventBuilder(this));
+                        new EventBuilder(this).open();
                     })
                     .horizontalSizing(Sizing.expand()));
         }
