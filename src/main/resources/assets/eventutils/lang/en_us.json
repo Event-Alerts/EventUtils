@@ -164,6 +164,10 @@
       },
 
       "error": {
+        "not_logged_in": {
+          "title": "Not logged in",
+          "description": "You must be logged in to post an event"
+        },
         "partner_servers": {
           "title": "Failed to get Partner Servers",
           "description": "%s"
@@ -172,9 +176,22 @@
           "title": "Failed to get preset",
           "description": "%s"
         },
+        "missing_required": {
+          "title": "Missing required value(s)",
+          "description": "%s"
+        },
         "invalid_time": {
           "title": "Invalid time",
           "description": "The specified time is invalid: %s"
+        },
+        "time_too_long": {
+          "title": "Time too long",
+          "description": "The specified time is too far in the future: %s"
+        },
+        "premium_required": {
+          "title": "Premium required",
+          "description": "%s",
+          "custom_community": "Custom community events require a premium subscription"
         },
         "post": {
           "title": "Failed to post event",

@@ -23,8 +23,8 @@ public class PlayerCache extends Cache<UUID, EnrichedPlayer> {
     public void addToCache(@NotNull Collection<EAPlayer> players) {
         players.forEach(player -> {
             final EnrichedPlayer enriched = new EnrichedPlayer(player);
-            if (enriched.player.minecraft != null && enriched.player.minecraft.uuid != null) {
-                addToCache(enriched.player.minecraft.uuid, enriched);
+            if (enriched.minecraft != null && enriched.minecraft.uuid != null) {
+                addToCache(enriched.minecraft.uuid, enriched);
             }
         });
     }
@@ -42,8 +42,8 @@ public class PlayerCache extends Cache<UUID, EnrichedPlayer> {
                     final Map<UUID, EnrichedPlayer> result = new HashMap<>();
                     for (final EAPlayer player : players) {
                         final EnrichedPlayer enriched = new EnrichedPlayer(player);
-                        if (enriched.player.minecraft != null && enriched.player.minecraft.uuid != null) {
-                            result.put(enriched.player.minecraft.uuid, enriched);
+                        if (enriched.minecraft != null && enriched.minecraft.uuid != null) {
+                            result.put(enriched.minecraft.uuid, enriched);
                         }
                     }
                     return result;

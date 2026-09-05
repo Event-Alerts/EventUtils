@@ -2,10 +2,12 @@ package cc.aabss.eventutils.screen;
 
 import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.NotificationToast;
+import cc.aabss.eventutils.sdk.EnrichedPlayer;
 import cc.aabss.eventutils.versioning.VersionedClient;
 import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import gg.eventalerts.sdk.object.EAEvent;
 import gg.eventalerts.sdk.object.EAPartnerServer;
+import gg.eventalerts.sdk.object.EAPlayer;
 import io.wispforest.owo.ui.component.ButtonComponent;
 import io.wispforest.owo.ui.component.DropdownComponent;
 import io.wispforest.owo.ui.component.LabelComponent;
@@ -41,9 +43,16 @@ import static net.minecraft.network.chat.Component.translatable;
 
 
 public class EventBuilder extends ScreenWithParent<FlowLayout> {
+    public static final int MAX_TITLE_LENGTH = 256;
+    public static final int MAX_DESCRIPTION_LENGTH = 2000;
+    public static final int MAX_TIME_LENGTH = 1007;
+    public static final int MAX_IP_LENGTH = 256;
+    public static final int MAX_VERSION_LENGTH = 256;
+    public static final int MAX_PRIZE_LENGTH = 256;
     @NotNull private static final List<EAEvent.PingRole> TOGGLEABLE_ROLES = Arrays.stream(EAEvent.PingRole.values())
             .filter(role -> role.partnerToggleable)
             .toList();
+    @NotNull private static final ObjectId COMMUNITY_EVENT_SENTINEL = new ObjectId("000000000000000000000000");
 
     @NotNull private Map<ObjectId, EAPartnerServer> partnerServers = new LinkedHashMap<>();
 
@@ -56,8 +65,8 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
     @NotNull private String ip = Defaults.ip();
     @NotNull private Set<EAEvent.Platform> platforms = Defaults.platforms();
     @NotNull private String version = Defaults.version();
-    @Nullable private String description = Defaults.DESCRIPTION;
-    @Nullable private String prize = Defaults.PRIZE;
+    @NotNull private String description = Defaults.DESCRIPTION;
+    @NotNull private String prize = Defaults.PRIZE;
     @Nullable private Integer maxPlayers = Defaults.maxPlayers();
 
     public EventBuilder(@Nullable Screen parent) {
@@ -86,21 +95,20 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
         this.maxPlayers = builder.maxPlayers;
 
         // Checks
-        if (custom && (EventUtils.MOD.authManager.player == null || EventUtils.MOD.authManager.player.player.subscription == null) && partnerServer == null) {
+        if (custom && (EventUtils.MOD.authManager.player == null || EventUtils.MOD.authManager.player.subscription == null) && partnerServer == null) {
             this.custom = false;
         }
     }
 
     public void open() {
-        if (EventUtils.MOD.authManager.player == null || EventUtils.MOD.authManager.player.player.discord == null) return;
+        final EAPlayer player = EventUtils.MOD.authManager.player;
+        if (player == null || player.discord == null) return;
 
         EventUtils.MOD.http.partnerServers.retrieveAll(MapGenerator.HASH_MAP.mapOf(
                 "enabled", null,
-                "representatives", Set.of(EventUtils.MOD.authManager.player.player.discord)
+                "representatives", Set.of(player.discord)
         )).queue(
                 partnerServers -> {
-                    if (EventUtils.MOD.authManager.player == null) return;
-
                     // partnerServers
                     this.partnerServers = new LinkedHashMap<>();
                     for (final EAPartnerServer partnerServer : partnerServers) {
@@ -108,13 +116,13 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
                     }
 
                     // No default preset, open immediately
-                    if (EventUtils.MOD.authManager.player.player.defaultPreset == null) {
+                    if (player.defaultPreset == null) {
                         setScreen();
                         return;
                     }
 
                     // Default preset, retrieve -> apply -> open
-                    EventUtils.MOD.http.eventPresets.retrieveOneById(EventUtils.MOD.authManager.player.player.defaultPreset).queue(
+                    EventUtils.MOD.http.eventPresets.retrieveOneById(player.defaultPreset).queue(
                             preset -> {
                                 // Apply preset
                                 if (preset.data != null) {
@@ -149,33 +157,105 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
         client.execute(() -> new VersionedClient(client).setScreen(this));
     }
 
+    private void rebuild() {
+        new VersionedClient(Minecraft.getInstance()).setScreen(new EventBuilder(this));
+    }
+
     private void error(@NotNull String key, @NotNull Object... args) {
         NotificationToast.show(
                 translatable("eventutils.event_builder.error." + key + ".title").withStyle(ChatFormatting.RED),
                 translatable("eventutils.event_builder.error." + key + ".description", args));
+        setScreen();
+    }
+
+    private boolean canPost() {
+        // Check if host is linked
+        final EnrichedPlayer player = EventUtils.MOD.authManager.player;
+        if (player == null || player.discord == null || player.minecraft == null) {
+            error("not_logged_in");
+            return false;
+        }
+
+        final EAEvent.Type type = partnerServer != null ? EAEvent.Type.PARTNER : EAEvent.Type.COMMUNITY;
+        final Set<String> missingRequiredFields = new HashSet<>();
+
+        if (custom) {
+            // Custom
+
+            // Required fields
+            if (description.isBlank()) missingRequiredFields.add("description");
+        } else {
+            // Builder
+
+            // Required fields
+            if (title.isBlank()) missingRequiredFields.add("title");
+            if (time.isBlank()) missingRequiredFields.add("time");
+            if (ip.isBlank()) missingRequiredFields.add("ip");
+            if (version.isBlank()) missingRequiredFields.add("version");
+
+            // Get time as Duration
+            final Duration duration = DurationParser.parse(time).orElse(null);
+            if (duration == null) {
+                error("invalid_time", time);
+                return false;
+            }
+            // Check if duration is more than 1 day
+            if (duration.toDays() > 1) {
+                error("time_too_long", time);
+                return false;
+            }
+
+            // Custom COMMUNITY required premium
+            if (type == EAEvent.Type.COMMUNITY && player.getEffectiveSubscriptionTier() == null) {
+                error("premium_required", translatable("eventutils.event_builder.error.premium_required.custom_community"));
+                return false;
+            }
+        }
+
+        // Missing required field
+        if (!missingRequiredFields.isEmpty()) {
+            final MutableComponent missingFields = Component.empty();
+            for (final String field : missingRequiredFields) {
+                if (!missingFields.getSiblings().isEmpty()) missingFields.append(", ");
+                missingFields.append(translatable("eventutils.event_builder.values." + field + ".label"));
+            }
+            error("missing_required", missingFields);
+            return false;
+        }
+
+        return true;
     }
 
     private void post() {
-        // Get Date time
-        final Duration duration = DurationParser.parse(time).orElse(null);
-        if (duration == null) {
-            error("invalid_time", time);
-            return;
-        }
-        final Date dateTime = new Date(System.currentTimeMillis() + duration.toMillis());
-
-        //TODO Local checks
-
-        // Build
+        if (!canPost()) return;
         final EAEvent event = new EAEvent();
+
+        // Common
         event.type = this.partnerServer != null ? EAEvent.Type.PARTNER : EAEvent.Type.COMMUNITY;
         event.custom = this.custom;
         event.server = this.partnerServer;
-        if (event.type == EAEvent.Type.PARTNER) event.rolesNamed = this.roles;
         event.description = this.description;
+
+        // Partner-only
+        if (event.type == EAEvent.Type.PARTNER) event.rolesNamed = this.roles;
+
         if (!custom) {
+            // Builder
+
+            // Get time as Duration
+            final Duration duration = DurationParser.parse(time).orElse(null);
+            if (duration == null) {
+                error("invalid_time", time);
+                return;
+            }
+            // Check if duration is more than 1 day
+            if (duration.toDays() > 1) {
+                error("time_too_long", time);
+                return;
+            }
+
             event.title = this.title;
-            event.time = dateTime;
+            event.time = new Date(System.currentTimeMillis() + duration.toMillis());
             event.ip = this.ip;
             event.platforms = this.platforms;
             event.version = this.version;
@@ -200,12 +280,10 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
                 });
     }
 
-    private void rebuild() {
-        new VersionedClient(Minecraft.getInstance()).setScreen(new EventBuilder(this));
-    }
-
     @Override
     protected void build(@NotNull FlowLayout root) {
+        final EnrichedPlayer player = EventUtils.MOD.authManager.player;
+
         root.gap(4);
         root
                 .surface(Surface.VANILLA_TRANSLUCENT)
@@ -221,13 +299,13 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
         if (!partnerServers.isEmpty()) {
             // Build Partner Server option IDs
             final List<ObjectId> partnerServerIds = new ArrayList<>(partnerServers.keySet());
-            partnerServerIds.addFirst(null); // Add null option for community events
+            partnerServerIds.addFirst(COMMUNITY_EVENT_SENTINEL); // Add community event option
 
             fields.child(dropdownRow(
                     "partner_server", true, partnerServerIds,
-                    partnerServer, id -> {
+                    Objects.requireNonNullElse(partnerServer, COMMUNITY_EVENT_SENTINEL), id -> {
                         final ObjectId oldPartnerServer = this.partnerServer;
-                        partnerServer = id;
+                        partnerServer = id == COMMUNITY_EVENT_SENTINEL ? null : id;
 
                         // Rebuild if switching between community and partner (for ping roles)
                         if ((oldPartnerServer == null && partnerServer != null) || (oldPartnerServer != null && partnerServer == null)) {
@@ -235,32 +313,35 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
                         }
                     },
                     id -> {
-                        if (id == null) return translatable("eventutils.event_builder.values.partner_server.community").withStyle(ChatFormatting.GRAY);
+                        if (id == null || id == COMMUNITY_EVENT_SENTINEL) {
+                            return translatable("eventutils.event_builder.values.partner_server.community").withStyle(ChatFormatting.GRAY);
+                        }
                         final EAPartnerServer server = partnerServers.get(id);
                         return literal(server != null && server.name != null ? server.name : id.toHexString());
                     }));
         }
-        // Roles (Partner only)
+        // Roles (Partner only) TODO role conditions
         if (partnerServer != null) fields.child(checkBoxRow(
-                "roles", true, TOGGLEABLE_ROLES,
-                roles::contains, roles::add, roles::remove,
+                "roles", !custom,
+                TOGGLEABLE_ROLES, roles,
                 pingRole -> literal(pingRole.displayName),
                 pingRole -> "textures/event_builder/role/" + pingRole.name().toLowerCase() + ".png"));
 
         if (!custom) {
-            fields.child(stringRow("title", true, title, value -> title = value));
-            fields.child(stringRow("time", true, time, value -> time = value));
-            fields.child(stringRow("ip", true, ip, value -> ip = value));
-            fields.child(stringRow("version", true, version, value -> version = value));
+            fields.child(stringRow("title", true, MAX_TITLE_LENGTH, title, value -> title = value));
+            fields.child(stringRow("time", true, MAX_TIME_LENGTH, time, value -> time = value));
+            fields.child(stringRow("ip", true, MAX_IP_LENGTH, ip, value -> ip = value));
+            fields.child(stringRow("version", true, MAX_VERSION_LENGTH, version, value -> version = value));
         }
-        fields.child(textAreaRow("description", false, custom, description, value -> description = value));
+        fields.child(textAreaRow("description", custom, MAX_DESCRIPTION_LENGTH, custom, description, value -> description = value));
         if (!custom) {
-            fields.child(stringRow("prize", false, prize, value -> prize = value));
+            fields.child(stringRow("prize", false, MAX_PRIZE_LENGTH, prize, value -> prize = value));
             fields.child(checkBoxRow(
-                    "platforms", false, List.of(EAEvent.Platform.values()),
-                    platforms::contains, platforms::add, platforms::remove,
+                    "platforms", false,
+                    List.of(EAEvent.Platform.values()), platforms,
                     platform -> literal(platform.displayName),
                     platform -> "textures/event_builder/platform/" + platform.name().toLowerCase() + ".png"));
+            //TODO does this allow negatives?
             fields.child(integerRow("max_players", false, maxPlayers, value -> maxPlayers = value));
         }
         root.child(Containers.verticalScroll(Sizing.content(), Sizing.expand(), fields));
@@ -269,13 +350,14 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
         actions.gap(6);
         actions.margins(Insets.top(12));
         final String customKey = custom ? "custom" : "builder";
-        if ((EventUtils.MOD.authManager.player != null && EventUtils.MOD.authManager.player.player.subscription != null) || partnerServer != null) {
+        if ((player != null && player.getEffectiveSubscriptionTier() != null) || partnerServer != null) {
             actions.child(Components.button(translatable("eventutils.event_builder.actions.custom." + customKey).withStyle(ChatFormatting.AQUA), button -> {
                 custom = !custom;
                 rebuild();
             }).horizontalSizing(Sizing.fixed(160)));
         }
         actions.child(Components.button(translatable("eventutils.event_builder.actions.post.label").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD),  button -> {
+            if (!canPost()) return;
             final VersionedClient vClient = new VersionedClient(Minecraft.getInstance());
             vClient.setScreen(new ConfirmScreen(result -> {
                 if (result) {
@@ -292,25 +374,51 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
     }
 
     @NotNull
-    private FlowLayout stringRow(@NotNull String key, boolean required, @Nullable String value, @NotNull Consumer<String> setter) {
-        final TextBoxComponent box = Components.textBox(Sizing.expand(), value == null ? "" : value);
-        box.onChanged().subscribe(setter::accept);
-        return row(key, required, box);
+    private FlowLayout stringRow(@NotNull String key, boolean required, int maxLength, @Nullable String value, @NotNull Consumer<String> setter) {
+        final String initial = value == null ? "" : value;
+        final TextBoxComponent box = Components.textBox(Sizing.expand(), initial);
+        final FlowLayout wrapper = inputWrapper(box, required && initial.isBlank());
+        box.onChanged().subscribe(newValue -> {
+            String result = newValue;
+            if (newValue.length() > maxLength) {
+                result = newValue.substring(0, maxLength);
+                box.text(result);
+            }
+            setter.accept(result);
+            markInvalid(wrapper, required && result.isBlank());
+        });
+        return row(key, required, wrapper);
     }
 
     @NotNull
     private FlowLayout integerRow(@NotNull String key, boolean required, @Nullable Number value, @NotNull Consumer<Integer> setter) {
-        final TextBoxComponent box = Components.textBox(Sizing.expand(), value == null ? "" : value.toString());
+        final String initial = value == null ? "" : value.toString();
+        final TextBoxComponent box = Components.textBox(Sizing.expand(), initial);
+        final FlowLayout wrapper = inputWrapper(box, required && initial.isBlank());
         box.setFilter(text -> text.isEmpty() || (text.length() <= 9 && text.chars().allMatch(Character::isDigit)));
-        box.onChanged().subscribe(newValue -> setter.accept(Mapper.toInt(newValue).orElse(null)));
+        box.onChanged().subscribe(newValue -> {
+            setter.accept(Mapper.toInt(newValue).orElse(null));
+            markInvalid(wrapper, required && newValue.isBlank());
+        });
         return row(key, required, box);
     }
 
     @NotNull
-    private FlowLayout textAreaRow(@NotNull String key, boolean required, boolean big, @Nullable String value, @NotNull Consumer<String> setter) {
-        final TextAreaComponent area = Components.textArea(Sizing.expand(), Sizing.fixed(big ? 200 : 60), value == null ? "" : value);
-        area.onChanged().subscribe(setter::accept);
-        return row(key, required, area);
+    private FlowLayout textAreaRow(@NotNull String key, boolean required, int maxLength, boolean big, @Nullable String value, @NotNull Consumer<String> setter) {
+        final String initial = value == null ? "" : value;
+        final TextAreaComponent area = Components.textArea(Sizing.expand(), Sizing.fixed(big ? 200 : 60), initial);
+        final FlowLayout wrapper = inputWrapper(area, required && initial.isBlank());
+        area.margins(Insets.of(1));
+        area.onChanged().subscribe(newValue -> {
+            String result = newValue;
+            if (newValue.length() > maxLength) {
+                result = newValue.substring(0, maxLength);
+                area.text(result);
+            }
+            setter.accept(newValue);
+            markInvalid(wrapper, required && result.isBlank());
+        });
+        return row(key, required, wrapper);
     }
 
     @NotNull
@@ -339,22 +447,22 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
 
     @NotNull
     private <T> FlowLayout checkBoxRow(
-            @NotNull String key, boolean required, @NotNull List<T> values,
-            @NotNull Function<T, Boolean> getter, @NotNull Consumer<T> adder, @NotNull Consumer<T> remover,
+            @NotNull String key, boolean required,
+            @NotNull Collection<T> availableValues, @NotNull Collection<T> selectedValues,
             @NotNull Function<T, @NotNull Component> displayNameMapper,
             @Nullable Function<T, @NotNull String> iconPathMapper
     ) {
         final FlowLayout checkboxes = Containers.horizontalFlow(Sizing.expand(), Sizing.content());
         checkboxes.gap(8);
         checkboxes.verticalAlignment(VerticalAlignment.CENTER);
-        for (final T enumValue : values) {
+        for (final T enumValue : availableValues) {
             final String iconPath = iconPathMapper == null ? null : iconPathMapper.apply(enumValue);
             checkboxes.child(iconPath == null
                     ? Components.checkbox(displayNameMapper.apply(enumValue))
-                            .checked(getter.apply(enumValue))
-                            .onChanged(checked -> setChecked(checked, enumValue, adder, remover))
-                    : iconToggle(iconPath, displayNameMapper.apply(enumValue), getter.apply(enumValue),
-                            checked -> setChecked(checked, enumValue, adder, remover)));
+                            .checked(selectedValues.contains(enumValue))
+                            .onChanged(checked -> setChecked(checked, enumValue, selectedValues::add, selectedValues::remove))
+                    : iconToggle(iconPath, displayNameMapper.apply(enumValue), selectedValues.contains(enumValue),
+                            checked -> setChecked(checked, enumValue, selectedValues::add, selectedValues::remove)));
         }
         return row(key, required, checkboxes);
     }
@@ -375,7 +483,6 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
         box.gap(4);
         box.verticalAlignment(VerticalAlignment.CENTER);
         box.padding(Insets.of(3));
-        box.cursorStyle(CursorStyle.HAND);
         box.child(Components.texture(VersionedIdentifier.of(texturePath), 0, 0, ICON_TOGGLE_SIZE, ICON_TOGGLE_SIZE, ICON_TOGGLE_SIZE, ICON_TOGGLE_SIZE));
         box.child(Components.label(label));
 
@@ -393,6 +500,7 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
             return true;
         });
 
+        cursorAll(box, CursorStyle.HAND);
         return box;
     }
 
@@ -418,6 +526,26 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
         return row;
     }
 
+    @NotNull
+    private static FlowLayout inputWrapper(@NotNull io.wispforest.owo.ui.core.Component input, boolean invalid) {
+        final FlowLayout wrapper = Containers.horizontalFlow(Sizing.expand(), Sizing.content());
+        wrapper.padding(Insets.of(1));
+        wrapper.child(input);
+        markInvalid(wrapper, invalid);
+        return wrapper;
+    }
+
+    private static void markInvalid(@NotNull FlowLayout wrapper, boolean invalid) {
+        wrapper.surface(invalid ? Surface.outline(0xFFFF5555) : Surface.BLANK);
+    }
+
+    private static void cursorAll(@NotNull io.wispforest.owo.ui.core.Component component, @NotNull CursorStyle style) {
+        component.cursorStyle(style);
+        if (component instanceof ParentComponent parent) {
+            for (final io.wispforest.owo.ui.core.Component child : parent.children()) cursorAll(child, style);
+        }
+    }
+
     @Override @NotNull
     protected OwoUIAdapter<FlowLayout> createAdapter() {
         return OwoUIAdapter.create(this, Containers::verticalFlow);
@@ -428,10 +556,10 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
         @NotNull private static final Set<EAEvent.PingRole> PING_ROLES = Set.of(EAEvent.PingRole.PARTNER);
         @NotNull public static final String TITLE =  Minecraft.getInstance().getUser().getName() + "'s Event";
         @NotNull public static final String TIME = "15m";
-        @Nullable private static final String IP = "play.eventalerts.gg";
-        @Nullable public static final String DESCRIPTION = null;
+        @NotNull private static final String IP = "play.eventalerts.gg";
+        @NotNull public static final String DESCRIPTION = "";
         @NotNull private static final Set<EAEvent.Platform> PLATFORMS = Set.of(EAEvent.Platform.JAVA);
-        @Nullable public static final String PRIZE = null;
+        @NotNull public static final String PRIZE = "";
         @Nullable public static final Integer MAX_PLAYERS = null;
 
         @NotNull
@@ -455,7 +583,7 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
             return Objects.requireNonNullElse(EventUtils.MC_VERSION, "26.2");
         }
 
-        @Nullable
+        @NotNull
         public static String description() {
             final ServerData server = Minecraft.getInstance().getCurrentServer();
             return server != null ? server.motd.getString() : DESCRIPTION;

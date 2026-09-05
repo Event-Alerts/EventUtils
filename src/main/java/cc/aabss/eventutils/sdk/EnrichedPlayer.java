@@ -1,36 +1,56 @@
 package cc.aabss.eventutils.sdk;
 
+import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.plustag.PlusTag;
 import gg.eventalerts.sdk.object.EAPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.srnyx.javautilities.parents.Stringable;
 
 
-public class EnrichedPlayer extends Stringable {
-    @NotNull public final EAPlayer player;
-
+public class EnrichedPlayer extends EAPlayer {
     // --- Enrichment ---
     private boolean plusTagResolved = false;
     @Nullable private PlusTag plusTag;
 
     public EnrichedPlayer(@NotNull EAPlayer player) {
-        this.player = player;
+        super(player);
     }
 
     public boolean isOnline() {
-        return player.minecraft != null && player.minecraft.eventUtils != null;
+        return minecraft != null && minecraft.eventUtils != null;
     }
 
     public boolean isDiscordLinked() {
-        return player.discord != null;
+        return discord != null;
+    }
+
+    @Nullable
+    public EAPlayer.Subscription.Tier getEffectiveSubscriptionTier() {
+        // Admins get highest subscription
+        if (discord != null && discord.roles != null && discord.roles.contains(EAPlayer.Discord.Role.ADMIN)) {
+            return EAPlayer.Subscription.Tier.HORNET;
+        }
+
+        // Has subscription
+        if (subscription != null) return subscription.tier;
+
+        // No subscription
+        return null;
     }
 
     @Nullable
     public PlusTag getPlusTag() {
         if (!plusTagResolved) {
             plusTagResolved = true;
-            plusTag = PlusTag.getBestUnlocked(player);
+            PlusTag bestTag = null;
+            for (final PlusTag tag : PlusTag.values()) {
+                if (tag.isUnlocked.test(this)) {
+                    bestTag = tag;
+                    break;
+                }
+            }
+            EventUtils.LOGGER.debug("[API] Fetched best tag={} uuid={}", bestTag, minecraft != null ? minecraft.uuid : "(minecraft=null)");
+            return bestTag;
         }
         return plusTag;
     }

@@ -1,10 +1,8 @@
 package cc.aabss.eventutils.plustag;
 
-import cc.aabss.eventutils.EventUtils;
 import cc.aabss.eventutils.versioning.VersionedIdentifier;
 import gg.eventalerts.sdk.object.EAPlayer;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 //? if >=1.21.11 {
 /*import net.minecraft.resources.Identifier;
 *///?} else {
@@ -58,19 +56,5 @@ public enum PlusTag {
     PlusTag(@NotNull Predicate<EAPlayer> isUnlocked) {
         this.textureId = VersionedIdentifier.of("textures/bee/plus/" + name().toLowerCase() + ".png");
         this.isUnlocked = isUnlocked;
-    }
-
-    @Nullable
-    public static PlusTag getBestUnlocked(@Nullable EAPlayer player) {
-        if (player == null) return null;
-        PlusTag bestTag = null;
-        for (final PlusTag tag : PlusTag.values()) {
-            if (tag.isUnlocked.test(player)) {
-                bestTag = tag;
-                break;
-            }
-        }
-        EventUtils.LOGGER.debug("[API] Fetched best tag={} uuid={}", bestTag, player.minecraft != null ? player.minecraft.uuid : "(player.minecraft=null)");
-        return bestTag;
     }
 }
