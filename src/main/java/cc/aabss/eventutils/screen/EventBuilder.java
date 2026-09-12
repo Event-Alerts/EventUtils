@@ -102,11 +102,12 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
 
     public void open() {
         final EAPlayer player = EventUtils.MOD.authManager.player;
-        if (player == null || player.discord == null) return;
+        if (player == null || player.discord == null || player.discord.id == null) return;
 
+        // Fetch Partner Servers
         EventUtils.MOD.http.partnerServers.retrieveAll(MapGenerator.HASH_MAP.mapOf(
                 "enabled", null,
-                "representatives", Set.of(player.discord)
+                "representatives", Set.of(player.discord.id)
         )).queue(
                 partnerServers -> {
                     // partnerServers
