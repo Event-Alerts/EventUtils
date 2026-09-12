@@ -149,7 +149,8 @@
       "config": "Config",
       "group_manager": "Group manager",
       "discord_link": "Link Discord account",
-      "event_builder": "Post an event"
+      "event_builder": "Post an event",
+      "close": "Close"
     },
 
     "event_builder": {

@@ -41,31 +41,42 @@ public class MenuScreen extends ScreenWithParent<FlowLayout> {
         buttons.horizontalSizing(Sizing.fixed(150));
         buttons.gap(10);
 
+        // Config
         buttons.child(Components
                 .button(translatable("eventutils.menu.config").withStyle(ChatFormatting.GOLD), button -> {
                     new VersionedClient(Minecraft.getInstance()).setScreen(ConfigScreen.getConfigScreen(this));
                 })
                 .horizontalSizing(Sizing.expand()));
 
+        // Group Manager
         buttons.child(Components
-                .button(translatable("eventutils.menu.group_manager").withStyle(ChatFormatting.YELLOW), button -> {
-                    new VersionedClient(Minecraft.getInstance()).setScreen(new GroupManagerScreen(EventUtils.MOD, this));
-                })
+                .button(
+                        translatable("eventutils.menu.group_manager").withStyle(ChatFormatting.YELLOW),
+                        button -> new VersionedClient(Minecraft.getInstance()).setScreen(new GroupManagerScreen(EventUtils.MOD, this)))
                 .horizontalSizing(Sizing.expand()));
 
         if (player != null) {
+            // Discord Link
             if (!player.isDiscordLinked()) buttons.child(Components
-                    .button(translatable("eventutils.menu.discord_link").withStyle(ChatFormatting.AQUA), button -> {
-                        EventUtils.MOD.discordLinkManager.startLink(this, null);
-                    })
+                    .button(
+                            translatable("eventutils.menu.discord_link").withStyle(ChatFormatting.AQUA),
+                            button -> EventUtils.MOD.discordLinkManager.startLink(this, null))
                     .horizontalSizing(Sizing.expand()));
 
+            // Event Builder
             if (player.isDiscordLinked()) buttons.child(Components
-                    .button(translatable("eventutils.menu.event_builder").withStyle(ChatFormatting.GREEN), button -> {
-                        new EventBuilder(this).open();
-                    })
+                    .button(
+                            translatable("eventutils.menu.event_builder").withStyle(ChatFormatting.GREEN),
+                            button -> new EventBuilder(this).open())
                     .horizontalSizing(Sizing.expand()));
         }
+
+        // Close
+        buttons.child(Components
+                .button(
+                        translatable("eventutils.menu.close"),
+                        button -> onClose())
+                .horizontalSizing(Sizing.expand()));
 
         rootComponent.child(buttons);
     }
