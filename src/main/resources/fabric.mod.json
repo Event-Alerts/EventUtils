@@ -4,7 +4,8 @@
   "version": "${mod_version}",
   "name": "${mod_name}",
   "description": "${description}",
-  "authors": ["Event Alerts", "aabss", "srnyx", "pvty", "QWERTZ_EXE"],
+  "authors": ["Event Alerts", "srnyx"],
+  "contributors": ["aabss", "pvty", "QWERTZ_EXE"],
   "contact": {
     "homepage": "https://eventalerts.gg?utm_source=minecraft&utm_medium=fabric_mod_json&utm_campaign=fabric",
     "sources": "https://github.com/Event-Alerts/EventUtils",
