@@ -524,6 +524,7 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
 
         row.child(label);
         row.child(input);
+        row.tooltip(translatable("eventutils.event_builder.values." + key + ".description"));
         return row;
     }
 
