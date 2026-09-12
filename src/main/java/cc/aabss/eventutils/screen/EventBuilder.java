@@ -300,7 +300,7 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
         if (!partnerServers.isEmpty()) {
             // Build Partner Server option IDs
             final List<ObjectId> partnerServerIds = new ArrayList<>(partnerServers.keySet());
-            partnerServerIds.addFirst(COMMUNITY_EVENT_SENTINEL); // Add community event option
+            partnerServerIds.add(0, COMMUNITY_EVENT_SENTINEL); // Add community event option (don't use addFirst to support old Java versions)
 
             fields.child(dropdownRow(
                     "partner_server", true, partnerServerIds,
