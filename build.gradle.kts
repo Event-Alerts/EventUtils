@@ -33,6 +33,7 @@ val sdkVersion = property("library.sdk").toString()
 val okaeriConfigsVersion = property("library.okaeri_configs").toString()
 val fabricApiVersion = property("deps.fabric_api").toString()
 val yaclVersion = property("deps.yacl").toString()
+val owoLibVersion = property("deps.owo_lib").toString()
 val modMenuVersion = property("deps.modmenu").toString()
 val placeholderApiVersion = if (hasProperty("deps.placeholder_api")) property("deps.placeholder_api").toString() else null
 
@@ -63,6 +64,7 @@ galaxy {
 
         add(
             "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1",
+            "https://maven.wispforest.io/releases/",
             GNOMECRAFT_RELEASES, NUCLEOID,
             OKAERI_RELEASES, OKAERI_SNAPSHOTS,
             SRNYX_RELEASES, SRNYX_SNAPSHOTS,
@@ -82,6 +84,7 @@ galaxy {
             "deps_loader" to loaderVersion,
             "deps_fabric_api" to fabricApiVersion,
             "deps_yacl" to yaclVersion,
+            "deps_owo_lib" to owoLibVersion,
             "deps_modmenu" to modMenuVersion))
 
         platformPublishing {
@@ -178,6 +181,8 @@ dependencies {
     modImplementation("dev.isxander:yet-another-config-lib:$yaclVersion")
     modImplementation("com.terraformersmc:modmenu:$modMenuVersion")
     placeholderApiVersion?.let { modImplementation("eu.pb4:placeholder-api:$it") }
+    modImplementation("io.wispforest:owo-lib:$owoLibVersion")
+    include("io.wispforest:owo-sentinel:$owoLibVersion")
 
     // Dev
     modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
@@ -199,6 +204,12 @@ stonecutter {
         replace("ClientCommandManager", "ClientCommands")
         replace("GuiGraphics", "GuiGraphicsExtractor")
         replace("net.minecraft.client.renderer.state.CameraRenderState", "net.minecraft.client.renderer.state.level.CameraRenderState")
+    }
+    replacements.string(current.parsed >= "1.21.11") {
+        replace("Components", "UIComponents")
+        replace("Containers", "UIContainers")
+        replace("ParentComponent", "ParentUIComponent")
+        replace("io.wispforest.owo.ui.core.Component", "UIComponent")
     }
     replacements.string(current.parsed < "1.21") {
         replace("GenericMessageScreen", "GenericDirtMessageScreen")
@@ -274,6 +285,13 @@ tasks {
     }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersionProject.majorVersion)
+        vendor = JvmVendorSpec.JETBRAINS
+    }
+}
+
 loom {
     fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json") // Useful for interface injection
 
@@ -283,7 +301,7 @@ loom {
 
     runConfigs.all {
         preferGradleTask = true
-        jvmArguments.add("-Dmixin.debug.export=true") // Exports transformed classes for debugging
+        jvmArguments.add("-Dmixin.debug.export=true -XX:+AllowEnhancedClassRedefinition") // Exports transformed classes for debugging
         runDirectory = file("../../run") // Shares the run directory between versions
     }
 

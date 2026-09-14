@@ -24,6 +24,7 @@ public class Stats {
     @NotNull private final AtomicLong socketMessagesSentPrevious = new AtomicLong();
     @NotNull public final AtomicInteger eventToastsReceived = new AtomicInteger();
     @NotNull public final AtomicInteger eventsJoined = new AtomicInteger();
+    @NotNull public final AtomicInteger eventsPosted = new AtomicInteger();
 
     public Stats(@NotNull EventUtils mod) {
         new FabricContext.Factory(BuildProperties.MOD_ID, "5de470ff674a5d47edfd04ad3f99e230")
@@ -35,6 +36,7 @@ public class Stats {
                         socketMessagesSentPrevious.set(mod.webSocket.messagesSent);
                         eventToastsReceived.set(0);
                         eventsJoined.set(0);
+                        eventsPosted.set(0);
                     });
 
                     // Config
@@ -51,6 +53,7 @@ public class Stats {
                     // Misc
                     factory.addMetric(Metric.number("event_toasts_received", eventToastsReceived::get));
                     factory.addMetric(Metric.number("events_joined", eventsJoined::get));
+                    factory.addMetric(Metric.number("events_posted", eventsPosted::get));
 
                     return factory.create();
                 })

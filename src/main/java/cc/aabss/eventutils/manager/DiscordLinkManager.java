@@ -87,6 +87,7 @@ public class DiscordLinkManager {
                         fail("eventutils.config.discord_link.toast.start");
                         return;
                     }
+                    // It's okay for browserParent to be null
                     Minecraft.getInstance().execute(() -> ConfirmLinkScreen.confirmLinkNow(browserParent, url));
                 },
                 t -> {
@@ -185,7 +186,6 @@ public class DiscordLinkManager {
         if (server == null) return;
         EventUtils.LOGGER.warn("[DISCORD_LINK] Linking timed out");
         cancel();
-        fail("eventutils.config.discord_link.toast.timeout");
     }
 
     private void fail(@NotNull String descriptionKey) {

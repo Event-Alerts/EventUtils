@@ -43,8 +43,8 @@ public class DiscordRPC {
     public DiscordRPC(@NotNull EventUtils mod) {
         this.mod = mod;
         this.client.setListener(new CustomIPCListener(this));
-        this.playerUrl = mod.authManager.player != null && mod.authManager.player.player.discord != null && mod.authManager.player.player.discord.id != null
-                ? utm("https://eventalerts.gg/players/" + mod.authManager.player.player.discord.id, "player")
+        this.playerUrl = mod.authManager.player != null && mod.authManager.player.discord != null && mod.authManager.player.discord.id != null
+                ? utm("https://eventalerts.gg/players/" + mod.authManager.player.discord.id, "player")
                 : "https://namemc.com/profile/" + Minecraft.getInstance().getUser().getProfileId();
         refreshConnection();
     }
@@ -77,7 +77,11 @@ public class DiscordRPC {
     }
 
     public void close() {
-        client.close();
+        try {
+            client.close();
+        } catch (final IllegalStateException ignored) {
+            // Not connected, ignore
+        }
     }
 
     public void refresh() {

@@ -15,6 +15,8 @@ public class CommandRegister {
     public static void register(@NotNull EventUtils mod, @NotNull CommandDispatcher<FabricClientCommandSource> dispatcher) {
         // Commands
         final LiteralCommandNode<FabricClientCommandSource> config = new ConfigCmd(mod).build();
+        final LiteralCommandNode<FabricClientCommandSource> link = new LinkCmd(mod).build();
+        final LiteralCommandNode<FabricClientCommandSource> post = new PostCmd(mod).build();
         final LiteralCommandNode<FabricClientCommandSource> teleport = new TeleportCmd(mod).build();
         final LiteralCommandNode<FabricClientCommandSource> priority = new PriorityCmd(mod).build();
         final LiteralCommandNode<FabricClientCommandSource> priorityTop = new PriorityTopCmd(mod).build();
@@ -32,6 +34,8 @@ public class CommandRegister {
         // Build command tree
         dispatcher.getRoot().addChild(main);
         main.addChild(config);
+        main.addChild(link);
+        main.addChild(post);
         main.addChild(teleport);
         main.addChild(priority);
         main.addChild(priorityTop);
