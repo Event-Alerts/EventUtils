@@ -40,18 +40,18 @@ public class EnrichedPlayer extends EAPlayer {
 
     @Nullable
     public PlusTag getPlusTag() {
-        if (!plusTagResolved) {
-            plusTagResolved = true;
-            PlusTag bestTag = null;
-            for (final PlusTag tag : PlusTag.values()) {
-                if (tag.isUnlocked.test(this)) {
-                    bestTag = tag;
-                    break;
-                }
+        if (plusTagResolved) return plusTag;
+
+        plusTagResolved = true;
+        PlusTag bestTag = null;
+        for (final PlusTag tag : PlusTag.values()) {
+            if (tag.isUnlocked.test(this)) {
+                bestTag = tag;
+                break;
             }
-            EventUtils.LOGGER.debug("[API] Fetched best tag={} uuid={}", bestTag, minecraft != null ? minecraft.uuid : "(minecraft=null)");
-            return bestTag;
         }
-        return plusTag;
+        EventUtils.LOGGER.debug("[API] Fetched best tag={} uuid={}", bestTag, minecraft != null ? minecraft.uuid : "(minecraft=null)");
+        plusTag = bestTag;
+        return bestTag;
     }
 }
