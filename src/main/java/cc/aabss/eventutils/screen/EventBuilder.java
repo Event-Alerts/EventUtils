@@ -416,7 +416,7 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
                 result = newValue.substring(0, maxLength);
                 area.text(result);
             }
-            setter.accept(newValue);
+            setter.accept(result);
             markInvalid(wrapper, required && result.isBlank());
         });
         return row(key, required, wrapper);
