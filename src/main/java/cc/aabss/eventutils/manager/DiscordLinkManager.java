@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+//? if >=26.3 {
+//import java.net.URI;
+//?}
 
 
 /**
@@ -81,12 +84,21 @@ public class DiscordLinkManager {
         // Ask Event Alerts to build the OAuth URL, then open the browser
         mod.http.players.eventUtils.postLinkDiscord(new EUDiscordLinkBody(currentNonce, port)).queue(
                 response -> {
-                    final String url = response != null ? response.url : null;
-                    if (url == null) {
+                    // Get URL
+                    final String urlString = response != null ? response.url : null;
+                    if (urlString == null) {
                         EventUtils.LOGGER.error("[DISCORD_LINK] Link start response missing 'url'");
                         fail("eventutils.config.discord_link.toast.start");
                         return;
                     }
+
+                    // >=26.3: URI, <26.3: String
+                    //? if >=26.3 {
+                    /*final URI url = URI.create(urlString);
+                    *///?} else {
+                    final String url = urlString;
+                    //?}
+
                     // It's okay for browserParent to be null
                     Minecraft.getInstance().execute(() -> ConfirmLinkScreen.confirmLinkNow(browserParent, url));
                 },

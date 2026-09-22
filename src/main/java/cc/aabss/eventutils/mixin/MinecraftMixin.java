@@ -1,10 +1,9 @@
+//? if <26.3 {
 package cc.aabss.eventutils.mixin;
 
 import cc.aabss.eventutils.EventUtils;
-import cc.aabss.eventutils.versioning.VersionedClient;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ConfirmScreen;
-import net.minecraft.client.gui.screens.Screen;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,36 +11,26 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.minecraft.network.chat.Component.translatable;
-
 
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
     @Inject(method = "run", at = @At("HEAD"))
     private void onRun(CallbackInfo ci) {
         if (!EventUtils.MOD.config.confirm_window_close) return;
-        final Minecraft client = Minecraft.getInstance();
+
+        // Get handle
+        final Window window = Minecraft.getInstance().getWindow();
         //? if >=1.21.11 {
-        /*final long handle = client.getWindow().handle();
+        /*final long handle = window.handle();
         *///?} else {
-        final long handle = client.getWindow().getWindow();
+        final long handle = window.getWindow();
         //?}
-        final GLFWWindowCloseCallback callback = GLFW.glfwSetWindowCloseCallback(handle, win -> client.execute(() -> {
-            final VersionedClient vClient = new VersionedClient(client);
-            GLFW.glfwSetWindowShouldClose(handle, false);
-            final Screen current = vClient.screen();
-            vClient.setScreen(new ConfirmScreen(
-                    result -> {
-                        if (result) {
-                            client.stop();
-                            return;
-                        }
-                        GLFW.glfwSetWindowShouldClose(handle, false);
-                        vClient.setScreen(current);
-                    },
-                    translatable("eventutils.confirm_exit.title"),
-                    translatable("eventutils.confirm_exit.message")));
-        }));
+
+        // Create callback
+        final GLFWWindowCloseCallback callback = GLFW.glfwSetWindowCloseCallback(
+                handle,
+                win -> EventUtils.confirmExit(() -> GLFW.glfwSetWindowShouldClose(handle, false)));
         if (callback != null) callback.free();
     }
 }
+//?}

@@ -14,7 +14,9 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+//? if <26.3 {
 import org.lwjgl.glfw.GLFW;
+//?}
 //? if >= 26.1 {
 /*import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 *///?} else {
@@ -80,7 +82,7 @@ public class KeybindManager {
 
             // Event info key
             if (!eventInfoKey.isUnbound()) {
-                if (GLFW.glfwGetKey(windowHandle, ((KeyMappingAccessor) eventInfoKey).getKey().getValue()) == GLFW.GLFW_PRESS) {
+                if (isKeyDown(eventInfoKey)) {
                     if (canNotPress(eventInfoKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.debug("Event info key pressed");
 
@@ -105,7 +107,7 @@ public class KeybindManager {
 
             // Developer Mode: simulate test event
             if (!testEventKey.isUnbound() && mod.config.developer_mode) {
-                if (GLFW.glfwGetKey(windowHandle, ((KeyMappingAccessor) testEventKey).getKey().getValue()) == GLFW.GLFW_PRESS) {
+                if (isKeyDown(testEventKey)) {
                     if (canNotPress(testEventKey, DEFAULT_COOLDOWN_TIME_MS)) return;
                     EventUtils.LOGGER.debug("Test event key pressed");
 
@@ -160,5 +162,14 @@ public class KeybindManager {
         if (lastPressTime != null && now - lastPressTime < cooldownTimeMs) return true;
         lastKeyPresses.put(name, now);
         return false;
+    }
+
+    private boolean isKeyDown(@NotNull KeyMapping key) {
+        final int keyValue = ((KeyMappingAccessor) key).getKey().getValue();
+        //? if >=26.3 {
+        /*return InputConstants.isKeyDown(keyValue);
+        *///?} else {
+        return windowHandle != null && GLFW.glfwGetKey(windowHandle, keyValue) == GLFW.GLFW_PRESS;
+        //?}
     }
 }
