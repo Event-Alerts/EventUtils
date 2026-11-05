@@ -110,6 +110,11 @@ galaxy {
                     id = "1eAoo2KR"
                     version = yaclVersion
                 }
+                // owo-lib
+                requires {
+                    id = "ccKDOlHs"
+                    version = owoLibVersion
+                }
                 // Text Placeholder API
                 placeholderApiVersion?.let { requires {
                     id = "eXts2L7r"
@@ -129,6 +134,8 @@ galaxy {
                 requires { slug = "fabric-api" }
                 // YetAnotherConfigLib (YACL)
                 requires { slug = "yacl" }
+                // owo-lib
+                requires { slug = "owo-lib" }
                 // Text Placeholder API
                 placeholderApiVersion?.let { requires { slug = "text-placeholder-api" } }
                 // Mod Menu
