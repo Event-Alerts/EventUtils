@@ -197,6 +197,10 @@ stonecutter {
     swaps["mod_version_full"] = "\"$version\""
 
     // Replacements
+    replacements.string(current.parsed >= "26.3") {
+        replace("InputConstants.Type.KEYSYM", "InputConstants.Type.KEYBOARD")
+        replace("GLFW.GLFW_KEY_", "InputConstants.KEY_")
+    }
     replacements.string(current.parsed >= "26.1") {
         replace("ClientCommandManager", "ClientCommands")
         replace("GuiGraphics", "GuiGraphicsExtractor")

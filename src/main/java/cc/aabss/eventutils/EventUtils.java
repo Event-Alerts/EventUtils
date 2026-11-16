@@ -18,6 +18,7 @@ import cc.aabss.eventutils.manager.KeybindManager;
 import cc.aabss.eventutils.sdk.EnrichedEvent;
 import cc.aabss.eventutils.sdk.EventWrapper;
 import cc.aabss.eventutils.stats.Stats;
+import cc.aabss.eventutils.versioning.VersionedClient;
 import cc.aabss.eventutils.versioning.VersionedGameProfile;
 import cc.aabss.eventutils.websocket.listener.EventCancelledListener;
 import cc.aabss.eventutils.websocket.listener.EventPostedListener;
@@ -38,6 +39,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.locale.Language;
@@ -328,6 +331,32 @@ public class EventUtils implements ClientModInitializer {
     @NotNull
     public static String translate(@NotNull String key) {
         return Language.getInstance().getOrDefault(key);
+    }
+
+    /**
+     * Shows the exit-confirmation dialog for a window/game close request
+     *
+     * @param cancelClose reverts the platform-specific "closing" state; run immediately and again if the user cancels
+     */
+    public static void confirmExit(@NotNull Runnable cancelClose) {
+        cancelClose.run();
+
+        final Minecraft client = Minecraft.getInstance();
+        client.execute(() -> {
+            final VersionedClient vClient = new VersionedClient(client);
+            final Screen current = vClient.screen();
+            vClient.setScreen(new ConfirmScreen(
+                    result -> {
+                        if (result) {
+                            client.stop();
+                            return;
+                        }
+                        cancelClose.run();
+                        vClient.setScreen(current);
+                    },
+                    Component.translatable("eventutils.confirm_exit.title"),
+                    Component.translatable("eventutils.confirm_exit.message")));
+        });
     }
 
     /**
