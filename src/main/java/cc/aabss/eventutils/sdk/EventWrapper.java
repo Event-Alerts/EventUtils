@@ -84,7 +84,7 @@ public class EventWrapper {
         this.title = (eventType != null ? eventType.name() : "Unknown") + " Event";
 
         // ip
-        this.ip = Objects.requireNonNullElse(ConnectUtility.getIp(event.message), mod.config.default_famous_ip).toLowerCase();
+        this.ip = Objects.requireNonNullElse(ConnectUtility.getIp(event.message), mod.config.default_famous_ip).toLowerCase(Locale.ROOT);
     }
 
     @Override @NotNull
@@ -187,7 +187,7 @@ public class EventWrapper {
                 final Component title = translatable("eventutils.event.toast.title", eventType.nameTranslation, prizeTranslatable).withStyle(eventType.color);
 
                 // Get description
-                final Component description = ip != null ? translatable("eventutils.event.teleport.text", translatable("eventutils.event.teleport.command", eventType.name().toLowerCase()).withStyle(eventType.color)) : null;
+                final Component description = ip != null ? translatable("eventutils.event.teleport.text", translatable("eventutils.event.teleport.command", eventType.name().toLowerCase(Locale.ROOT)).withStyle(eventType.color)) : null;
 
                 // Update metric
                 mod.stats.eventToastsReceived.incrementAndGet();
@@ -230,18 +230,18 @@ public class EventWrapper {
         if (!(event instanceof EAEvent eaEvent)) return null;
 
         // Direct IP field
-        if (eaEvent.ip != null && !eaEvent.ip.isEmpty()) return eaEvent.ip.toLowerCase();
+        if (eaEvent.ip != null && !eaEvent.ip.isEmpty()) return eaEvent.ip.toLowerCase(Locale.ROOT);
 
         // Extract from description
         if (eaEvent.description != null) {
             final String extracted = ConnectUtility.getIp(eaEvent.description);
-            if (extracted != null) return extracted.toLowerCase();
+            if (extracted != null) return extracted.toLowerCase(Locale.ROOT);
         }
 
         // Extract from title
         if (eaEvent.title != null) {
             final String extracted = ConnectUtility.getIp(eaEvent.title);
-            if (extracted != null) return extracted.toLowerCase();
+            if (extracted != null) return extracted.toLowerCase(Locale.ROOT);
         }
 
         return null;
@@ -280,7 +280,7 @@ public class EventWrapper {
             return matcher.group("symbol") + matcher.group("symbolAmount").replace(",", "");
         }
 
-        final String symbol = switch (matcher.group("currency").toLowerCase()) {
+        final String symbol = switch (matcher.group("currency").toLowerCase(Locale.ROOT)) {
             case "dollar", "dollars" -> "$";
             case "euro", "euros" -> "€";
             case "pound", "pounds" -> "£";

@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.srnyx.javautilities.MiscUtility;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -36,8 +37,8 @@ public class EventServerManager {
     }
 
     public boolean isActiveEventServer(@NotNull String ip) {
-        final String ipLower = ip.toLowerCase();
-        return activeEventServers.values().stream().anyMatch(info -> info.serverData.ip.toLowerCase().equals(ipLower));
+        final String ipLower = ip.toLowerCase(Locale.ROOT);
+        return activeEventServers.values().stream().anyMatch(info -> info.serverData.ip.toLowerCase(Locale.ROOT).equals(ipLower));
     }
 
     public void addEventServer(@NotNull EventWrapper wrapper) {

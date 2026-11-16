@@ -79,7 +79,7 @@ public class Group extends Stringable implements Statable {
     @NotNull
     public Group setPlayers(@NotNull Collection<String> players) {
         this.players = players.stream()
-                .map(String::toLowerCase)
+                .map(name -> name.toLowerCase(Locale.ROOT))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         return this;
     }
@@ -176,7 +176,7 @@ public class Group extends Stringable implements Statable {
     }
 
     public boolean isPlayerVisible(@NotNull String name, @Nullable Vec3 position) {
-        final boolean show = (playerMode == Mode.SHOW) == players.contains(name.toLowerCase());
+        final boolean show = (playerMode == Mode.SHOW) == players.contains(name.toLowerCase(Locale.ROOT));
         return show || outsideRadius(position);
     }
 

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.resources.ResourceLocation;
 //?}
 
+import java.util.Locale;
 import java.util.function.Predicate;
 
 
@@ -54,7 +55,7 @@ public enum PlusTag {
     @NotNull public final Predicate<EAPlayer> isUnlocked;
 
     PlusTag(@NotNull Predicate<EAPlayer> isUnlocked) {
-        this.textureId = VersionedIdentifier.of("textures/bee/plus/" + name().toLowerCase() + ".png");
+        this.textureId = VersionedIdentifier.of("textures/bee/plus/" + name().toLowerCase(Locale.ROOT) + ".png");
         this.isUnlocked = isUnlocked;
     }
 }

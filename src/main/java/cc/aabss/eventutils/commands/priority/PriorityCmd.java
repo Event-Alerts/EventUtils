@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Locale;
 
 
 public class PriorityCmd extends EUCommand {
@@ -57,8 +58,8 @@ public class PriorityCmd extends EUCommand {
                 return;
             }
 
-            final String nameLower = name.toLowerCase();
-            for (final String playerName : namesSorted) if (nameLower.equals(playerName.toLowerCase())) {
+            final String nameLower = name.toLowerCase(Locale.ROOT);
+            for (final String playerName : namesSorted) if (nameLower.equals(playerName.toLowerCase(Locale.ROOT))) {
                 if (playerName.equalsIgnoreCase(client.player.getName().getString())) {
                     context.getSource().sendFeedback(Component.translatable("eventutils.command.priority.self", EventUtils.MESSAGE_PREFIX, "§6#" + (namesSorted.indexOf(playerName) + 1)));
                 } else {

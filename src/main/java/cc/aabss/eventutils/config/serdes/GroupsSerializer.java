@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -37,7 +38,7 @@ public class GroupsSerializer implements ObjectSerializer<Groups> {
         // Validate (unique names)
         final Set<String> groupNames = new HashSet<>();
         for (final Group group : map.values()) {
-            if (groupNames.add(group.getName().toLowerCase())) continue;
+            if (groupNames.add(group.getName().toLowerCase(Locale.ROOT))) continue;
             EventUtils.LOGGER.error("Removing duplicate group: {}", group);
             map.remove(group.getUuid());
         }

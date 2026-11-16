@@ -326,7 +326,7 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
                 "roles", !custom,
                 TOGGLEABLE_ROLES, roles,
                 pingRole -> literal(pingRole.displayName),
-                pingRole -> "textures/event_builder/role/" + pingRole.name().toLowerCase() + ".png"));
+                pingRole -> "textures/event_builder/role/" + pingRole.name().toLowerCase(Locale.ROOT) + ".png"));
 
         if (!custom) {
             fields.child(stringRow("title", true, MAX_TITLE_LENGTH, title, value -> title = value));
@@ -341,7 +341,7 @@ public class EventBuilder extends ScreenWithParent<FlowLayout> {
                     "platforms", false,
                     List.of(EAEvent.Platform.values()), platforms,
                     platform -> literal(platform.displayName),
-                    platform -> "textures/event_builder/platform/" + platform.name().toLowerCase() + ".png"));
+                    platform -> "textures/event_builder/platform/" + platform.name().toLowerCase(Locale.ROOT) + ".png"));
             //TODO does this allow negatives?
             fields.child(integerRow("max_players", false, maxPlayers, value -> maxPlayers = value));
         }

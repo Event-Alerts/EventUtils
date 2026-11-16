@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Locale;
 
 
 public class CountNameCmd extends EUCommand {
@@ -58,7 +59,7 @@ public class CountNameCmd extends EUCommand {
                 .map(entry -> new VersionedGameProfile(entry.getProfile()))
                 .filter(profile -> !EventUtils.isNpc(profile.getId()))
                 .map(VersionedGameProfile::getName)
-                .filter(name -> name.toLowerCase().contains(filter.toLowerCase()))
+                .filter(name -> name.toLowerCase(Locale.ROOT).contains(filter.toLowerCase(Locale.ROOT)))
                 .toList();
 
         // No names after filtering

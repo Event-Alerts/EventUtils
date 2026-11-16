@@ -11,6 +11,8 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
+
 import static net.minecraft.network.chat.Component.translatable;
 
 
@@ -29,7 +31,7 @@ public class TeleportCmd extends EUCommand {
             })
             .build();
         for (final EventType type : EventType.values()) teleport.addChild(ClientCommandManager
-                .literal(type.name().toLowerCase())
+                .literal(type.name().toLowerCase(Locale.ROOT))
                 .executes((context -> {
                     execute(context, type);
                     return 0;

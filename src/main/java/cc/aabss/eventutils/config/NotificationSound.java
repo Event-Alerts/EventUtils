@@ -9,6 +9,8 @@ import net.minecraft.sounds.SoundEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
+
 import static net.minecraft.network.chat.Component.translatable;
 
 
@@ -26,11 +28,11 @@ public enum NotificationSound implements NameableEnum {
     TIME_OF_WAR;
 
     public void play() {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvent.createVariableRangeEvent(VersionedIdentifier.of("notification." + name().toLowerCase())), 1, 1));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvent.createVariableRangeEvent(VersionedIdentifier.of("notification." + name().toLowerCase(Locale.ROOT))), 1, 1));
     }
 
     @Override @NotNull @Contract(" -> new")
     public Component getDisplayName() {
-        return translatable("eventutils.sound." + name().toLowerCase());
+        return translatable("eventutils.sound." + name().toLowerCase(Locale.ROOT));
     }
 }

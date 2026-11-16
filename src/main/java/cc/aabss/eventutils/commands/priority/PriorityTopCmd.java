@@ -17,6 +17,7 @@ import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Locale;
 
 
 public class PriorityTopCmd extends EUCommand {
@@ -65,7 +66,7 @@ public class PriorityTopCmd extends EUCommand {
             final int pageIndex = Math.max(0, page - 1);
             final int start = pageIndex * PLAYERS_PER_PAGE;
             final int end = Math.min(start + PLAYERS_PER_PAGE, totalPlayers);
-            final String clientName = client.player.getName().getString().toLowerCase();
+            final String clientName = client.player.getName().getString().toLowerCase(Locale.ROOT);
             final MutableComponent text = Component.translatable("eventutils.command.prioritytop.page", EventUtils.MESSAGE_PREFIX, "§6" + page, "§6" + totalPages);
             for (int i = start; i < end; i++) {
                 final String name = namesSorted.get(i);

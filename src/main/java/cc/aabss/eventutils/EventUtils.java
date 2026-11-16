@@ -192,7 +192,7 @@ public class EventUtils implements ClientModInitializer {
                 final ServerData server = client.getCurrentServer();
                 EventUtils.LOGGER.debug("[JOIN] server={}", server != null ? server.ip : "null");
                 if (server != null) {
-                    final String ip = server.ip.toLowerCase();
+                    final String ip = server.ip.toLowerCase(Locale.ROOT);
                     LOGGER.debug("[JOIN] retrieving event ip={}", ip);
                     http.events.retrieveMany(1, null, Map.of(
                                     "match", "any",
