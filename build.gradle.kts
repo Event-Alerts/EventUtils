@@ -10,7 +10,7 @@ import java.nio.file.StandardCopyOption
 
 plugins {
     id("dev.kikugie.loom-back-compat")
-    id("xyz.srnyx.gradle-galaxy") version "c99868f"
+    id("xyz.srnyx.gradle-galaxy") version "4.0.0"
     id("com.gradleup.shadow") version "9.6.1"
     id("me.modmuss50.mod-publish-plugin") version "04fb4ab"
 
@@ -65,12 +65,11 @@ galaxy {
         add(
             "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1",
             "https://maven.wispforest.io/releases/",
-            GNOMECRAFT_RELEASES, NUCLEOID,
+            SHEDANIEL, ISXANDER, GNOMECRAFT_RELEASES, NUCLEOID,
             OKAERI_RELEASES, OKAERI_SNAPSHOTS,
             SRNYX_RELEASES, SRNYX_SNAPSHOTS,
-            FABRIC, SHEDANIEL, ISXANDER,
             FASTSTATS_RELEASES, FASTSTATS_SNAPSHOTS,
-            MAVEN_CENTRAL, JITPACK)
+            FABRIC, MAVEN_CENTRAL, JITPACK)
     }
 
     minecraft {
@@ -168,17 +167,8 @@ dependencies {
     shadowLibrary("eu.okaeri:okaeri-configs-serdes-commons:$okaeriConfigsVersion")
     // Library: JDiscordIPC (https://github.com/jagrosh/DiscordIPC/pull/24/changes)
     jijLibrary("io.github.cdagaming:DiscordIPC:${property("library.discord_ipc")}")
-    // Library: FastStats (1.16.1-1.17.1, 1.18-1.21.8, 1.21.9-1.21.11, 26.1-26.3)
-    when {
-        sc.current.parsed >= "1.16.1" && sc.current.parsed <= "1.17.1" -> "1.16.1-1.17.1"
-        sc.current.parsed >= "1.18" && sc.current.parsed <= "1.21.8" -> "1.18-1.21.8"
-        sc.current.parsed >= "1.21.9" && sc.current.parsed <= "1.21.11" -> "1.21.9-1.21.11"
-        sc.current.parsed >= "26.1" && sc.current.parsed <= "26.3" -> "26.1-26.3"
-        else -> {
-            logger.warn("Unsupported Minecraft version for FastStats: ${sc.current.version}")
-            null
-        }
-    }?.let { jijLibraryMod("dev.faststats.metrics:fabric:${property("library.faststats")}+mc$it") }
+    // Library: FastStats
+    jijLibraryMod("dev.faststats.metrics:fabric:${property("library.faststats")}+mc${sc.current.version}")
 
     // Fabric
     modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
